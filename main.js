@@ -6,7 +6,7 @@ function createWindow () {
         height: 500,
         center: true,
         autoHideMenuBar: true,
-        icon: __dirname + "/app/assets/ico/icon.ico",
+        icon: __dirname + "/app/assets/ico/icon.png",
         webPreferences: {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,

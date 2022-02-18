@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <title>Fast Downloader v0.5.2</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self' https://*.cloudflare.com https://*.googleapis.com https://*.gstatic.com;" />
+    <title>Fast Downloader v0.1</title>
 
     <link href="assets/css/style.min.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -15,16 +15,27 @@
 </head>
 <body>
     <h2>Fast Downloader</h2>
-    <div>
+    <div class="input">
         <label for="youtube-url">YouTube URL</label>
         <div class="flex">
             <input type="text" id="youtube-url"/>
-            <button>Hinzufügen</button>
-            <button><i class="fa-solid fa-paste"></i></button>
+            <button class="add">Hinzufügen</button>
+            <button class="paste"><i class="fa-solid fa-paste"></i></button>
         </div>
     </div>
-    <div>
-
+    <div class="listBox">
+        <ul>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+            <li>https://youtube.com/watch?v=Idw32da_DA</li>
+        </ul>
+        <button class="delete">Entfernen</button>
     </div>
     <script src="assets/js/script.js" rel="script" type="module"></script>
 </body>

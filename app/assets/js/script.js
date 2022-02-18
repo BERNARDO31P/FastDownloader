@@ -1,16 +1,43 @@
-const spawn = require('child_process').spawn;
-let childProcess = null;
+import * as tools from "./tools.js";
 
-let execute = document.getElementById("execute");
+tools.bindEvent("click", ".input .add", function () {
+    let input = this.closest(".input").querySelector("input");
 
-execute.addEventListener("click", function () {
-    execShellCommand(__dirname + "/assets/executable/youtube-dl.exe", ["https://www.youtube.com/watch?v=rWI2sNUXD04"]);
+    if (!input.value) {
+        // TODO: Show error
+        return;
+    }
+
+    let li = document.createElement("li");
+    li.textContent = input.value;
+
+    let ul = document.querySelector(".listBox ul");
+    ul.appendChild(li);
 });
 
-function execShellCommand(cmd, options = []) {
-    childProcess = spawn(cmd, options);
+// TODO: Comment
+tools.bindEvent("click", ".listBox li", function (e) {
+    if (!e.ctrlKey) {
+        let actives = this.closest(".listBox").querySelectorAll("li.active");
+        for (let active of actives)
+            active.classList.remove("active");
+    }
 
-    childProcess.stdout.on('data', function(data) {
-        console.log(data.toString());
-    });
-}
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+    } else {
+        this.classList.add("active");
+    }
+});
+
+// TODO: Comment
+tools.bindEvent("click", ".listBox .delete", function () {
+    tools.removeActiveListItems();
+});
+
+// TODO: Comment
+document.addEventListener("keydown", function (e) {
+    if (e.code === "Delete") {
+        tools.removeActiveListItems();
+    }
+});
