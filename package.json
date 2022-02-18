@@ -1,0 +1,22 @@
+{
+  "name": "fastdownloader",
+  "version": "0.5.2",
+  "description": "A fast video and audio downloader for YouTube",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "downloader",
+    "youtube",
+    "fast",
+    "audio",
+    "video"
+  ],
+  "author": "Bernardo de Oliveira",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^17.0.1",
+    "upath": "^2.0.1"
+  }
+}
