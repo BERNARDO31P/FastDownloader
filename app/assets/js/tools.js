@@ -43,12 +43,16 @@ export function execShellCommand(cmd, options = []) {
 
 // TODO: Comment
 export function removeActiveListItems() {
-    let actives = document.querySelectorAll(".listBox li.active");
+    let ul = document.querySelector(".listBox ul");
+    let actives = ul.querySelectorAll("li.active");
     if (actives) {
         for (let active of actives) {
             active.remove();
         }
     }
+
+    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
+    else ul.style.width = "100%";
 }
 
 
@@ -147,6 +151,9 @@ export function addLinkToList(eventElement) {
 
     ul.appendChild(li);
     input.value = "";
+
+    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
+    else ul.style.width = "100%";
 
     showNotification("Link wurde zur Liste hinzugefügt");
 }
