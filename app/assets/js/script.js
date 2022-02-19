@@ -5,19 +5,31 @@ tools.bindEvent("click", ".input .add", function () {
     let input = this.closest(".input").querySelector("input");
 
     if (!input.value) {
-        // TODO: Show error
+        showNotification("Sie haben keinen Link angegeben");
         return;
+    }
+
+    if (!input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) {
+        showNotification("Sie haben keinen gültigen Link angegeben");
+        return;
+    }
+
+    let ul = document.querySelector(".listBox ul");
+    let elements = ul.querySelectorAll("li");
+    for (let element of elements) {
+        if (element.textContent === input.value) {
+            showNotification("Dieser Link befindet sich bereits in der Liste");
+            return;
+        }
     }
 
     let li = document.createElement("li");
     li.textContent = input.value;
 
-    let ul = document.querySelector(".listBox ul");
     ul.appendChild(li);
-
     input.value = "";
 
-    showNotification("Test", 1000);
+    showNotification("Link wurde zur Liste hinzugefügt");
 });
 
 // TODO: Comment

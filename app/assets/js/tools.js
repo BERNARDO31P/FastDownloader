@@ -62,7 +62,7 @@ export function removeActiveListItems() {
  * Animiert eine Benachrichtigung in die Anzeige
  * Wenn der Player angezeigt wird, wird die Benachrichtigung drüber angezeigt, sonst ganz unten
  */
-export function showNotification(message, time) {
+export function showNotification(message, time = 3000) {
     let body = document.getElementsByTagName("body")[0];
 
     let notifications = document.getElementsByClassName("notification");
@@ -82,7 +82,7 @@ export function showNotification(message, time) {
 
     body.appendChild(notification);
 
-    let timeoutOpacity, timeoutBottom;
+    let timeoutOpacity;
 
     notification.animateCallback([{opacity: 0}, {opacity: 1}], {
         duration: 100, fill: "forwards"
@@ -94,12 +94,10 @@ export function showNotification(message, time) {
 
     notification.onmouseover = function () {
         clearTimeout(timeoutOpacity);
-        clearTimeout(timeoutBottom);
     }
 
     notification.onmouseout = function () {
         removeOpacityNotification(notification);
-        hideNotification(notification);
     }
 }
 
@@ -119,33 +117,4 @@ export function removeOpacityNotification(notification) {
     }, function () {
         notification.remove();
     });
-}
-
-/*
- * Funktion: hideNotification()
- * Autor: Bernardo de Oliveira
- * Argumente:
- *  notification: (Object) Definiert die Benachrichtigung
- *
- * Bewegt eine Benachrichtigung nach unten um sie zu verstecken
- */
-export function hideNotification(notification) {
-    let position = window.getComputedStyle(notification);
-
-    notification.animateCallback([{bottom: position.bottom}, {bottom: '10px'}], {
-        duration: 100
-    }, function () {
-        notification.style.bottom = "10px";
-    });
-}
-
-
-/*
- * Funktion: getWidth()
- * Autor: Bernardo de Oliveira
- *
- * Gibt die Browser Breite zurück
- */
-export function getWidth() {
-    return Math.max(document.body.scrollWidth, document.documentElement.scrollWidth, document.body.offsetWidth, document.documentElement.offsetWidth, document.documentElement.clientWidth);
 }
