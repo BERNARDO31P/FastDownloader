@@ -118,3 +118,35 @@ export function removeOpacityNotification(notification) {
         notification.remove();
     });
 }
+
+// TODO: Comment
+export function addLinkToList(eventElement) {
+    let input = eventElement.closest(".input").querySelector("input");
+
+    if (!input.value) {
+        showNotification("Sie haben keinen Link angegeben");
+        return;
+    }
+
+    if (!input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) {
+        showNotification("Sie haben keinen gültigen Link angegeben");
+        return;
+    }
+
+    let ul = document.querySelector(".listBox ul");
+    let elements = ul.querySelectorAll("li");
+    for (let element of elements) {
+        if (element.textContent === input.value) {
+            showNotification("Dieser Link befindet sich bereits in der Liste");
+            return;
+        }
+    }
+
+    let li = document.createElement("li");
+    li.textContent = input.value;
+
+    ul.appendChild(li);
+    input.value = "";
+
+    showNotification("Link wurde zur Liste hinzugefügt");
+}
