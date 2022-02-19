@@ -3,7 +3,7 @@ import * as tools from "./tools.js";
 const { clipboard } = require('electron');
 
 // TODO: Comment
-tools.bindEvent("click", ".input .add", function () {
+tools.bindEvent("click", ".input .add-button", function () {
     tools.addLinkToList(this);
 });
 
@@ -23,12 +23,12 @@ tools.bindEvent("click", ".listBox li", function (e) {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox .delete", function () {
+tools.bindEvent("click", ".listBox .delete-button", function () {
     tools.removeActiveListItems();
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".input .paste", function () {
+tools.bindEvent("click", ".input .paste-button", function () {
     let input = this.closest(".input").querySelector("input");
     input.value = clipboard.readText();
 
