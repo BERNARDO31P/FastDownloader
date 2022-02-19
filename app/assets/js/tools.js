@@ -1,3 +1,5 @@
+import {ipcRenderer} from "electron";
+
 const { spawn } = require('child_process');
 let childProcess = null;
 
@@ -156,4 +158,15 @@ export function addLinkToList(eventElement) {
     else ul.style.width = "100%";
 
     showNotification("Link wurde zur Liste hinzugefügt");
+}
+
+// TODO: Comment
+export function closeNotification() {
+    let notification = document.getElementById("updateNotification");
+    notification.classList.add('hidden');
+}
+
+// TODO: Comment
+export function restartApp() {
+    ipcRenderer.send('restart_app');
 }

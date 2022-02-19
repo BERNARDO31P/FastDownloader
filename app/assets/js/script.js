@@ -1,6 +1,6 @@
 import * as tools from "./tools.js";
 
-const { clipboard } = require('electron');
+const {clipboard} = require('electron');
 
 // TODO: Comment
 tools.bindEvent("click", ".input .add-button", function () {
@@ -36,6 +36,16 @@ tools.bindEvent("click", ".input .paste-button", function () {
 });
 
 // TODO: Comment
+tools.bindEvent("click", "#updateNotification .close-button", function () {
+    tools.closeNotification();
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#updateNotification .restart-button", function () {
+    tools.restartApp();
+});
+
+// TODO: Comment
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {
         tools.removeActiveListItems();
@@ -44,7 +54,7 @@ document.addEventListener("keydown", function (e) {
 
 // TODO: Comment
 window.onload = function () {
-    const { ipcRenderer } = require('electron');
+    const {ipcRenderer} = require('electron');
     const title = document.getElementsByTagName("title")[0];
 
     ipcRenderer.send('app_version');
@@ -69,11 +79,4 @@ window.onload = function () {
         restartButton.classList.remove('hidden');
         notification.classList.remove('hidden');
     });
-
-    function closeNotification() {
-        notification.classList.add('hidden');
-    }
-    function restartApp() {
-        ipcRenderer.send('restart_app');
-    }
 }
