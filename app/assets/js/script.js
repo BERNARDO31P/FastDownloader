@@ -1,16 +1,16 @@
 import * as tools from "./tools.js";
-import {showNotification} from "./tools.js";
 
+// TODO: Comment
 tools.bindEvent("click", ".input .add", function () {
     let input = this.closest(".input").querySelector("input");
 
     if (!input.value) {
-        showNotification("Sie haben keinen Link angegeben");
+        tools.showNotification("Sie haben keinen Link angegeben");
         return;
     }
 
     if (!input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) {
-        showNotification("Sie haben keinen gültigen Link angegeben");
+        tools.showNotification("Sie haben keinen gültigen Link angegeben");
         return;
     }
 
@@ -18,7 +18,7 @@ tools.bindEvent("click", ".input .add", function () {
     let elements = ul.querySelectorAll("li");
     for (let element of elements) {
         if (element.textContent === input.value) {
-            showNotification("Dieser Link befindet sich bereits in der Liste");
+            tools.showNotification("Dieser Link befindet sich bereits in der Liste");
             return;
         }
     }
@@ -29,7 +29,7 @@ tools.bindEvent("click", ".input .add", function () {
     ul.appendChild(li);
     input.value = "";
 
-    showNotification("Link wurde zur Liste hinzugefügt");
+    tools.showNotification("Link wurde zur Liste hinzugefügt");
 });
 
 // TODO: Comment
