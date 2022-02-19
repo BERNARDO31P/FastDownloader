@@ -37,16 +37,16 @@
         </ul>
         <button class="delete">Entfernen</button>
     </div>
-    <script src="assets/js/script.js" rel="script" type="module"></script>
-    <script rel="script">
-        const { ipcRenderer } = require('electron');
-        const title = document.getElementsByTagName("title")[0];
 
-        ipcRenderer.send('app_version');
-        ipcRenderer.on('app_version', (event, arg) => {
-            ipcRenderer.removeAllListeners('app_version');
-            title.textContent += " " + arg.version;
-        });
-    </script>
+    <div id="updateNotification" class="hidden">
+        <p class="message"></p>
+        <button class="close-button" onClick="closeNotification()">
+            Close
+        </button>
+        <button class="restart-button" onClick="restartApp()" class="hidden">
+            Restart
+        </button>
+    </div>
+    <script src="assets/js/script.js" rel="script" type="module"></script>
 </body>
 </html>

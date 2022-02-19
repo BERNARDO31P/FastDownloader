@@ -1,5 +1,8 @@
 # Files
 package-lock.json
+electron-builder.yml
+build.json
 
 # Folders
 node_modules/
+dist/

@@ -1,10 +1,12 @@
 {
   "name": "fastdownloader",
-  "version": "0.1",
+  "version": "0.1.0",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder build --win --linux --publish never",
+    "deploy": "electron-builder build --win --linux --publish always"
   },
   "repository": {
     "type": "git",
@@ -17,11 +19,23 @@
     "audio",
     "video"
   ],
-  "author": "Bernardo de Oliveira",
+  "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "MIT",
-  "dependencies": {
-    "electron-updater": "^4.6.5",
+  "devDependencies": {
     "electron": "^17.0.1",
     "electron-builder": "^22.14.13"
+  },
+  "dependencies": {
+    "electron-updater": "^4.6.5"
+  },
+  "build": {
+    "win": {
+      "icon": "app/assets/ico/icon_256x256.png"
+    },
+    "linux": {
+      "icon": "app/assets/ico/icon_256x256.png",
+      "category": "Utility",
+      "target": ["deb", "AppImage", "snap"]
+    }
   }
 }

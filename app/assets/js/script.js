@@ -41,3 +41,39 @@ document.addEventListener("keydown", function (e) {
         tools.removeActiveListItems();
     }
 });
+
+// TODO: Comment
+window.onload = function () {
+    const { ipcRenderer } = require('electron');
+    const title = document.getElementsByTagName("title")[0];
+
+    ipcRenderer.send('app_version');
+    ipcRenderer.on('app_version', (event, arg) => {
+        ipcRenderer.removeAllListeners('app_version');
+        title.textContent += " " + arg.version;
+    });
+
+    const notification = document.getElementById('updateNotification');
+    const message = notification.querySelector(".message");
+    const restartButton = notification.querySelector('.restart-button');
+
+    ipcRenderer.on('update_available', () => {
+        ipcRenderer.removeAllListeners('update_available');
+        message.innerText = 'A new update is available. Downloading now...';
+        notification.classList.remove('hidden');
+    });
+
+    ipcRenderer.on('update_downloaded', () => {
+        ipcRenderer.removeAllListeners('update_downloaded');
+        message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+        restartButton.classList.remove('hidden');
+        notification.classList.remove('hidden');
+    });
+
+    function closeNotification() {
+        notification.classList.add('hidden');
+    }
+    function restartApp() {
+        ipcRenderer.send('restart_app');
+    }
+}
