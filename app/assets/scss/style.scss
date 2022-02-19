@@ -1,3 +1,4 @@
+@import './variables.scss';
 @import url('https://fonts.googleapis.com/css2?family=Doppio+One&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orienta&display=swap');
 
@@ -5,12 +6,17 @@ body {
   margin: 0;
   padding: 0 23px 0 15px;
   font-family: 'Orienta', sans-serif;
+
+  color: var(--text-color);
+  background-color: var(--body-background);
 }
 
 h2 {
   margin: 5px 0;
   text-align: center;
   font-family: 'Doppio One', sans-serif;
+
+  color: var(--text-color);
 }
 
 label {
@@ -26,18 +32,19 @@ input {
 
   font-size: 15px;
   font-family: 'Orienta', sans-serif;
+  color: var(--text-color);
 
   width: calc(100% - 10px);
-  background-color: white;
+  background-color: var(--body-background);
 
   padding: 0 10px;
 
   border: none;
   border-radius: 5px;
-  box-shadow: inset 2px 2px 5px #d2d2d2,inset -5px -5px 7px #efefef;
+  box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
 
   &:focus {
-    box-shadow: inset 1px 1px 2px #d2d2d2, inset -1px -1px 2px #efefef;
+    box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
   }
 
   &:focus-visible {
@@ -48,20 +55,21 @@ input {
 button {
   border: none;
   border-radius: 5px;
-  box-shadow: -2px -2px 3px #efefef, 2px 2px 3px #d2d2d2;
+  box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
 
   font-size: 15px;
   font-family: 'Orienta', sans-serif;
+  color: var(--text-color);
 
-  background-color: white;
+  background-color: var(--body-background);
   height: 30px;
 
   &:hover {
-    box-shadow: -1px -1px 2px #efefef, 1px 1px 2px #d2d2d2;
+    box-shadow: -1px -1px 2px var(--shadow-light), 1px 1px 2px var(--shadow-dark);
   }
 
   &:active {
-    box-shadow: inset 1px 1px 2px #d2d2d2, inset -1px -1px 2px #efefef;
+    box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
   }
 
   & > svg {
@@ -80,7 +88,7 @@ button {
 }
 
 .listBox {
-  box-shadow: inset 2px 2px 5px #d2d2d2,inset -5px -5px 7px #efefef;
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -5px -5px 7px var(--shadow-light);
   border-radius: 5px;
 
   & > ul {
@@ -91,6 +99,8 @@ button {
     width: calc(100% + 10px);
     height: 150px;
 
+    resize: vertical;
+
     & li {
       transition: 0.2s;
       padding: 5px 10px;
@@ -99,6 +109,7 @@ button {
 
       font-size: 15px;
       font-family: 'Orienta', sans-serif;
+      color: var(--text-color);
 
       cursor: pointer;
 
@@ -115,14 +126,42 @@ button {
     &::-webkit-scrollbar-thumb {
       background: #888;
       border-radius: 5px;
+
+      &:hover {
+        background: #555;
+      }
     }
 
     &::-webkit-scrollbar-track {
-      background: white;
+      background: var(--body-background)
     }
   }
 
   .delete {
     float: right;
   }
+}
+
+::-webkit-resizer {
+  background-color: var(--body-background);
+}
+
+.notification {
+  font-family: "Roboto Regular", sans-serif;
+
+  color: var(--text-color);
+  background-color: var(--notification-background);
+  box-shadow: 1px 1px 1px var(--shadow-dark), -1px -1px 1px var(--shadow-light);
+
+  left: 0;
+  bottom: 10px;
+
+  z-index: 3;
+
+  padding: 10px 15px;
+  position: fixed;
+
+  opacity: 0;
+
+  border-radius: 3px;
 }

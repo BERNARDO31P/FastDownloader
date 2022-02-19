@@ -1,0 +1,39 @@
+:root {
+  --primary-color: #f5f5f5;
+  --secondary-color: #1d93ff;
+  --body-background: var(--primary-color);
+  --navbar-background: var(--primary-color);
+  --notification-background: #ededed;
+  --shadow-light: #efefef;
+  --shadow-dark: #d2d2d2;
+  --border-color: #e6e6e6;
+  --border-blockquote: rgba(137, 161, 255, 0.16);
+  --text-color: #5b5b5b;
+  --text-color-title: black;
+  --text-color-author: #b7b6b6;
+  --text-color-artist: #797979;
+  --active-background: #e2e2e2;
+  --range-background: #ddd;
+  --contrast-border: #c7c7c7;
+  --hover-background: #cbcbcb;
+}
+
+:root[data-theme='dark'] {
+  --primary-color: #212121;
+  --secondary-color: #1d93ff;
+  --body-background: #1c1c1c;
+  --navbar-background: var(--body-background);
+  --notification-background: #2c2c2c;
+  --shadow-light: #1a1a1a;
+  --shadow-dark: #0e0e0e;
+  --border-color: var(--shadow-dark);
+  --border-blockquote: rgba(137, 161, 255, 0.30);
+  --text-color: #9d9d9d;
+  --text-color-title: #bebdbd;
+  --text-color-author: #7a7a7a;
+  --text-color-artist: var(--text-color-author);
+  --active-background: #161616;
+  --range-background: #323232;
+  --contrast-border: #424242;
+  --hover-background: #232323;
+}

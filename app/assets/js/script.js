@@ -1,4 +1,5 @@
 import * as tools from "./tools.js";
+import {showNotification} from "./tools.js";
 
 tools.bindEvent("click", ".input .add", function () {
     let input = this.closest(".input").querySelector("input");
@@ -13,6 +14,10 @@ tools.bindEvent("click", ".input .add", function () {
 
     let ul = document.querySelector(".listBox ul");
     ul.appendChild(li);
+
+    input.value = "";
+
+    showNotification("Test", 1000);
 });
 
 // TODO: Comment
