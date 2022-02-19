@@ -1,11 +1,10 @@
 import * as tools from "./tools.js";
-import { addLinkToList } from "./tools.js";
 
 const { clipboard } = require('electron');
 
 // TODO: Comment
 tools.bindEvent("click", ".input .add", function () {
-    addLinkToList(this);
+    tools.addLinkToList(this);
 });
 
 // TODO: Comment
@@ -33,7 +32,7 @@ tools.bindEvent("click", ".input .paste", function () {
     let input = this.closest(".input").querySelector("input");
     input.value = clipboard.readText();
 
-    addLinkToList(this);
+    tools.addLinkToList(this);
 });
 
 // TODO: Comment

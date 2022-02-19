@@ -6,6 +6,10 @@
   "scripts": {
     "start": "electron ."
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BERNARDO31P/fastDownloader.git"
+  },
   "keywords": [
     "downloader",
     "youtube",
@@ -16,7 +20,8 @@
   "author": "Bernardo de Oliveira",
   "license": "MIT",
   "dependencies": {
-    "console": "^0.7.2",
-    "electron": "^17.0.1"
+    "electron-updater": "^4.6.5",
+    "electron": "^17.0.1",
+    "electron-builder": "^22.14.13"
   }
 }

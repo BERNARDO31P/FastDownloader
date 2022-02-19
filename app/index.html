@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self' https://*.cloudflare.com https://*.googleapis.com https://*.gstatic.com;" />
-    <title>Fast Downloader v0.1</title>
+    <title>Fast Downloader</title>
 
     <link href="assets/css/style.min.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -38,5 +38,15 @@
         <button class="delete">Entfernen</button>
     </div>
     <script src="assets/js/script.js" rel="script" type="module"></script>
+    <script rel="script">
+        const { ipcRenderer } = require('electron');
+        const title = document.getElementsByTagName("title")[0];
+
+        ipcRenderer.send('app_version');
+        ipcRenderer.on('app_version', (event, arg) => {
+            ipcRenderer.removeAllListeners('app_version');
+            title.textContent += " " + arg.version;
+        });
+    </script>
 </body>
 </html>
