@@ -68,13 +68,13 @@ window.onload = function () {
 
     ipcRenderer.on('update_available', () => {
         ipcRenderer.removeAllListeners('update_available');
-        message.innerText = 'A new update is available. Downloading now...';
+        message.innerText = 'Eine neue Version ist verfügbar und wird heruntergeladen..';
         notification.classList.remove('hidden');
     });
 
     ipcRenderer.on('update_downloaded', () => {
         ipcRenderer.removeAllListeners('update_downloaded');
-        message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+        message.innerText = 'Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.';
         restartButton.classList.remove('hidden');
         notification.classList.remove('hidden');
     });
