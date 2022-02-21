@@ -35,7 +35,11 @@
     "linux": {
       "icon": "app/assets/ico/icon_256x256.png",
       "category": "Utility",
-      "target": ["deb", "AppImage", "snap"]
+      "target": [
+        "deb",
+        "AppImage",
+        "snap"
+      ]
     }
   }
 }
