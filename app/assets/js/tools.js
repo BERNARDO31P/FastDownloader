@@ -1,4 +1,4 @@
-import {ipcRenderer} from "electron";
+const { ipcRenderer } = require('electron');
 
 const { spawn } = require('child_process');
 let childProcess = null;

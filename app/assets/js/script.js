@@ -1,6 +1,6 @@
 import * as tools from "./tools.js";
 
-const {clipboard} = require('electron');
+const { clipboard, ipcRenderer } = require('electron');
 
 // TODO: Comment
 tools.bindEvent("click", ".input .add-button", function () {
@@ -54,7 +54,6 @@ document.addEventListener("keydown", function (e) {
 
 // TODO: Comment
 window.onload = function () {
-    const {ipcRenderer} = require('electron');
     const title = document.getElementsByTagName("title")[0];
 
     ipcRenderer.send('app_version');
