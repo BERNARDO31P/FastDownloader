@@ -45,6 +45,12 @@ tools.bindEvent("click", "#updateNotification .restart-button", function () {
     tools.restartApp();
 });
 
+tools.bindEvent("keydown", ".input input", function (e) {
+    if (e.code === "Enter") {
+        tools.addLinkToList(this);
+    }
+});
+
 // TODO: Comment
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {

@@ -134,7 +134,8 @@ export function addLinkToList(eventElement) {
         return;
     }
 
-    if (!input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) {
+    let found = input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
+    if (!found) {
         showNotification("Sie haben keinen gültigen Link angegeben");
         return;
     }
@@ -142,14 +143,14 @@ export function addLinkToList(eventElement) {
     let ul = document.querySelector(".listBox ul");
     let elements = ul.querySelectorAll("li");
     for (let element of elements) {
-        if (element.textContent === input.value) {
+        if (element.textContent === found[0]) {
             showNotification("Dieser Link befindet sich bereits in der Liste");
             return;
         }
     }
 
     let li = document.createElement("li");
-    li.textContent = input.value;
+    li.textContent = found[0];
 
     ul.appendChild(li);
     input.value = "";
