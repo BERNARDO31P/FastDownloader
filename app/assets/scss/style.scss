@@ -60,6 +60,8 @@ input {
 }
 
 button, #theme-toggler {
+  user-select: none;
+
   border: none;
   border-radius: 5px;
   box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
@@ -86,6 +88,25 @@ button, #theme-toggler {
 
     padding: 0 10px;
   }
+}
+
+p {
+  margin: 0;
+}
+
+progress[value] {
+  appearance: none;
+
+  width: 100%;
+  height: 30px;
+}
+
+progress::-webkit-progress-value {
+  background: var(--shadow-dark);
+}
+
+progress::-webkit-progress-bar {
+  background: var(--body-background);
 }
 
 #theme-toggler {
@@ -183,7 +204,7 @@ button, #theme-toggler {
 }
 
 .options {
-  margin: 15px 0 0 0;
+  margin: 15px 0;
   display: flex;
 
   & > div {
@@ -221,6 +242,8 @@ button, #theme-toggler {
 }
 
 .select {
+  user-select: none;
+
   outline: none;
   border: none;
 
@@ -297,6 +320,26 @@ button, #theme-toggler {
 
       height: initial;
       padding: 10px;
+    }
+  }
+}
+
+.progress-song, .progress-total {
+  margin: 5px 0 0 0;
+  padding: 5px;
+
+  border-radius: 5px;
+
+  box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
+
+
+  .info {
+    display: flex;
+    line-height: 30px;
+    position: absolute;
+
+    & > * {
+      margin: 0 5px;
     }
   }
 }
