@@ -107,6 +107,13 @@ button, #theme-toggler {
 
     padding: 0 10px;
   }
+
+  &.disabled {
+    box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+    color: var(--text-color-artist);
+
+    cursor: default;
+  }
 }
 
 p {

@@ -1,6 +1,7 @@
 import * as tools from "./tools.js";
+import {showNotification} from "./tools.js";
 
-const {clipboard, ipcRenderer} = require('electron');
+const {clipboard, ipcRenderer, shell} = require('electron');
 
 let theme = tools.getCookie("theme");
 if (!theme) theme = "light";
@@ -154,9 +155,19 @@ tools.bindEvent("click", ".location .search-button", function () {
 });
 
 // TODO: Comment
+tools.bindEvent("click", ".location .location-button:not(.disabled)", function () {
+    let location = document.querySelector(".location #location");
+
+    if (location.value) shell.openPath(location.value);
+});
+
+// TODO: Comment
 ipcRenderer.on('selected_file', function (event, path) {
     let location = document.querySelector(".location #location");
+    let locationButton = document.querySelector(".location .location-button");
+
     location.value = path;
+    locationButton.classList.remove("disabled");
 })
 
 // TODO: Comment
