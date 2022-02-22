@@ -43,19 +43,11 @@ export const bindEvent = (eventNames, selectors, handler) => {
  * Argumente:
  *  name: (String) Cookie Name
  *
- * Sucht den Cookie über den Namen
+ * Holt den Wert aus dem Speicher
  * Gibt den Wert zurück
  */
 export function getCookie(name) {
     return store.get(name);
-
-    /*let value = `; ${document.cookie}`, parts = value.split(`; ${name}=`);
-
-    if (parts.length === 2) {
-        return parts.pop().split(';').shift();
-    } else {
-        return "";
-    }*/
 }
 
 /*
@@ -70,8 +62,6 @@ export function getCookie(name) {
  */
 export function setCookie(name, value, expiresAt = "") {
     store.set(name, value);
-
-    //document.cookie = name + "=" + value + "; Expires=" + expiresAt + "; Path=/; SameSite=Lax";
 }
 
 // TODO: Comment
