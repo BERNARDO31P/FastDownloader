@@ -66,15 +66,6 @@ export function setCookie(name, value, expiresAt = "") {
 }
 
 // TODO: Comment
-export function execShellCommand(cmd, options = []) {
-    childProcess = spawn(cmd, options);
-
-    childProcess.stdout.on('data', function (data) {
-        console.log(data.toString());
-    });
-}
-
-// TODO: Comment
 export function removeActiveListItems() {
     let ul = document.querySelector(".listBox ul");
     let actives = ul.querySelectorAll("li.active");
@@ -87,7 +78,6 @@ export function removeActiveListItems() {
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
     else ul.style.width = "100%";
 }
-
 
 /*
  * Funktion: showNotification()
@@ -137,7 +127,6 @@ export function showNotification(message, time = 3000) {
         removeOpacityNotification(notification);
     }
 }
-
 
 /*
  * Funktion: removeOpacityNotification()
@@ -221,4 +210,32 @@ export function selectClick(element) {
         select.classList.add("active");
 
     }
+}
+
+// TODO: Comment
+export function execShellCommand(cmd) {
+    childProcess = spawn(cmd);
+
+    childProcess.stdout.on('data', function (data) {
+        console.log(data.toString());
+    });
+}
+
+// TODO: Comment
+export function generateShellCommand(mode, location, url, percentage, codec, quality, playlistCount) {
+    let exe = "";
+    if (process.platform === "win32") exe = ".exe";
+
+    let command = "";
+    if (mode === "audio") {
+        if (codec === "mp3") {
+            command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+        } else {
+            command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+        }
+    } else {
+        command = __dirname + "/assets/executable/youtube-dl" + exe +" -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+    }
+
+    return command;
 }

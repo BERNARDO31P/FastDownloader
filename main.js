@@ -1,5 +1,7 @@
-const {app, BrowserWindow, ipcMain} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog} = require('electron');
 const {autoUpdater} = require('electron-updater');
+
+const console = require('console');
 
 const Store = require('electron-store');
 Store.initRenderer();
@@ -9,9 +11,9 @@ let win = null;
 function createWindow() {
     win = new BrowserWindow({
         width: 900,
-        height: 550,
+        height: 600,
         minWidth: 900,
-        minHeight: 550,
+        minHeight: 600,
         center: true,
         autoHideMenuBar: true,
         icon: __dirname + "/app/assets/ico/icon_64x64.png",
@@ -49,6 +51,15 @@ ipcMain.on('app_version', (event) => {
 
 ipcMain.on('restart_app', () => {
     autoUpdater.quitAndInstall();
+});
+
+ipcMain.on("open_file_dialog", (event) => {
+    dialog.showOpenDialog({
+        properties: ['openDirectory']
+    }).then(function (files) {
+        if (!files.canceled)
+            win.webContents.send('selected_file', files.filePaths);
+    });
 });
 
 autoUpdater.on('update-available', () => {

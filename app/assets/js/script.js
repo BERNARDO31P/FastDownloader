@@ -121,6 +121,45 @@ tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function
 });
 
 // TODO: Comment
+tools.bindEvent("click", ".startAbort .start-button", function () {
+    let listBox = document.getElementsByClassName("listBox")[0];
+    let mode = document.querySelector(".mode .select");
+    let codec = document.querySelector(".codec .select");
+    let quality = document.querySelector(".quality .select");
+    let location = document.querySelector(".location #location");
+
+    let items = listBox.querySelectorAll("li");
+    let percentage = Math.floor(100 / items.length * 100) / 100;
+
+    for (let item of items) {
+        tools.generateShellCommand(
+            mode.getAttribute("data-value"),
+            location.value,
+            item.textContent,
+            percentage,
+            codec.getAttribute("data-value"),
+            quality.getAttribute("data-value")
+        );
+    }
+});
+
+// TODO: Comment
+tools.bindEvent("click", ".startAbort .abort-button", function () {
+
+});
+
+// TODO: Comment
+tools.bindEvent("click", ".location .search-button", function () {
+    ipcRenderer.send('open_file_dialog');
+});
+
+// TODO: Comment
+ipcRenderer.on('selected_file', function (event, path) {
+    let location = document.querySelector(".location #location");
+    location.value = path;
+})
+
+// TODO: Comment
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {
         tools.removeActiveListItems();
