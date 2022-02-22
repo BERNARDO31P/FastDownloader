@@ -234,16 +234,13 @@ button, #theme-toggler {
   background-color: var(--body-background);
   border-radius: 5px;
 
-  .head, .body {
-    padding: 10px;
-  }
-
   .head {
     transition: 0.2s;
     cursor: pointer;
     box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
 
     border-radius: 5px;
+    padding: 10px;
 
     & > * {
       display: inline-block;
@@ -260,7 +257,9 @@ button, #theme-toggler {
   }
 
   .body {
-    opacity: 0;
+    height: 0;
+    padding: 0 10px;
+    overflow: hidden;
 
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
@@ -274,7 +273,7 @@ button, #theme-toggler {
         color: var(--text-color-artist)
       }
 
-      &:hover:not([aria-disabled='true']) {
+      &:hover:not([aria-disabled='true']):not([aria-selected='true']) {
         background-color: var(--hover-background);
       }
 
@@ -296,7 +295,8 @@ button, #theme-toggler {
     .body {
       box-shadow: 0 0 0 var(--shadow-dark), inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light), inset -1px -1px 2px var(--shadow-light);
 
-      opacity: 1;
+      height: initial;
+      padding: 10px;
     }
   }
 }
