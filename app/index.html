@@ -2,7 +2,8 @@
 <html lang="de" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self' https://*.cloudflare.com https://*.googleapis.com https://*.gstatic.com;" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'unsafe-inline' 'self' https://*.cloudflare.com https://*.googleapis.com https://*.gstatic.com;"/>
     <title>Fast Downloader</title>
 
     <link href="assets/css/style.min.css" rel="stylesheet" type="text/css"/>
@@ -31,33 +32,51 @@
     <div class="options">
         <div class="mode">
             <label for="mode">Download-Modus</label>
-            <select id="mode">
-                <option selected disabled></option>
-                <option value="video">Video und Audio</option>
-                <option value="audio">Nur Audio</option>
-            </select>
+            <div class="select" id="mode">
+                <div class="head">
+                    <div class="button">Nichts ausgewählt</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">Nichts ausgewählt</div>
+                    <div class="option" data-value="video">Video und Audio</div>
+                    <div class="option" data-value="audio">Nur Audio</div>
+                </div>
+            </div>
         </div>
         <div class="quality">
             <label for="quality">Qualität</label>
-            <select id="quality">
-                <option selected disabled></option>
-                <option>Beste</option>
-                <option>Mittlere</option>
-                <option>Schlechte</option>
-            </select>
+            <div class="select" id="quality">
+                <div class="head">
+                    <div class="button">Nichts ausgewählt</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">Nichts ausgewählt</div>
+                    <div class="option" data-value="best">Beste</div>
+                    <div class="option" data-value="medium">Mittlere</div>
+                    <div class="option" data-value="bad">Schlechte</div>
+                </div>
+            </div>
         </div>
         <div class="codec">
             <label for="codec">Codec</label>
-            <select id="codec">
-                <option selected disabled></option>
-                <option>aac</option>
-                <option>flac</option>
-                <option>mp3</option>
-                <option>m4a</option>
-                <option>opus</option>
-                <option>vorbis</option>
-                <option>wav</option>
-            </select>
+            <div class="select" id="codec">
+                <div class="head">
+                    <div class="button">Nichts ausgewählt</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">Nichts ausgewählt</div>
+                    <div class="option" data-value="aac">aac</div>
+                    <div class="option" data-value="flac">flac</div>
+                    <div class="option" data-value="mp3">mp3</div>
+                    <div class="option" data-value="m4a">m4a</div>
+                    <div class="option" data-value="opus">opus</div>
+                    <div class="option" data-value="vorbis">vorbis</div>
+                    <div class="option" data-value="wav">wav</div>
+                </div>
+            </div>
         </div>
     </div>
 

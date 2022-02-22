@@ -85,17 +85,44 @@ tools.bindEvent("click", "#theme-toggler", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("input", ".options #mode", function () {
+tools.bindEvent("click", ".select .head", function () {
+    let select = this.closest(".select");
+
+    if (select.classList.contains("active")) {
+        select.classList.remove("active");
+    } else {
+        select.classList.add("active");
+    }
+});
+
+// TODO: Comment
+tools.bindEvent("click", ".select#mode .option", function () {
+    let value = this.getAttribute("data-value");
+
     let quality = document.querySelector(".options .quality");
     let codec = document.querySelector(".options .codec");
 
-    if (this.value === "audio") {
+    if (value === "audio") {
         quality.style.display = "inline-block";
         codec.style.display = "inline-block";
     } else {
         quality.style.display = "";
         codec.style.display = "";
     }
+});
+
+// TODO: Comment
+tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function () {
+    let select = this.closest(".select");
+    let button = select.querySelector(".button");
+
+    let selected = select.querySelector("[aria-selected='true']");
+    selected.ariaSelected = "false";
+    this.ariaSelected = "true";
+
+    button.textContent = this.textContent;
+    select.setAttribute("data-value", this.getAttribute("data-value"));
+    select.classList.remove("active");
 });
 
 // TODO: Comment

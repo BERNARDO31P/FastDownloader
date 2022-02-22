@@ -59,22 +59,6 @@ input {
   }
 }
 
-select {
-  outline: none;
-  border: none;
-
-  height: 30px;
-  line-height: 15px;
-
-  font-size: 15px;
-  font-family: 'Orienta', sans-serif;
-  color: var(--text-color);
-
-  background-color: var(--body-background);
-  border-radius: 5px;
-  box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
-}
-
 button, #theme-toggler {
   border: none;
   border-radius: 5px;
@@ -155,6 +139,8 @@ button, #theme-toggler {
     resize: vertical;
 
     & li {
+      border-radius: 5px;
+
       transition: 0.2s;
       padding: 5px 10px;
 
@@ -198,6 +184,7 @@ button, #theme-toggler {
 
 .options {
   margin: 15px 0 0 0;
+  display: flex;
 
   & > div {
     display: inline-block;
@@ -231,4 +218,85 @@ button, #theme-toggler {
   opacity: 0;
 
   border-radius: 3px;
+}
+
+.select {
+  outline: none;
+  border: none;
+
+  height: 30px;
+  line-height: 15px;
+
+  font-size: 15px;
+  font-family: 'Orienta', sans-serif;
+  color: var(--text-color);
+
+  background-color: var(--body-background);
+  border-radius: 5px;
+
+  .head, .body {
+    padding: 10px;
+  }
+
+  .head {
+    transition: 0.2s;
+    cursor: pointer;
+    box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
+
+    border-radius: 5px;
+
+    & > * {
+      display: inline-block;
+    }
+
+    svg {
+      float: right;
+      padding: 0 0 0 10px;
+    }
+
+    &:hover {
+      box-shadow: -1px -1px 2px var(--shadow-light), 1px 1px 2px var(--shadow-dark);
+    }
+  }
+
+  .body {
+    opacity: 0;
+
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+
+    .option {
+      cursor: pointer;
+      transition: 0.2s;
+      padding: 5px;
+
+      &[aria-disabled='true'] {
+        color: var(--text-color-artist)
+      }
+
+      &:hover:not([aria-disabled='true']) {
+        background-color: var(--hover-background);
+      }
+
+      &[aria-selected='true'] {
+        background-color: var(--active-background);
+      }
+    }
+  }
+
+  &.active {
+    .head {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+
+      box-shadow: inset 1px 1px 2px var(--shadow-dark), 0 0 0 var(--shadow-dark), inset -1px -1px 2px var(--shadow-light), inset -1px -1px 2px var(--shadow-light);
+      /* Oben, Unten, Rechts, Links */
+    }
+
+    .body {
+      box-shadow: 0 0 0 var(--shadow-dark), inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light), inset -1px -1px 2px var(--shadow-light);
+
+      opacity: 1;
+    }
+  }
 }
