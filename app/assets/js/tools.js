@@ -1,6 +1,9 @@
-const { ipcRenderer } = require('electron');
+const {ipcRenderer} = require('electron');
 
-const { spawn } = require('child_process');
+const Store = require('electron-store');
+const store = new Store();
+
+const {spawn} = require('child_process');
 let childProcess = null;
 
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -34,11 +37,48 @@ export const bindEvent = (eventNames, selectors, handler) => {
     });
 };
 
+/*
+ * Funktion: getCookie()
+ * Autor: Bernardo de Oliveira
+ * Argumente:
+ *  name: (String) Cookie Name
+ *
+ * Sucht den Cookie über den Namen
+ * Gibt den Wert zurück
+ */
+export function getCookie(name) {
+    return store.get(name);
+
+    /*let value = `; ${document.cookie}`, parts = value.split(`; ${name}=`);
+
+    if (parts.length === 2) {
+        return parts.pop().split(';').shift();
+    } else {
+        return "";
+    }*/
+}
+
+/*
+ * Funktion: setCookie()
+ * Autor: Bernardo de Oliveira
+ * Argumente:
+ *  name: (String) Cookie Name
+ *  value: (String) Cookie Wert
+ *  expiresAt: (String) Auslaufdatum vom Cookie
+ *
+ * Erstellt einen Cookie und setzt die Werte
+ */
+export function setCookie(name, value, expiresAt = "") {
+    store.set(name, value);
+
+    //document.cookie = name + "=" + value + "; Expires=" + expiresAt + "; Path=/; SameSite=Lax";
+}
+
 // TODO: Comment
 export function execShellCommand(cmd, options = []) {
     childProcess = spawn(cmd, options);
 
-    childProcess.stdout.on('data', function(data) {
+    childProcess.stdout.on('data', function (data) {
         console.log(data.toString());
     });
 }

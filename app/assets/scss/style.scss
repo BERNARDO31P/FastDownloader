@@ -55,7 +55,7 @@ input {
   }
 }
 
-button {
+button, #theme-toggler {
   border: none;
   border-radius: 5px;
   box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
@@ -66,6 +66,8 @@ button {
 
   background-color: var(--body-background);
   height: 30px;
+
+  display: inline-block;
 
   &:hover {
     box-shadow: -1px -1px 2px var(--shadow-light), 1px 1px 2px var(--shadow-dark);
@@ -80,6 +82,19 @@ button {
 
     padding: 0 10px;
   }
+}
+
+#theme-toggler {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  position: absolute;
+  right: 25px;
+  top: 10px;
+
+  border-radius: 20px;
+  height: 40px;
 }
 
 #updateNotification {

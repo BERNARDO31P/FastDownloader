@@ -26,6 +26,11 @@
     "electron-builder": "^22.14.13"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.5",
+    "console": "^0.7.2",
+    "electron-cookies": "^1.1.0",
+    "electron-data-holder": "^1.0.1",
+    "electron-store": "^8.0.1",
     "electron-updater": "^4.6.5"
   },
   "build": {

@@ -1,8 +1,12 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const { autoUpdater } = require('electron-updater');
+const {app, BrowserWindow, ipcMain} = require('electron');
+const {autoUpdater} = require('electron-updater');
+
+const Store = require('electron-store');
+Store.initRenderer();
+
 let win = null;
 
-function createWindow () {
+function createWindow() {
     win = new BrowserWindow({
         width: 800,
         height: 500,
@@ -33,10 +37,14 @@ app.on('window-all-closed', () => {
     }
 });
 
+app.on('activate', function () {
+    if (win === null) createWindow();
+});
+
 app.whenReady().then(createWindow);
 
 ipcMain.on('app_version', (event) => {
-    event.sender.send('app_version', { version: app.getVersion() });
+    event.sender.send('app_version', {version: app.getVersion()});
 });
 
 ipcMain.on('restart_app', () => {

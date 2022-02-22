@@ -1,6 +1,10 @@
 import * as tools from "./tools.js";
 
-const { clipboard, ipcRenderer } = require('electron');
+const {clipboard, ipcRenderer} = require('electron');
+
+let theme = tools.getCookie("theme");
+if (!theme) theme = "light";
+document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 // TODO: Comment
 tools.bindEvent("click", ".input .add-button", function () {
@@ -45,9 +49,38 @@ tools.bindEvent("click", "#updateNotification .restart-button", function () {
     tools.restartApp();
 });
 
+// TODO: Comment
 tools.bindEvent("keydown", ".input input", function (e) {
     if (e.code === "Enter") {
         tools.addLinkToList(this);
+    }
+});
+
+/*
+ * Funktion: Anonym
+ * Autor: Bernardo de Oliveira
+ *
+ * Ändert das Design-Attribut und ändert somit auch das Design
+ */
+tools.bindEvent("click", "#theme-toggler", function () {
+    let html = document.getElementsByTagName("html")[0], icon = this.querySelector("svg");
+
+    if (html.getAttribute("data-theme") === "dark") {
+        html.setAttribute("data-theme", "light");
+
+        icon.classList.remove("fa-sun");
+        icon.classList.add("fa-moon");
+
+        theme = "light";
+        tools.setCookie("theme", "light");
+    } else {
+        html.setAttribute("data-theme", "dark");
+
+        icon.classList.remove("fa-moon");
+        icon.classList.add("fa-sun");
+
+        theme = "dark";
+        tools.setCookie("theme", "dark");
     }
 });
 
@@ -84,4 +117,19 @@ window.onload = function () {
         restartButton.classList.remove('hidden');
         notification.classList.remove('hidden');
     });
+
+    let interval = setInterval(function () {
+        let toggler = document.getElementById("theme-toggler");
+
+        if (toggler) {
+            let icon = toggler.querySelector("svg");
+
+            if (icon) {
+                if (theme === "light") icon.classList.add("fa-moon");
+                else icon.classList.add("fa-sun");
+
+                clearInterval(interval);
+            }
+        }
+    }, 50);
 }
