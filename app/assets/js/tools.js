@@ -199,13 +199,13 @@ export function selectClick(element) {
     let totalProgress = document.getElementsByClassName("progress-total")[0];
 
     if (select.classList.contains("active")) {
-        songProgress.style.display = "";
-        totalProgress.style.display = "";
+        songProgress.style.opacity = "1";
+        totalProgress.style.opacity = "1";
 
         select.classList.remove("active");
     } else {
-        songProgress.style.display = "none";
-        totalProgress.style.display = "none";
+        songProgress.style.opacity = "0";
+        totalProgress.style.opacity = "0";
 
         select.classList.add("active");
 

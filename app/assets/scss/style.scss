@@ -211,6 +211,8 @@ progress::-webkit-progress-bar {
   & > div {
     display: inline-block;
     margin: 0 10px;
+
+    z-index: 1;
   }
 
   & > div:first-of-type {
