@@ -17,9 +17,9 @@
     <h2>Fast Downloader</h2>
     <div id="theme-toggler"><i class="fas"></i></div>
     <div class="input">
-        <label for="youtube-url">YouTube URL</label>
+        <label for="url">YouTube URL</label>
         <div class="flex">
-            <input type="text" id="youtube-url"/>
+            <input type="text" id="url"/>
             <button class="add-button">Hinzufügen</button>
             <button class="paste-button"><i class="fa-solid fa-paste"></i></button>
         </div>
@@ -27,6 +27,38 @@
     <div class="listBox">
         <ul></ul>
         <button class="delete-button">Entfernen</button>
+    </div>
+    <div class="options">
+        <div class="mode">
+            <label for="mode">Download-Modus</label>
+            <select id="mode">
+                <option selected disabled></option>
+                <option value="video">Video und Audio</option>
+                <option value="audio">Nur Audio</option>
+            </select>
+        </div>
+        <div class="quality">
+            <label for="quality">Qualität</label>
+            <select id="quality">
+                <option selected disabled></option>
+                <option>Beste</option>
+                <option>Mittlere</option>
+                <option>Schlechte</option>
+            </select>
+        </div>
+        <div class="codec">
+            <label for="codec">Codec</label>
+            <select id="codec">
+                <option selected disabled></option>
+                <option>aac</option>
+                <option>flac</option>
+                <option>mp3</option>
+                <option>m4a</option>
+                <option>opus</option>
+                <option>vorbis</option>
+                <option>wav</option>
+            </select>
+        </div>
     </div>
 
     <div id="updateNotification" class="hidden">

@@ -6,6 +6,10 @@
   src: url("../fonts/Roboto-Regular.ttf") format("truetype");
 }
 
+::-webkit-resizer {
+  background-color: var(--body-background);
+}
+
 body {
   margin: 0;
   padding: 0 23px 0 15px;
@@ -53,6 +57,22 @@ input {
   &:focus-visible {
     outline: none;
   }
+}
+
+select {
+  outline: none;
+  border: none;
+
+  height: 30px;
+  line-height: 15px;
+
+  font-size: 15px;
+  font-family: 'Orienta', sans-serif;
+  color: var(--text-color);
+
+  background-color: var(--body-background);
+  border-radius: 5px;
+  box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
 }
 
 button, #theme-toggler {
@@ -171,12 +191,26 @@ button, #theme-toggler {
   }
 
   .delete-button {
+    margin: 0 0 15px 0;
     float: right;
   }
 }
 
-::-webkit-resizer {
-  background-color: var(--body-background);
+.options {
+  margin: 15px 0 0 0;
+
+  & > div {
+    display: inline-block;
+    margin: 0 10px;
+  }
+
+  & > div:first-of-type {
+    margin: 0 10px 0 0;
+  }
+
+  .quality, .codec {
+    display: none;
+  }
 }
 
 .notification {

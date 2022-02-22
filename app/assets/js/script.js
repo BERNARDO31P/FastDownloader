@@ -85,6 +85,20 @@ tools.bindEvent("click", "#theme-toggler", function () {
 });
 
 // TODO: Comment
+tools.bindEvent("input", ".options #mode", function () {
+    let quality = document.querySelector(".options .quality");
+    let codec = document.querySelector(".options .codec");
+
+    if (this.value === "audio") {
+        quality.style.display = "inline-block";
+        codec.style.display = "inline-block";
+    } else {
+        quality.style.display = "";
+        codec.style.display = "";
+    }
+});
+
+// TODO: Comment
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {
         tools.removeActiveListItems();

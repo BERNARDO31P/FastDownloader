@@ -6,6 +6,7 @@ const store = new Store();
 const {spawn} = require('child_process');
 let childProcess = null;
 
+// TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
     let animation = this.animate(keyframes, options);
 
