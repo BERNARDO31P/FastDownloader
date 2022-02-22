@@ -86,22 +86,7 @@ tools.bindEvent("click", "#theme-toggler", function () {
 
 // TODO: Comment
 tools.bindEvent("click", ".select .head", function () {
-    let select = this.closest(".select");
-    let songProgress = document.getElementsByClassName("progress-song")[0];
-    let totalProgress = document.getElementsByClassName("progress-total")[0];
-
-    if (select.classList.contains("active")) {
-        songProgress.style.display = "";
-        totalProgress.style.display = "";
-
-        select.classList.remove("active");
-    } else {
-        songProgress.style.display = "none";
-        totalProgress.style.display = "none";
-
-        select.classList.add("active");
-
-    }
+    tools.selectClick(this);
 });
 
 // TODO: Comment
@@ -131,7 +116,8 @@ tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function
 
     button.textContent = this.textContent;
     select.setAttribute("data-value", this.getAttribute("data-value"));
-    select.classList.remove("active");
+
+    tools.selectClick(this);
 });
 
 // TODO: Comment

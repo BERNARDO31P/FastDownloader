@@ -10,6 +10,24 @@
   background-color: var(--body-background);
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+
+  &:hover {
+    background: #555;
+  }
+}
+
+::-webkit-scrollbar-track {
+  background: var(--body-background)
+}
+
 body {
   margin: 0;
   padding: 0 23px 0 15px;
@@ -61,6 +79,7 @@ input {
 
 button, #theme-toggler {
   user-select: none;
+  cursor: pointer;
 
   border: none;
   border-radius: 5px;
@@ -176,24 +195,6 @@ progress::-webkit-progress-bar {
       &.active {
         background-color: #3f6d952b;
       }
-    }
-
-    &::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 5px;
-
-      &:hover {
-        background: #555;
-      }
-    }
-
-    &::-webkit-scrollbar-track {
-      background: var(--body-background)
     }
   }
 
@@ -318,7 +319,11 @@ progress::-webkit-progress-bar {
     .body {
       box-shadow: 0 0 0 var(--shadow-dark), inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light), inset -1px -1px 2px var(--shadow-light);
 
+      max-height: 100px;
+      overflow: auto;
+
       height: initial;
+
       padding: 10px;
     }
   }
@@ -342,4 +347,16 @@ progress::-webkit-progress-bar {
       margin: 0 5px;
     }
   }
+}
+
+.startAbort {
+  position: absolute;
+
+  width: 100%;
+  left: 0;
+  bottom: 0;
+
+  padding: 0 0 15px 0;
+
+  text-align: center;
 }

@@ -202,3 +202,23 @@ export function closeNotification() {
 export function restartApp() {
     ipcRenderer.send('restart_app');
 }
+
+// TODO: Comment
+export function selectClick(element) {
+    let select = element.closest(".select");
+    let songProgress = document.getElementsByClassName("progress-song")[0];
+    let totalProgress = document.getElementsByClassName("progress-total")[0];
+
+    if (select.classList.contains("active")) {
+        songProgress.style.display = "";
+        totalProgress.style.display = "";
+
+        select.classList.remove("active");
+    } else {
+        songProgress.style.display = "none";
+        totalProgress.style.display = "none";
+
+        select.classList.add("active");
+
+    }
+}
