@@ -3,8 +3,8 @@ const {ipcRenderer} = require('electron');
 const Store = require('electron-store');
 const store = new Store();
 
-const {spawn} = require('child_process');
-let childProcess = null;
+const {exec} = require('child_process');
+export let childProcess = null, playlistCount = 0;
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -213,16 +213,7 @@ export function selectClick(element) {
 }
 
 // TODO: Comment
-export function execShellCommand(cmd) {
-    childProcess = spawn(cmd);
-
-    childProcess.stdout.on('data', function (data) {
-        console.log(data.toString());
-    });
-}
-
-// TODO: Comment
-export function generateShellCommand(mode, location, url, percentage, codec, quality, playlistCount) {
+export function downloadURL(mode, location, url, percentage, codec, quality, playlistCount) {
     let exe = "";
     if (process.platform === "win32") exe = ".exe";
 
@@ -234,8 +225,89 @@ export function generateShellCommand(mode, location, url, percentage, codec, qua
             command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
         }
     } else {
-        command = __dirname + "/assets/executable/youtube-dl" + exe +" -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+        command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
     }
 
-    return command;
+    childProcess = exec(command);
+
+    childProcess.stdout.on('data', function (data) {
+        console.log(data);
+    });
+}
+
+// TODO: Comment
+export function checkPlaylistCount(url) {
+    return new Promise((resolve, reject) => {
+        let exe = "";
+        if (process.platform === "win32") exe = ".exe";
+
+        let command = __dirname + "/assets/executable/youtube-dl" + exe + " --flat-playlist " + url;
+        childProcess = exec(command);
+
+        childProcess.stdout.on('data', function callback (data) {
+            data = data.trim();
+            if (data.includes("Downloading video")) {
+                let found = data.match("(?<=\\s|^)[\\d]+$");
+                if (found) {
+                    resolve(Number(found[0]));
+
+                    childProcess.kill('SIGINT');
+                }
+            }
+        });
+
+        childProcess.stderr.on('data', function () {
+            resolve(0);
+        });
+    })
+}
+
+// TODO: Comment
+export function setDisabled() {
+    let listBox = document.getElementsByClassName("listBox")[0];
+    let mode = document.querySelector(".mode .select");
+    let codec = document.querySelector(".codec .select");
+    let quality = document.querySelector(".quality .select");
+    let location = document.querySelector(".location #location");
+    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button)");
+    let abortButton = document.querySelector(".abort-button");
+    let input = document.querySelector("input:not(#location)");
+
+    listBox.ariaDisabled = "true";
+    mode.ariaDisabled = "true";
+    codec.ariaDisabled = "true";
+    quality.ariaDisabled = "true";
+    location.ariaDisabled = "true";
+    input.ariaDisabled = "true";
+    input.setAttribute("readonly", "readonly");
+
+    for (let button of buttons)
+        button.ariaDisabled = "true";
+
+    abortButton.ariaDisabled = "false";
+}
+
+// TODO: Comment
+export function setEnabled() {
+    let listBox = document.getElementsByClassName("listBox")[0];
+    let mode = document.querySelector(".mode .select");
+    let codec = document.querySelector(".codec .select");
+    let quality = document.querySelector(".quality .select");
+    let location = document.querySelector(".location #location");
+    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button)");
+    let abortButton = document.querySelector(".abort-button");
+    let input = document.querySelector("input:not(#location)");
+
+    listBox.ariaDisabled = "false";
+    mode.ariaDisabled = "false";
+    codec.ariaDisabled = "false";
+    quality.ariaDisabled = "false";
+    location.ariaDisabled = "false";
+    input.ariaDisabled = "false";
+    input.removeAttribute("readonly");
+
+    for (let button of buttons)
+        button.ariaDisabled = "false";
+
+    abortButton.ariaDisabled = "true";
 }

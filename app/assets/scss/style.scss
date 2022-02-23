@@ -75,6 +75,13 @@ input {
   &:focus-visible {
     outline: none;
   }
+
+  &[aria-disabled="true"] {
+    box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+    color: var(--text-color-artist);
+
+    cursor: default;
+  }
 }
 
 button, #theme-toggler {
@@ -108,7 +115,7 @@ button, #theme-toggler {
     padding: 0 10px;
   }
 
-  &.disabled {
+  &[aria-disabled="true"] {
     box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
     color: var(--text-color-artist);
 
@@ -208,6 +215,15 @@ progress::-webkit-progress-bar {
   .delete-button {
     margin: 0 0 15px 0;
     float: right;
+  }
+
+  &[aria-disabled="true"] {
+    box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+    color: var(--text-color-artist);
+
+    li {
+      cursor: default;
+    }
   }
 }
 
@@ -336,6 +352,15 @@ progress::-webkit-progress-bar {
       padding: 10px;
     }
   }
+
+  &[aria-disabled='true'] {
+    .head {
+      box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+      color: var(--text-color-artist);
+
+      cursor: default;
+    }
+  }
 }
 
 .progress-song {
@@ -347,8 +372,9 @@ progress::-webkit-progress-bar {
 }
 
 .progress-song, .progress-total {
-  padding: 5px;
+  user-select: none;
 
+  padding: 5px;
   border-radius: 5px;
 
   box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);

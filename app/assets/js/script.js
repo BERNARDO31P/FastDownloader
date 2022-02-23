@@ -8,12 +8,12 @@ if (!theme) theme = "light";
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 // TODO: Comment
-tools.bindEvent("click", ".input .add-button", function () {
+tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
     tools.addLinkToList(this);
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox li", function (e) {
+tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e) {
     if (!e.ctrlKey) {
         let actives = this.closest(".listBox").querySelectorAll("li.active");
         for (let active of actives)
@@ -28,12 +28,12 @@ tools.bindEvent("click", ".listBox li", function (e) {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox .delete-button", function () {
+tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", function () {
     tools.removeActiveListItems();
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".input .paste-button", function () {
+tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", function () {
     let input = this.closest(".input").querySelector("input");
     input.value = clipboard.readText();
 
@@ -51,7 +51,7 @@ tools.bindEvent("click", "#updateNotification .restart-button", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("keydown", ".input input", function (e) {
+tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
     if (e.code === "Enter") {
         tools.addLinkToList(this);
     }
@@ -86,7 +86,7 @@ tools.bindEvent("click", "#theme-toggler", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select .head", function () {
+tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function () {
     tools.selectClick(this);
 });
 
@@ -107,7 +107,7 @@ tools.bindEvent("click", ".select#mode .option", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", ".select:not([aria-disabled='true']) .option", function () {
     let select = this.closest(".select");
     let button = select.querySelector(".button");
 
@@ -122,7 +122,7 @@ tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".startAbort .start-button", function () {
+tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
     let listBox = document.getElementsByClassName("listBox")[0];
     let mode = document.querySelector(".mode .select");
     let codec = document.querySelector(".codec .select");
@@ -130,32 +130,82 @@ tools.bindEvent("click", ".startAbort .start-button", function () {
     let location = document.querySelector(".location #location");
 
     let items = listBox.querySelectorAll("li");
-    let percentage = Math.floor(100 / items.length * 100) / 100;
 
+    if (!items.length) {
+        showNotification("Sie haben keine URLs eingegeben");
+        return;
+    }
+
+    if (!mode.getAttribute("data-value")) {
+        showNotification("Sie haben keinen Download-Modus ausgewählt");
+        return;
+    } else if (mode.getAttribute("data-value") === "audio") {
+        if (!codec.getAttribute("data-value")) {
+            showNotification("Sie haben keinen Codec ausgewählt");
+            return;
+        }
+
+        if (!quality.getAttribute("data-value")) {
+            showNotification("Sie haben keine Qualität ausgewählt");
+            return;
+        } else {
+            switch (quality.getAttribute("data-value")) {
+                case "best":
+                    quality = 9;
+                    break;
+                case "medium":
+                    quality = 5;
+                    break;
+                case "worst":
+                    quality = 1;
+                    break;
+            }
+        }
+    }
+
+    if (!location.value) {
+        showNotification("Sie haben keinen Speicherort angegeben");
+        return;
+    }
+
+    tools.setDisabled();
+
+    let count = 0;
     for (let item of items) {
-        tools.generateShellCommand(
+        if (item.textContent.includes("playlist?list=")) {
+            count += await tools.checkPlaylistCount(item.textContent);
+        } else {
+            count++;
+        }
+    }
+
+    /*let percentage = Math.floor(100 / count * 100) / 100;
+    for (let item of items) {
+        tools.downloadURL(
             mode.getAttribute("data-value"),
             location.value,
             item.textContent,
             percentage,
             codec.getAttribute("data-value"),
-            quality.getAttribute("data-value")
+            quality,
+            tools.playlistCount
         );
-    }
+    }*/
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".startAbort .abort-button", function () {
-
+tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
+    tools.childProcess.kill("SIGINT");
+    tools.setEnabled();
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".location .search-button", function () {
+tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", function () {
     ipcRenderer.send('open_file_dialog');
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".location .location-button:not(.disabled)", function () {
+tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])", function () {
     let location = document.querySelector(".location #location");
 
     if (location.value) shell.openPath(location.value);
@@ -167,7 +217,7 @@ ipcRenderer.on('selected_file', function (event, path) {
     let locationButton = document.querySelector(".location .location-button");
 
     location.value = path;
-    locationButton.classList.remove("disabled");
+    locationButton.ariaDisabled = "false";
 })
 
 // TODO: Comment
