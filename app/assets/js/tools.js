@@ -241,10 +241,16 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
 
         let found;
         childProcess.stdout.on('data', function (data) {
-            found = data.match("(\\d+(\\.\\d+)?%)");
+            found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
-                progressSong.value = Number(found[0].replace("%", "")) / 100;
-                infoSong.textContent = found[0];
+                progressSong.value = Number(found[1].replace("%", "")) / 100;
+                infoSong.textContent = found[1];
+            }
+
+            found = data.match("\\[MetaData\\]");
+            if (found) {
+                progressTotal.value = progressTotal.value + (percentage / 100);
+                infoTotal.textContent = Number(infoTotal.textContent.replace("%", "")) + percentage + "%";
             }
         });
 
@@ -259,6 +265,7 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
                 resolve(true);
             } else {
                 resolve(false);
+                downloadAborted = false;
             }
         });
     });
@@ -291,6 +298,10 @@ export function checkPlaylistCount(url) {
         });
 
         childProcess.stderr.on('data', function () {
+            resolve(0);
+        });
+
+        childProcess.on('close', function () {
             resolve(0);
         });
     })
