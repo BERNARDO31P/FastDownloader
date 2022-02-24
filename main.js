@@ -1,5 +1,6 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog, Notification} = require('electron');
 const {autoUpdater} = require('electron-updater');
+const { exec } = require("child_process");
 
 const console = require('console');
 
@@ -60,6 +61,22 @@ ipcMain.on("open_file_dialog", (event) => {
         if (!files.canceled)
             win.webContents.send('selected_file', files.filePaths);
     });
+});
+
+ipcMain.on("show_notification", (event, title, message) => {
+    new Notification({
+        title: title,
+        body: message,
+        icon: __dirname + "/app/assets/ico/icon_256x256.png"
+    }).show();
+});
+
+ipcMain.on("kill_pid", (event, pid) => {
+    if (process.platform === "win32")
+        exec("taskkill /F /T /PID " + pid);
+    else {
+
+    }
 });
 
 autoUpdater.on('update-available', () => {

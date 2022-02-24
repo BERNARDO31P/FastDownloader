@@ -170,18 +170,29 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
     tools.setDisabled();
 
+    let progressTotal = document.querySelector(".progress-total progress");
+    let infoTotal = document.querySelector(".progress-total .info p");
+    let progressSong = document.querySelector(".progress-song progress");
+    let infoSong = document.querySelector(".progress-song .info p");
+
+    progressTotal.value = 0;
+    progressSong.value = 0;
+    infoTotal.textContent = "0%";
+    infoSong.textContent = "0%";
+
     let count = 0;
     for (let item of items) {
-        if (item.textContent.includes("playlist?list=")) {
+        if (item.textContent.includes("playlist?list="))
             count += await tools.checkPlaylistCount(item.textContent);
-        } else {
-            count++;
-        }
+        else count++;
     }
 
-    /*let percentage = Math.floor(100 / count * 100) / 100;
-    for (let item of items) {
-        tools.downloadURL(
+    let percentage = Math.floor(100 / count * 100) / 100;
+    let aborted = false;
+    for (let i = 0; i < items.length;) {
+        let item = items[i];
+
+        let success = await tools.downloadURL(
             mode.getAttribute("data-value"),
             location.value,
             item.textContent,
@@ -190,12 +201,33 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             quality,
             tools.playlistCount
         );
-    }*/
+
+        if (success) {
+            i++;
+        } else {
+            aborted = true;
+            break;
+        }
+    }
+
+    tools.setEnabled();
+    if (!aborted) {
+        ipcRenderer.send('show_notification', "Erfolg", "Alle Lieder wurden erfolgreich heruntergeladen");
+    } else {
+        showNotification("Das Herunterladen wurde erfolgreich abgebrochen.");
+    }
 });
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
-    tools.childProcess.kill("SIGINT");
+    tools.abortDownload();
+    tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
+        pids = pids.reverse();
+        for (let pid of pids) {
+            ipcRenderer.send("kill_pid", Number(pid));
+        }
+        ipcRenderer.send("kill_pid", tools.childProcess.pid);
+    });
     tools.setEnabled();
 });
 

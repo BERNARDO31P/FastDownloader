@@ -31,7 +31,10 @@
     "electron-cookies": "^1.1.0",
     "electron-data-holder": "^1.0.1",
     "electron-store": "^8.0.1",
-    "electron-updater": "^4.6.5"
+    "electron-updater": "^4.6.5",
+    "fkill": "^8.0.0",
+    "taskkill": "^4.0.0",
+    "tree-kill": "^1.2.2"
   },
   "build": {
     "win": {

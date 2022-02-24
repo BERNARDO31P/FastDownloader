@@ -1,10 +1,13 @@
 const {ipcRenderer} = require('electron');
+const { promisify } = require('util');
 
 const Store = require('electron-store');
 const store = new Store();
 
 const {exec} = require('child_process');
-export let childProcess = null, playlistCount = 0;
+const execSync = promisify(require('child_process').exec);
+
+export let childProcess = null, downloadAborted = false, playlistCount = 1;
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -214,35 +217,60 @@ export function selectClick(element) {
 
 // TODO: Comment
 export function downloadURL(mode, location, url, percentage, codec, quality, playlistCount) {
-    let exe = "";
-    if (process.platform === "win32") exe = ".exe";
+    return new Promise((resolve) => {
+        let exe = "";
+        if (process.platform === "win32") exe = ".exe";
 
-    let command = "";
-    if (mode === "audio") {
-        if (codec === "mp3") {
-            command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+        let progressTotal = document.querySelector(".progress-total progress");
+        let infoTotal = document.querySelector(".progress-total .info p");
+        let progressSong = document.querySelector(".progress-song progress");
+        let infoSong = document.querySelector(".progress-song .info p");
+
+        let command;
+        if (mode === "audio") {
+            if (codec === "mp3") {
+                command = __dirname + "/assets/executable/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            } else {
+                command = __dirname + "/assets/executable/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            }
         } else {
-            command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            command = __dirname + "/assets/executable/yt-dlp" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
         }
-    } else {
-        command = __dirname + "/assets/executable/youtube-dl" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
-    }
 
-    childProcess = exec(command);
+        childProcess = exec(command);
 
-    childProcess.stdout.on('data', function (data) {
-        console.log(data);
+        let found;
+        childProcess.stdout.on('data', function (data) {
+            found = data.match("(\\d+(\\.\\d+)?%)");
+            if (found) {
+                progressSong.value = Number(found[0].replace("%", "")) / 100;
+                infoSong.textContent = found[0];
+            }
+        });
+
+        childProcess.on('close', function () {
+            progressTotal.value = progressTotal.value + (percentage / 100);
+            progressSong.value = 1;
+
+            infoTotal.textContent = Number(infoTotal.textContent.replace("%", "")) + percentage + "%";
+            infoSong.textContent = "100%";
+
+            if (!downloadAborted) {
+                resolve(true);
+            } else {
+                resolve(false);
+            }
+        });
     });
 }
 
 // TODO: Comment
 export function checkPlaylistCount(url) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         let exe = "";
         if (process.platform === "win32") exe = ".exe";
 
-        let command = __dirname + "/assets/executable/youtube-dl" + exe + " --flat-playlist " + url;
-        childProcess = exec(command);
+        childProcess = exec(__dirname + "/assets/executable/yt-dlp" + exe + " --flat-playlist " + url);
 
         childProcess.stdout.on('data', function callback (data) {
             data = data.trim();
@@ -251,7 +279,13 @@ export function checkPlaylistCount(url) {
                 if (found) {
                     resolve(Number(found[0]));
 
-                    childProcess.kill('SIGINT');
+                    getChildProcessRecursive(childProcess.pid).then(function (pids) {
+                        pids = pids.reverse();
+                        for (let pid of pids) {
+                            ipcRenderer.send("kill_pid", Number(pid));
+                        }
+                        ipcRenderer.send("kill_pid", childProcess.pid);
+                    });
                 }
             }
         });
@@ -310,4 +344,34 @@ export function setEnabled() {
         button.ariaDisabled = "false";
 
     abortButton.ariaDisabled = "true";
+}
+
+// TODO: Comment
+export async function getChildProcessRecursive(ppid) {
+    let output = [];
+    if (process.platform === "win32") {
+        let tempOutput = await execSync("wmic process where (ParentProcessId=" + ppid + ") get ProcessId");
+        tempOutput = [...tempOutput["stdout"].matchAll("\\d+")];
+
+        for (let i = 0; i < tempOutput.length; i++) {
+            output[i] = tempOutput[i][0];
+        }
+
+        for (let pid of output) {
+            tempOutput = getChildProcessRecursive(pid);
+            if (Array.isArray(tempOutput)) {
+                output = tempOutput.concat(output);
+            }
+        }
+    } else {
+        output = await execSync("pstree -p " + ppid + " | grep -oP '\\(\\K[^\\)]+'");
+    }
+
+    return output;
+
+}
+
+// TODO: Comment
+export function abortDownload() {
+    downloadAborted = true;
 }
