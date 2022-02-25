@@ -243,6 +243,7 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
         }
 
         childProcess = exec(command);
+        console.log(command);
 
         let found;
         childProcess.stdout.on('data', function (data) {
@@ -334,27 +335,30 @@ export function setEnabled() {
 
 // TODO: Comment
 export async function getChildProcessRecursive(ppid) {
-    let output = [];
+    let output = [], tempOutput;
     if (process.platform === "win32") {
-        let tempOutput = await execSync("wmic process where (ParentProcessId=" + ppid + ") get ProcessId");
-        tempOutput = [...tempOutput["stdout"].matchAll("\\d+")];
-
-        for (let i = 0; i < tempOutput.length; i++) {
-            output[i] = tempOutput[i][0];
-        }
-
-        for (let pid of output) {
-            tempOutput = getChildProcessRecursive(pid);
-            if (Array.isArray(tempOutput)) {
-                output = tempOutput.concat(output);
-            }
-        }
+        tempOutput = await execSync("wmic process where (ParentProcessId=" + ppid + ") get ProcessId");
     } else {
-        output = await execSync("pstree -p " + ppid + " | grep -oP '\\(\\K[^\\)]+'");
+        tempOutput = await execSync("pgrep -P " + ppid).catch(() => {});
+        if (!tempOutput) tempOutput = [];
+    }
+
+    if (Object.keys(tempOutput).length) {
+        tempOutput = [...tempOutput["stdout"].matchAll("\\d+")];
+    }
+
+    for (let i = 0; i < tempOutput.length; i++) {
+        output[i] = Number(tempOutput[i][0]);
+    }
+
+    for (let pid of output) {
+        tempOutput = await getChildProcessRecursive(pid);
+        if (Array.isArray(tempOutput)) {
+            output = [...tempOutput, ...output];
+        }
     }
 
     return output;
-
 }
 
 // TODO: Comment

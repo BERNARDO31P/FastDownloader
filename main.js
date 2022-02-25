@@ -2,8 +2,6 @@ const {app, BrowserWindow, ipcMain, dialog, Notification} = require('electron');
 const {autoUpdater} = require('electron-updater');
 const { exec } = require("child_process");
 
-const console = require('console');
-
 const Store = require('electron-store');
 Store.initRenderer();
 
@@ -75,7 +73,7 @@ ipcMain.on("kill_pid", (event, pid) => {
     if (process.platform === "win32")
         exec("taskkill /F /T /PID " + pid);
     else {
-
+        exec("pkill -KILL -P " + pid);
     }
 });
 

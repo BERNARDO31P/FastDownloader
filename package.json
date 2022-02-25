@@ -22,21 +22,12 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^17.0.1",
+    "electron": "^17.1.0",
     "electron-builder": "^22.14.13"
   },
   "dependencies": {
-    "@electron/remote": "^2.0.5",
-    "console": "^0.7.2",
-    "electron-cookies": "^1.1.0",
-    "electron-data-holder": "^1.0.1",
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.5",
-    "fkill": "^8.0.0",
-    "taskkill": "^4.0.0",
-    "tree-kill": "^1.2.2",
-    "youtube-dl-exec": "^2.0.6",
-    "yt-dlp-wrap": "^2.3.11",
     "ytpl": "^2.2.3"
   },
   "build": {
