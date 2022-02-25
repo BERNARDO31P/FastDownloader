@@ -234,16 +234,17 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
         let command;
         if (mode === "audio") {
             if (codec === "mp3") {
-                command = __dirname + "/assets/executable/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+                command = __dirname + "/resources/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/resources/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
             } else {
-                command = __dirname + "/assets/executable/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+                command = __dirname + "/resources/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/resources/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
             }
         } else {
-            command = __dirname + "/assets/executable/yt-dlp" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/assets/executable/ffmpeg" + exe + " --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            command = __dirname + "/resources/yt-dlp" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/resources/ffmpeg" + exe + " --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
         }
 
+        console.log(__dirname);
+
         childProcess = exec(command);
-        console.log(command);
 
         let found;
         childProcess.stdout.on('data', function (data) {

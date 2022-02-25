@@ -32,6 +32,7 @@
     "ytpl": "^2.2.3"
   },
   "build": {
+    "productName": "Fast Downloader",
     "win": {
       "icon": "assets/ico/icon_256x256.png"
     },
@@ -41,7 +42,6 @@
       "target": [
         "deb"
       ]
-    },
-    "asar": false
+    }
   }
 }
