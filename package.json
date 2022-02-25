@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder build --win --linux --publish never",
+    "build_win": "electron-builder build --win --publish never",
+    "build_unix": "electron-builder build --linux --publish never",
     "deploy": "electron-builder build --win --linux --publish always"
   },
   "repository": {
@@ -23,7 +24,7 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^17.1.0",
-    "electron-builder": "^22.14.13"
+    "electron-builder": "~22.10.5"
   },
   "dependencies": {
     "electron-store": "^8.0.1",
@@ -32,16 +33,15 @@
   },
   "build": {
     "win": {
-      "icon": "app/assets/ico/icon_256x256.png"
+      "icon": "assets/ico/icon_256x256.png"
     },
     "linux": {
-      "icon": "app/assets/ico/icon_256x256.png",
+      "icon": "./build/icon_256x256.png",
       "category": "Utility",
       "target": [
-        "deb",
-        "AppImage",
-        "snap"
+        "deb"
       ]
-    }
+    },
+    "asar": false
   }
 }

@@ -6,3 +6,4 @@ build.json
 # Folders
 node_modules/
 dist/
+app/assets/scss/.sass-cache
