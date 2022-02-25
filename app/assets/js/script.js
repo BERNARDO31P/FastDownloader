@@ -151,13 +151,13 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         } else {
             switch (quality.getAttribute("data-value")) {
                 case "best":
-                    quality = 9;
+                    quality = 0;
                     break;
                 case "medium":
                     quality = 5;
                     break;
                 case "worst":
-                    quality = 1;
+                    quality = 9;
                     break;
             }
         }
@@ -181,30 +181,32 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     infoSong.textContent = "0%";
 
     let count = 0;
+    let allUrls = [];
     for (let item of items) {
-        if (item.textContent.includes("playlist?list="))
-            count += await tools.checkPlaylistCount(item.textContent);
-        else count++;
+        if (item.textContent.includes("playlist?list=")) {
+            let urls = await tools.getPlaylistUrls(item.textContent);
+            count += urls.length;
+            allUrls = [...allUrls, ...urls];
+        } else {
+            count++;
+            allUrls.push(item.textContent);
+        }
     }
 
     let percentage = Math.floor(100 / count * 100) / 100;
     let aborted = false;
-    for (let i = 0; i < items.length;) {
-        let item = items[i];
-
+    for (let url of allUrls) {
         let success = await tools.downloadURL(
             mode.getAttribute("data-value"),
             location.value,
-            item.textContent,
+            url,
             percentage,
             codec.getAttribute("data-value"),
             quality,
             tools.playlistCount
         );
 
-        if (success) {
-            i++;
-        } else {
+        if (!success) {
             aborted = true;
             break;
         }

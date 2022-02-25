@@ -34,7 +34,10 @@
     "electron-updater": "^4.6.5",
     "fkill": "^8.0.0",
     "taskkill": "^4.0.0",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "youtube-dl-exec": "^2.0.6",
+    "yt-dlp-wrap": "^2.3.11",
+    "ytpl": "^2.2.3"
   },
   "build": {
     "win": {

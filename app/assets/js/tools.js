@@ -1,5 +1,6 @@
 const {ipcRenderer} = require('electron');
-const { promisify } = require('util');
+const {promisify} = require('util');
+const ytpl = require('ytpl');
 
 const Store = require('electron-store');
 const store = new Store();
@@ -197,7 +198,11 @@ export function restartApp() {
 
 // TODO: Comment
 export function selectClick(element) {
-    let select = element.closest(".select");
+    let select = element;
+    if (!element.classList.contains("select")) {
+        select = element.closest(".select");
+    }
+
     let songProgress = document.getElementsByClassName("progress-song")[0];
     let totalProgress = document.getElementsByClassName("progress-total")[0];
 
@@ -246,12 +251,6 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
                 progressSong.value = Number(found[1].replace("%", "")) / 100;
                 infoSong.textContent = found[1];
             }
-
-            found = data.match("\\[MetaData\\]");
-            if (found) {
-                progressTotal.value = progressTotal.value + (percentage / 100);
-                infoTotal.textContent = Number(infoTotal.textContent.replace("%", "")) + percentage + "%";
-            }
         });
 
         childProcess.on('close', function () {
@@ -272,39 +271,15 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
 }
 
 // TODO: Comment
-export function checkPlaylistCount(url) {
-    return new Promise((resolve) => {
-        let exe = "";
-        if (process.platform === "win32") exe = ".exe";
+export async function getPlaylistUrls(url) {
+    let playlist = await ytpl(url);
 
-        childProcess = exec(__dirname + "/assets/executable/yt-dlp" + exe + " --flat-playlist " + url);
+    let items = [];
 
-        childProcess.stdout.on('data', function callback (data) {
-            data = data.trim();
-            if (data.includes("Downloading video")) {
-                let found = data.match("(?<=\\s|^)[\\d]+$");
-                if (found) {
-                    resolve(Number(found[0]));
+    for (let item of playlist["items"])
+        items.push(item["shortUrl"]);
 
-                    getChildProcessRecursive(childProcess.pid).then(function (pids) {
-                        pids = pids.reverse();
-                        for (let pid of pids) {
-                            ipcRenderer.send("kill_pid", Number(pid));
-                        }
-                        ipcRenderer.send("kill_pid", childProcess.pid);
-                    });
-                }
-            }
-        });
-
-        childProcess.stderr.on('data', function () {
-            resolve(0);
-        });
-
-        childProcess.on('close', function () {
-            resolve(0);
-        });
-    })
+    return items;
 }
 
 // TODO: Comment
