@@ -52,7 +52,6 @@
       "target": [
         "deb",
         "AppImage",
-        "snap",
         "rpm",
         "tar.gz"
       ],
