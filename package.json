@@ -34,14 +34,29 @@
   "build": {
     "productName": "Fast Downloader",
     "win": {
-      "icon": "assets/ico/icon_256x256.png"
+      "icon": "resources/256x256.png"
     },
     "linux": {
-      "icon": "./build/icon_256x256.png",
+      "icon": "resources/256x256.png",
       "category": "Utility",
       "target": [
-        "deb"
+
+        "deb",
+        "AppImage",
+        "snap",
+        "rpm",
+        "tar.gz"
       ]
-    }
+    },
+    "extraResources": [
+      {
+        "from": "resources/ffmpeg",
+        "to": "ffmpeg"
+      },
+      {
+        "from": "resources/yt-dlp",
+        "to": "yt-dlp"
+      }
+    ]
   }
 }

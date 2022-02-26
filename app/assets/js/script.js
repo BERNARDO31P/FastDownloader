@@ -252,7 +252,7 @@ ipcRenderer.on('selected_file', function (event, path) {
 
     location.value = path;
     locationButton.ariaDisabled = "false";
-})
+});
 
 // TODO: Comment
 document.addEventListener("keydown", function (e) {
@@ -269,6 +269,11 @@ window.onload = function () {
     ipcRenderer.on('app_version', (event, arg) => {
         ipcRenderer.removeAllListeners('app_version');
         title.textContent += " " + arg.version;
+    });
+
+    ipcRenderer.send('dir_name');
+    ipcRenderer.on('dir_name', (event, dirname) => {
+        tools.setRealDir(dirname);
     });
 
     const notification = document.getElementById('updateNotification');

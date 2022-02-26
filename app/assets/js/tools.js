@@ -9,6 +9,7 @@ const {exec} = require('child_process');
 const execSync = promisify(require('child_process').exec);
 
 export let childProcess = null, downloadAborted = false, playlistCount = 1;
+export let __realdir = null;
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -41,6 +42,15 @@ export const bindEvent = (eventNames, selectors, handler) => {
         }, false);
     });
 };
+
+// TODO: Comment
+export function setRealDir(dirname) {
+    if (dirname.includes("/app.asar")) dirname = dirname.replace("/app.asar", "");
+    if (!dirname.includes("/resources")) dirname = dirname + "/resources";
+    dirname = dirname.replace(" ", "\\ ");
+
+    __realdir = dirname;
+}
 
 /*
  * Funktion: getCookie()
@@ -234,15 +244,13 @@ export function downloadURL(mode, location, url, percentage, codec, quality, pla
         let command;
         if (mode === "audio") {
             if (codec === "mp3") {
-                command = __dirname + "/resources/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/resources/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+                command = __realdir + "/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __realdir + "/ffmpeg" + exe + " --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
             } else {
-                command = __dirname + "/resources/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/resources/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+                command = __realdir + "/yt-dlp" + exe + " -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __realdir + "/ffmpeg" + exe + " --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
             }
         } else {
-            command = __dirname + "/resources/yt-dlp" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __dirname + "/resources/ffmpeg" + exe + " --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            command = __realdir + "/yt-dlp" + exe + " -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location " + __realdir + "/ffmpeg" + exe + " --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
         }
-
-        console.log(__dirname);
 
         childProcess = exec(command);
 

@@ -48,6 +48,10 @@ ipcMain.on('app_version', (event) => {
     event.sender.send('app_version', {version: app.getVersion()});
 });
 
+ipcMain.on('dir_name', (event) => {
+    event.sender.send('dir_name', __dirname);
+});
+
 ipcMain.on('restart_app', () => {
     autoUpdater.quitAndInstall();
 });
@@ -65,7 +69,7 @@ ipcMain.on("show_notification", (event, title, message) => {
     new Notification({
         title: title,
         body: message,
-        icon: __dirname + "/app/assets/ico/icon_256x256.png"
+        icon: __dirname + "/app/assets/ico/icon_64x64.png"
     }).show();
 });
 
