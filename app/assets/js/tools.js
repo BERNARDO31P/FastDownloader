@@ -48,7 +48,6 @@ export function setRealDir(dirname) {
     if (process.platform !== "win32") {
         if (dirname.includes("/app.asar")) dirname = dirname.replace("/app.asar", "");
         if (!dirname.includes("/resources")) dirname = dirname + "/resources";
-        dirname = dirname.replace(" ", "\\ ");
     } else {
         if (dirname.includes("\\app.asar")) dirname = dirname.replace("\\app.asar", "");
         if (!dirname.includes("\\resources")) dirname = dirname + "\\resources";
