@@ -30,6 +30,8 @@ function createWindow() {
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
     });
+
+    app.setAppUserModelId("Fast Downloader");
 }
 
 app.on('window-all-closed', () => {

@@ -34,29 +34,38 @@
   "build": {
     "productName": "Fast Downloader",
     "win": {
-      "icon": "resources/256x256.png"
+      "icon": "resources/256x256.png",
+      "extraResources": [
+        {
+          "from": "resources/ffmpeg.exe",
+          "to": "ffmpeg.exe"
+        },
+        {
+          "from": "resources/yt-dlp.exe",
+          "to": "yt-dlp.exe"
+        }
+      ]
     },
     "linux": {
       "icon": "resources/256x256.png",
       "category": "Utility",
       "target": [
-
         "deb",
         "AppImage",
         "snap",
         "rpm",
         "tar.gz"
+      ],
+      "extraResources": [
+        {
+          "from": "resources/ffmpeg",
+          "to": "ffmpeg"
+        },
+        {
+          "from": "resources/yt-dlp",
+          "to": "yt-dlp"
+        }
       ]
-    },
-    "extraResources": [
-      {
-        "from": "resources/ffmpeg",
-        "to": "ffmpeg"
-      },
-      {
-        "from": "resources/yt-dlp",
-        "to": "yt-dlp"
-      }
-    ]
+    }
   }
 }
