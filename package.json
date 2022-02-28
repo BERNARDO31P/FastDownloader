@@ -35,6 +35,7 @@
     "productName": "Fast Downloader",
     "win": {
       "icon": "resources/256x256.png",
+      "target": "nsis",
       "extraResources": [
         {
           "from": "resources/ffmpeg.exe",
@@ -45,6 +46,12 @@
           "to": "yt-dlp.exe"
         }
       ]
+    },
+    "nsis": {
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "perMachine": true
     },
     "linux": {
       "icon": "resources/256x256.png",
