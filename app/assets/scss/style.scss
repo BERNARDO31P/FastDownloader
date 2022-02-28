@@ -159,14 +159,28 @@ progress::-webkit-progress-bar {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  width: 200px;
+  width: 250px;
   padding: 20px;
   border-radius: 5px;
-  background-color: white;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+
+  color: var(--text-color);
+  background-color: var(--notification-background);
+  box-shadow: 1px 1px 1px var(--shadow-dark), -1px -1px 1px var(--shadow-light);
+
+  .message {
+    margin: 0 0 10px 0;
+  }
 
   &.hidden {
     display: none;
+  }
+
+  .restart-button {
+    margin: 0 0 0 10px;
+
+    &.hidden {
+      display: none;
+    }
   }
 }
 
