@@ -87,6 +87,9 @@ tools.bindEvent("click", "#theme-toggler", function () {
 
 // TODO: Comment
 tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function () {
+    let active = document.querySelector(".select.active");
+    if (active && this.closest(".select") !== active) tools.hideSelect(active);
+
     tools.selectClick(this);
 });
 

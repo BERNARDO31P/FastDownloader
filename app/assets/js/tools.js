@@ -235,6 +235,16 @@ export function selectClick(element) {
 }
 
 // TODO: Comment
+export function hideSelect(element) {
+    let select = element;
+    if (!element.classList.contains("select")) {
+        select = element.closest(".select");
+    }
+
+    select.classList.remove("active");
+}
+
+// TODO: Comment
 export function downloadURL(mode, location, url, percentage, codec, quality, playlistCount) {
     return new Promise((resolve) => {
         let exe = "";
