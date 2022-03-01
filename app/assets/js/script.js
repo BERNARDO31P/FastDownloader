@@ -42,12 +42,13 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", fun
 
 // TODO: Comment
 tools.bindEvent("click", "#updateNotification .close-button", function () {
-    tools.closeNotification();
+    let notification = document.getElementById("updateNotification");
+    notification.classList.add('hidden');
 });
 
 // TODO: Comment
 tools.bindEvent("click", "#updateNotification .restart-button", function () {
-    tools.restartApp();
+    ipcRenderer.send('restart_app');
 });
 
 // TODO: Comment
@@ -63,22 +64,29 @@ tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function 
  *
  * Ändert das Design-Attribut und ändert somit auch das Design
  */
-tools.bindEvent("click", "#theme-toggler", function () {
-    let html = document.getElementsByTagName("html")[0], icon = this.querySelector("svg");
+tools.bindEvent("click", ".theme-toggler", function () {
+    let html = document.getElementsByTagName("html")[0];
+    let togglers = document.getElementsByClassName("theme-toggler");
 
     if (html.getAttribute("data-theme") === "dark") {
         html.setAttribute("data-theme", "light");
 
-        icon.classList.remove("fa-sun");
-        icon.classList.add("fa-moon");
+        for (let toggler of togglers) {
+            let icon = toggler.querySelector("svg");
+            icon.classList.remove("fa-sun");
+            icon.classList.add("fa-moon");
+        }
 
         theme = "light";
         tools.setCookie("theme", "light");
     } else {
         html.setAttribute("data-theme", "dark");
 
-        icon.classList.remove("fa-moon");
-        icon.classList.add("fa-sun");
+        for (let toggler of togglers) {
+            let icon = toggler.querySelector("svg");
+            icon.classList.remove("fa-moon");
+            icon.classList.add("fa-sun");
+        }
 
         theme = "dark";
         tools.setCookie("theme", "dark");
@@ -86,50 +94,11 @@ tools.bindEvent("click", "#theme-toggler", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function () {
-    let active = document.querySelector(".select.active");
-    if (active && this.closest(".select") !== active) tools.hideSelect(active);
-
-    tools.selectClick(this);
-});
-
-// TODO: Comment
-tools.bindEvent("click", ".select#mode .option", function () {
-    let value = this.getAttribute("data-value");
-
-    let quality = document.querySelector(".options .quality");
-    let codec = document.querySelector(".options .codec");
-
-    if (value === "audio") {
-        quality.style.display = "inline-block";
-        codec.style.display = "inline-block";
-    } else {
-        quality.style.display = "";
-        codec.style.display = "";
-    }
-});
-
-// TODO: Comment
-tools.bindEvent("click", ".select:not([aria-disabled='true']) .option", function () {
-    let select = this.closest(".select");
-    let button = select.querySelector(".button");
-
-    let selected = select.querySelector("[aria-selected='true']");
-    selected.ariaSelected = "false";
-    this.ariaSelected = "true";
-
-    button.textContent = this.textContent;
-    select.setAttribute("data-value", this.getAttribute("data-value"));
-
-    tools.selectClick(this);
-});
-
-// TODO: Comment
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
     let listBox = document.getElementsByClassName("listBox")[0];
-    let mode = document.querySelector(".mode .select");
-    let codec = document.querySelector(".codec .select");
-    let quality = document.querySelector(".quality .select");
+    let mode = document.querySelector("#settings .mode .select");
+    let codec = document.querySelector("#settings .codec .select");
+    let quality = document.querySelector("#settings .quality .select");
     let location = document.querySelector(".location #location");
 
     let items = listBox.querySelectorAll("li");
@@ -140,16 +109,16 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     }
 
     if (!mode.getAttribute("data-value")) {
-        showNotification("Sie haben keinen Download-Modus ausgewählt");
+        showNotification("Sie haben in den Einstellungen keinen Download-Modus ausgewählt");
         return;
     } else if (mode.getAttribute("data-value") === "audio") {
         if (!codec.getAttribute("data-value")) {
-            showNotification("Sie haben keinen Codec ausgewählt");
+            showNotification("Sie haben in den Einstellungen keinen Codec ausgewählt");
             return;
         }
 
         if (!quality.getAttribute("data-value")) {
-            showNotification("Sie haben keine Qualität ausgewählt");
+            showNotification("Sie haben in den Einstellungen keine Qualität ausgewählt");
             return;
         } else {
             switch (quality.getAttribute("data-value")) {
@@ -249,6 +218,24 @@ tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])
 });
 
 // TODO: Comment
+tools.bindEvent("click", "#settings-open", function () {
+    let settings = document.getElementById("settings");
+    let body = document.getElementsByTagName("body")[0];
+
+    body.style.overflow = "hidden";
+    settings.style.display = "initial";
+    settings.animateCallback([
+        {top: "100%"},
+        {top: "0%"}
+    ], {
+        duration: 200,
+        fill: "forwards"
+    }, function () {
+        body.style.overflow = "";
+    });
+});
+
+// TODO: Comment
 ipcRenderer.on('selected_file', function (event, path) {
     let location = document.querySelector(".location #location");
     let locationButton = document.querySelector(".location .location-button");
@@ -297,17 +284,21 @@ window.onload = function () {
     });
 
     let interval = setInterval(function () {
-        let toggler = document.getElementById("theme-toggler");
+        let togglers = document.getElementsByClassName("theme-toggler");
 
-        if (toggler) {
+        for (let i = 0; i < togglers.length;) {
+            let toggler = togglers[i];
+
             let icon = toggler.querySelector("svg");
-
             if (icon) {
                 if (theme === "light") icon.classList.add("fa-moon");
                 else icon.classList.add("fa-sun");
 
                 clearInterval(interval);
+                i++;
             }
         }
     }, 50);
+
+    tools.loadSettings();
 }

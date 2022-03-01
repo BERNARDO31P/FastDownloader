@@ -28,17 +28,21 @@
   background: var(--body-background)
 }
 
-body {
+body, #settings {
+  position: absolute;
   margin: 0;
-  padding: 0 23px 0 15px;
+  padding: 0 15px 0 15px;
   font-family: 'Roboto Regular', sans-serif;
 
   color: var(--text-color);
   background-color: var(--body-background);
+
+  width: calc(100% - 30px);
+  height: 100%;
 }
 
 h2 {
-  margin: 5px 0;
+  margin: 15px 0 5px 0;
   text-align: center;
 
   color: var(--text-color);
@@ -59,7 +63,7 @@ input {
   font-family: 'Orienta', sans-serif;
   color: var(--text-color);
 
-  width: calc(100% - 10px);
+  width: 100%;
   background-color: var(--body-background);
 
   padding: 0 10px;
@@ -84,7 +88,7 @@ input {
   }
 }
 
-button, #theme-toggler {
+button, .theme-toggler, #settings-open, #settings-close {
   user-select: none;
   cursor: pointer;
 
@@ -142,17 +146,25 @@ progress::-webkit-progress-bar {
   background: var(--body-background);
 }
 
-#theme-toggler {
+.theme-toggler, #settings-open, #settings-close {
   display: inline-flex;
   justify-content: center;
   align-items: center;
 
   position: absolute;
-  right: 25px;
   top: 10px;
 
   border-radius: 20px;
   height: 40px;
+  width: 40px;
+}
+
+.theme-toggler {
+  right: 25px;
+}
+
+#settings-open, #settings-close {
+  right: 70px;
 }
 
 #updateNotification {
@@ -181,6 +193,24 @@ progress::-webkit-progress-bar {
     &.hidden {
       display: none;
     }
+  }
+}
+
+#settings {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  height: 100%;
+  z-index: 1;
+
+  display: none;
+
+  & > div:not(.theme-toggler):not(#settings-close) {
+    margin: 15px 0 0 0;
+  }
+
+  .quality, .codec {
+    display: none;
   }
 }
 
@@ -238,26 +268,6 @@ progress::-webkit-progress-bar {
     li {
       cursor: default;
     }
-  }
-}
-
-.options {
-  margin: 15px 0;
-  display: flex;
-
-  & > div {
-    display: inline-block;
-    margin: 0 10px;
-
-    z-index: 1;
-  }
-
-  & > div:first-of-type {
-    margin: 0 10px 0 0;
-  }
-
-  .quality, .codec {
-    display: none;
   }
 }
 
@@ -377,12 +387,51 @@ progress::-webkit-progress-bar {
   }
 }
 
+.checkbox {
+  transition: 0.2s;
+  box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
+
+  width: 45px;
+  height: 20px;
+
+  border-radius: 5px;
+
+  background-color: var(--body-background);
+
+  position: relative;
+
+  cursor: pointer;
+
+  .toggle {
+    transition: 0.2s;
+    position: absolute;
+
+    width: 14px;
+    height: 14px;
+
+    top: 3px;
+    left: 6px;
+
+    border-radius: 8px;
+
+    background-color: var(--text-color);
+  }
+
+  &.active {
+    box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
+
+    .toggle {
+      left: 25px;
+    }
+  }
+}
+
 .progress-song {
   margin: 10px 0;
 }
 
 .progress-total {
-  margin: 5px 0 0 0;
+  margin: 47px 0 0 0;
 }
 
 .progress-song, .progress-total {
@@ -393,6 +442,8 @@ progress::-webkit-progress-bar {
 
   box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
 
+  height: 30px;
+  position: relative;
 
   .info {
     display: flex;

@@ -10,9 +10,9 @@ let win = null;
 function createWindow() {
     win = new BrowserWindow({
         width: 900,
-        height: 600,
+        height: 550,
         minWidth: 900,
-        minHeight: 600,
+        minHeight: 550,
         center: true,
         autoHideMenuBar: true,
         icon: __dirname + "/app/assets/ico/icon_64x64.png",

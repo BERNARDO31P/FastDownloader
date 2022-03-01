@@ -1,4 +1,3 @@
-const {ipcRenderer} = require('electron');
 const {promisify} = require('util');
 const ytpl = require('ytpl');
 
@@ -200,38 +199,16 @@ export function addLinkToList(eventElement) {
 }
 
 // TODO: Comment
-export function closeNotification() {
-    let notification = document.getElementById("updateNotification");
-    notification.classList.add('hidden');
-}
-
-// TODO: Comment
-export function restartApp() {
-    ipcRenderer.send('restart_app');
-}
-
-// TODO: Comment
 export function selectClick(element) {
     let select = element;
     if (!element.classList.contains("select")) {
         select = element.closest(".select");
     }
 
-    let songProgress = document.getElementsByClassName("progress-song")[0];
-    let totalProgress = document.getElementsByClassName("progress-total")[0];
-
-    if (select.classList.contains("active")) {
-        songProgress.style.opacity = "1";
-        totalProgress.style.opacity = "1";
-
+    if (select.classList.contains("active"))
         select.classList.remove("active");
-    } else {
-        songProgress.style.opacity = "0";
-        totalProgress.style.opacity = "0";
-
+    else
         select.classList.add("active");
-
-    }
 }
 
 // TODO: Comment
@@ -309,18 +286,12 @@ export async function getPlaylistUrls(url) {
 // TODO: Comment
 export function setDisabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
-    let mode = document.querySelector(".mode .select");
-    let codec = document.querySelector(".codec .select");
-    let quality = document.querySelector(".quality .select");
     let location = document.querySelector(".location #location");
     let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button)");
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
 
     listBox.ariaDisabled = "true";
-    mode.ariaDisabled = "true";
-    codec.ariaDisabled = "true";
-    quality.ariaDisabled = "true";
     location.ariaDisabled = "true";
     input.ariaDisabled = "true";
     input.setAttribute("readonly", "readonly");
@@ -334,18 +305,12 @@ export function setDisabled() {
 // TODO: Comment
 export function setEnabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
-    let mode = document.querySelector(".mode .select");
-    let codec = document.querySelector(".codec .select");
-    let quality = document.querySelector(".quality .select");
     let location = document.querySelector(".location #location");
     let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button)");
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
 
     listBox.ariaDisabled = "false";
-    mode.ariaDisabled = "false";
-    codec.ariaDisabled = "false";
-    quality.ariaDisabled = "false";
     location.ariaDisabled = "false";
     input.ariaDisabled = "false";
     input.removeAttribute("readonly");
@@ -385,6 +350,94 @@ export async function getChildProcessRecursive(ppid) {
 }
 
 // TODO: Comment
+export function selectOption(option) {
+    let select = option.closest(".select");
+    let button = select.querySelector(".button");
+
+    let selected = select.querySelector("[aria-selected='true']");
+    selected.ariaSelected = "false";
+    option.ariaSelected = "true";
+
+    button.textContent = option.textContent;
+    select.setAttribute("data-value", option.getAttribute("data-value"));
+
+    toggleVisibility();
+}
+
+// TODO: Comment
+export function toggleVisibility() {
+    let mode = document.querySelector("#settings .mode .select");
+    let value = mode.getAttribute("data-value");
+
+    let quality = document.querySelector("#settings .quality");
+    let codec = document.querySelector("#settings .codec");
+
+    if (value === "audio") {
+        quality.style.display = "block";
+        codec.style.display = "block";
+    } else {
+        quality.style.display = "";
+        codec.style.display = "";
+    }
+}
+
+// TODO: Comment
 export function abortDownload() {
     downloadAborted = true;
+}
+
+// TODO: Comment
+export function saveSettings() {
+    let save = document.querySelector("#settings #save");
+
+    if (save.classList.contains("active")) {
+        let mode = document.querySelector("#settings .mode .select");
+        let quality = document.querySelector("#settings .quality .select");
+        let codec = document.querySelector("#settings .codec .select");
+
+
+        setCookie("mode", mode.getAttribute("data-value"));
+        setCookie("quality", quality.getAttribute("data-value"));
+        setCookie("codec", codec.getAttribute("data-value"));
+        setCookie("save", true);
+    }
+}
+
+// TODO: Comment
+export function deleteSettings() {
+    setCookie("mode", "");
+    setCookie("quality", "");
+    setCookie("codec", "");
+    setCookie("save", false);
+}
+
+// TODO: Comment
+export function loadSettings() {
+    let mode = document.querySelector("#settings .mode .select");
+    let quality = document.querySelector("#settings .quality .select");
+    let codec = document.querySelector("#settings .codec .select");
+
+    let modeValue = getCookie("mode");
+    let qualityValue = getCookie("quality");
+    let codecValue = getCookie("codec");
+    let save = getCookie("save");
+
+    let option;
+    if (modeValue) {
+        option = mode.querySelector("[data-value='" + modeValue + "']");
+        selectOption(option);
+    }
+
+    if (qualityValue) {
+        option = quality.querySelector("[data-value='" + qualityValue + "']");
+        selectOption(option);
+    }
+
+    if (codecValue) {
+        option = codec.querySelector("[data-value='" + codecValue + "']");
+        selectOption(option);
+    }
+
+    let saveButton = document.querySelector("#settings #save");
+    if (save) saveButton.classList.add("active");
 }

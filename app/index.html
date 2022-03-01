@@ -16,7 +16,8 @@
 </head>
 <body>
     <h2>Fast Downloader</h2>
-    <div id="theme-toggler"><i class="fas"></i></div>
+    <div class="theme-toggler"><i class="fas"></i></div>
+    <div id="settings-open"><i class="fas fa-tools"></i></div>
     <div class="input">
         <label for="url">YouTube URL</label>
         <div class="flex">
@@ -29,7 +30,46 @@
         <ul></ul>
         <button class="delete-button">Entfernen</button>
     </div>
-    <div class="options">
+    <div class="progress-total">
+        <div class="info">
+            <label>Fortschritt insgesamt:</label>
+            <p>0%</p>
+        </div>
+        <progress value="0"></progress>
+    </div>
+    <div class="progress-song">
+        <div class="info">
+            <label>Fortschritt:</label>
+            <p>0%</p>
+        </div>
+        <progress value="0"></progress>
+    </div>
+    <div class="location">
+        <div class="input">
+            <label for="location">Speicherort</label>
+            <div class="flex">
+                <input type="text" id="location" readonly/>
+                <button class="search-button">Durchsuchen</button>
+                <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="startAbort">
+        <button class="start-button">Herunterladen</button>
+        <button class="abort-button" aria-disabled="true">Abbrechen</button>
+    </div>
+
+    <div id="settings">
+        <h2>Einstellungen</h2>
+        <div class="theme-toggler"><i class="fas"></i></div>
+        <div id="settings-close"><i class="fas fa-angle-down"></i></div>
+
+        <div class="save">
+            <label for="save">Einstellungen speichern</label>
+            <div class="checkbox" id="save">
+                <div class="toggle"></div>
+            </div>
+        </div>
         <div class="mode">
             <label for="mode">Download-Modus</label>
             <div class="select" id="mode">
@@ -79,41 +119,13 @@
             </div>
         </div>
     </div>
-    <div class="progress-total">
-        <div class="info">
-            <label>Fortschritt insgesamt:</label>
-            <p>0%</p>
-        </div>
-        <progress value="0"></progress>
-    </div>
-    <div class="progress-song">
-        <div class="info">
-            <label>Fortschritt:</label>
-            <p>0%</p>
-        </div>
-        <progress value="0"></progress>
-    </div>
-    <div class="location">
-        <div class="input">
-            <label for="location">Speicherort</label>
-            <div class="flex">
-                <input type="text" id="location" readonly/>
-                <button class="search-button">Durchsuchen</button>
-                <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
-            </div>
-        </div>
-    </div>
-    <div class="startAbort">
-        <button class="start-button">Herunterladen</button>
-        <button class="abort-button" aria-disabled="true">Abbrechen</button>
-    </div>
-
-
     <div id="updateNotification" class="hidden">
         <p class="message"></p>
         <button class="close-button">Schliessen</button>
         <button class="restart-button hidden">Neustarten</button>
     </div>
+
+    <script src="assets/js/settings.js" rel="script" type="module"></script>
     <script src="assets/js/script.js" rel="script" type="module"></script>
 </body>
 </html>
