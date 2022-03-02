@@ -1,5 +1,9 @@
 @import 'variables';
-@import url('https://fonts.googleapis.com/css2?family=Orienta&display=swap');
+
+@font-face {
+  font-family: "Orienta Regular";
+  src: url("../fonts/Orienta-Regular.ttf") format("truetype");
+}
 
 @font-face {
   font-family: "Roboto Regular";
@@ -60,7 +64,7 @@ input {
   line-height: 15px;
 
   font-size: 15px;
-  font-family: 'Orienta', sans-serif;
+  font-family: 'Orienta Regular', sans-serif;
   color: var(--text-color);
 
   width: 100%;
@@ -97,7 +101,7 @@ button, .theme-toggler, #settings-open, #settings-close {
   box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
 
   font-size: 15px;
-  font-family: 'Orienta', sans-serif;
+  font-family: 'Orienta Regular', sans-serif;
   color: var(--text-color);
 
   background-color: var(--body-background);
@@ -245,7 +249,7 @@ progress::-webkit-progress-bar {
       display: block;
 
       font-size: 15px;
-      font-family: 'Orienta', sans-serif;
+      font-family: 'Orienta Regular', sans-serif;
       color: var(--text-color);
 
       cursor: pointer;
@@ -301,7 +305,7 @@ progress::-webkit-progress-bar {
   line-height: 15px;
 
   font-size: 15px;
-  font-family: 'Orienta', sans-serif;
+  font-family: 'Orienta Regular', sans-serif;
   color: var(--text-color);
 
   background-color: var(--body-background);
