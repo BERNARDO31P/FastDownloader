@@ -283,22 +283,13 @@ window.onload = function () {
         notification.classList.remove('hidden');
     });
 
-    let interval = setInterval(function () {
-        let togglers = document.getElementsByClassName("theme-toggler");
-
-        for (let i = 0; i < togglers.length;) {
-            let toggler = togglers[i];
-
-            let icon = toggler.querySelector("svg");
-            if (icon) {
-                if (theme === "light") icon.classList.add("fa-moon");
-                else icon.classList.add("fa-sun");
-
-                clearInterval(interval);
-                i++;
-            }
+    setTimeout(function () {
+        let icons = document.querySelectorAll(".theme-toggler svg");
+        for (let icon of icons) {
+            if (theme === "light") icon.classList.add("fa-moon");
+            else icon.classList.add("fa-sun");
         }
-    }, 50);
+    }, 500);
 
     tools.loadSettings();
 }
