@@ -171,8 +171,12 @@ export function addLinkToList(eventElement) {
         return;
     }
 
-    let found = input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
-    if (!found) {
+    let foundYT = input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
+
+    // TODO: Complete regex for netflix
+    let foundNF = input.value.match("http(?:s?):\\/\\/(?:www\\.)?netflix.com");
+
+    if (!foundYT && !foundNF) {
         showNotification("Sie haben keinen gültigen Link angegeben");
         return;
     }
@@ -180,14 +184,16 @@ export function addLinkToList(eventElement) {
     let ul = document.querySelector(".listBox ul");
     let elements = ul.querySelectorAll("li");
     for (let element of elements) {
-        if (element.textContent === found[0]) {
+        if (element.textContent === foundYT[0] || element.textContent === foundNF[0]) {
             showNotification("Dieser Link befindet sich bereits in der Liste");
             return;
         }
     }
 
     let li = document.createElement("li");
-    li.textContent = found[0];
+
+    if (foundYT) li.textContent = foundYT[0];
+    else li.textContent = foundNF[0];
 
     ul.appendChild(li);
     input.value = "";
