@@ -1,16 +1,15 @@
-const {app, BrowserWindow, ipcMain, dialog, Notification} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog, Notification, screen} = require('electron');
+const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
+
 const { exec } = require("child_process");
 
-const Store = require('electron-store');
 Store.initRenderer();
 
 let win = null;
 
 function createWindow() {
     win = new BrowserWindow({
-        width: 900,
-        height: 580,
         minWidth: 900,
         minHeight: 580,
         center: true,
@@ -26,6 +25,13 @@ function createWindow() {
     });
 
     win.loadFile('app/index.html');
+
+    const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
+    const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
+
+    win.setBounds(currentScreen.workArea);
+    win.setSize(900, 580);
+    win.center();
 
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
