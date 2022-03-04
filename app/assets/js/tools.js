@@ -222,7 +222,12 @@ export function hideSelect(element) {
 }
 
 // TODO: Comment
-export function downloadURL(mode, location, url, percentage, codec, quality, playlistCount) {
+export function downloadNFURL() {
+
+}
+
+// TODO: Comment
+export function downloadYTURL(mode, location, url, percentage, codec, quality, playlistCount) {
     return new Promise((resolve) => {
         let exe = "";
         if (process.platform === "win32") exe = ".exe";

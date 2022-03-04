@@ -168,15 +168,22 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     let percentage = Math.floor(100 / count * 100) / 100;
     let aborted = false;
     for (let url of allUrls) {
-        let success = await tools.downloadURL(
-            mode.getAttribute("data-value"),
-            location.value,
-            url,
-            percentage,
-            codec.getAttribute("data-value"),
-            quality,
-            tools.playlistCount
-        );
+        let success = false;
+
+        if (!url.includes("netflix")) {
+            success = await tools.downloadYTURL(
+                mode.getAttribute("data-value"),
+                location.value,
+                url,
+                percentage,
+                codec.getAttribute("data-value"),
+                quality,
+                tools.playlistCount
+            );
+        } else {
+            success = await tools.downloadNFURL(
+            );
+        }
 
         if (!success) {
             aborted = true;
