@@ -84,6 +84,10 @@ input {
     outline: none;
   }
 
+  &[readonly] {
+    cursor: default;
+  }
+
   &[aria-disabled="true"] {
     box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
     color: var(--text-color-artist);
