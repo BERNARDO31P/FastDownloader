@@ -167,6 +167,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     }
 
     tools.setDisabled();
+    ipcRenderer.send('set_percentage', 0);
 
     let progressTotal = document.querySelector(".progress-total progress");
     let infoTotal = document.querySelector(".progress-total .info p");
