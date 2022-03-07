@@ -14,16 +14,42 @@ tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", funct
 
 // TODO: Comment
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e) {
-    if (!e.ctrlKey) {
-        let actives = this.closest(".listBox").querySelectorAll("li.active");
-        for (let active of actives)
-            active.classList.remove("active");
+    let listBox = this.closest(".listBox");
+    let actives = listBox.querySelectorAll("li.active");
+
+    if (!e.ctrlKey && !e.shiftKey) {
+        for (let active of actives) {
+            if (active !== this) active.classList.remove("active");
+        }
     }
 
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
+    if (e.shiftKey && actives.length) {
+        document.getSelection().removeAllRanges();
+
+        let elements = listBox.querySelectorAll("li");
+        let active = false, clicked = false;
+
+        for (let i = 0; i < elements.length; i++) {
+            let element = elements[i];
+
+            if (element === this) {
+                clicked = true;
+            }
+
+            if (element.classList.contains("active")) {
+                active = true;
+            }
+
+            if ((active && !clicked) || (clicked && !active)) {
+                element.classList.add("active");
+            } else if (active && clicked) {
+                this.classList.add("active");
+                break;
+            }
+        }
     } else {
-        this.classList.add("active");
+        if (this.classList.contains("active")) this.classList.remove("active");
+        else this.classList.add("active");
     }
 });
 

@@ -184,7 +184,7 @@ export function addLinkToList(eventElement) {
     let ul = document.querySelector(".listBox ul");
     let elements = ul.querySelectorAll("li");
     for (let element of elements) {
-        if (element.textContent === foundYT[0] || element.textContent === foundNF[0]) {
+        if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
             showNotification("Dieser Link befindet sich bereits in der Liste");
             return;
         }
@@ -200,6 +200,8 @@ export function addLinkToList(eventElement) {
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
     else ul.style.width = "100%";
+
+    ul.scrollTop = ul.scrollHeight;
 
     showNotification("Link wurde zur Liste hinzugefügt");
 }
