@@ -64,6 +64,10 @@ ipcMain.on('restart_app', () => {
     autoUpdater.quitAndInstall();
 });
 
+ipcMain.on('set_percentage', (event, percentage) => {
+    win.setProgressBar(percentage);
+});
+
 ipcMain.on("open_file_dialog", (event) => {
     dialog.showOpenDialog({
         properties: ['openDirectory']

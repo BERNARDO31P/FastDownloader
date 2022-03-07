@@ -1,5 +1,6 @@
 const {promisify} = require('util');
 const ytpl = require('ytpl');
+const {ipcRenderer} = require('electron');
 
 const Store = require('electron-store');
 const store = new Store();
@@ -268,8 +269,11 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
         });
 
         childProcess.on('close', function () {
-            progressTotal.value = progressTotal.value + (percentage / 100);
+            let percentageTotal = progressTotal.value + Math.round((percentage / 100) * 100) / 100;
+            progressTotal.value = percentageTotal;
             progressSong.value = 1;
+
+            ipcRenderer.send('set_percentage', percentageTotal);
 
             infoTotal.textContent = Number(infoTotal.textContent.replace("%", "")) + percentage + "%";
             infoSong.textContent = "100%";
