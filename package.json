@@ -60,7 +60,8 @@
         "deb",
         "AppImage",
         "rpm",
-        "tar.gz"
+        "tar.gz",
+        "pacman"
       ],
       "extraResources": [
         {
