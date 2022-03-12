@@ -1,12 +1,12 @@
-const {app, BrowserWindow, ipcMain, dialog, Notification, screen} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog, Notification, screen, Menu, Tray, MenuItem} = require('electron');
 const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
 
-const { exec } = require("child_process");
+const {exec} = require("child_process");
 
 Store.initRenderer();
 
-let win = null;
+let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 
 function createWindow() {
     win = new BrowserWindow({
@@ -14,7 +14,7 @@ function createWindow() {
         minHeight: 580,
         center: true,
         autoHideMenuBar: true,
-        icon: __dirname + "/app/assets/ico/icon_64x64.png",
+        icon: __dirname + "/resources/256x256.png",
         webPreferences: {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,
@@ -26,7 +26,7 @@ function createWindow() {
 
     win.loadFile('app/index.html');
 
-    const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
+    const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
     const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
 
     win.setBounds(currentScreen.workArea);
@@ -35,6 +35,13 @@ function createWindow() {
 
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
+    });
+
+    win.on('close', function (event) {
+        event.preventDefault();
+        win.hide();
+
+        return false;
     });
 
     app.setAppUserModelId("Fast Downloader");
@@ -50,7 +57,21 @@ app.on('activate', function () {
     if (win === null) createWindow();
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow();
+
+    trayIcon = new Tray(__dirname + "/resources/256x256.png");
+    trayIcon.setTitle("Fast Downloader");
+    trayIcon.setToolTip("Fast Downloader");
+
+    trayMenu = Menu.buildFromTemplate([
+        {id: "hide", label: "Verstecken", type: "normal", click: hide},
+        {id: "download", label: "Herunterladen", type: "normal", click: download},
+        {id: "close", label: "Schliessen", type: "normal", click: exit}
+    ]);
+
+    trayIcon.setContextMenu(trayMenu);
+});
 
 ipcMain.on('app_version', (event) => {
     event.sender.send('app_version', {version: app.getVersion()});
@@ -68,7 +89,7 @@ ipcMain.on('set_percentage', (event, percentage) => {
     win.setProgressBar(percentage);
 });
 
-ipcMain.on("open_file_dialog", (event) => {
+ipcMain.on("open_file_dialog", () => {
     dialog.showOpenDialog({
         properties: ['openDirectory']
     }).then(function (files) {
@@ -93,6 +114,20 @@ ipcMain.on("kill_pid", (event, pid) => {
     }
 });
 
+ipcMain.on("add_abort", () => {
+    removeTrayItem("download");
+    addTrayItem("abort", "Abbrechen", "normal", abort);
+
+    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+});
+
+ipcMain.on("remove_abort", () => {
+    removeTrayItem("abort");
+    addTrayItem("download", "Herunterladen", "normal", download);
+
+    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+});
+
 autoUpdater.on('update-available', () => {
     win.webContents.send('update_available');
 });
@@ -100,3 +135,44 @@ autoUpdater.on('update-available', () => {
 autoUpdater.on('update-downloaded', () => {
     win.webContents.send('update_downloaded');
 });
+
+function exit() {
+    app.exit(0);
+}
+
+function hide() {
+    removeTrayItem("hide");
+    addTrayItem("maximize", "Maximieren", "normal", maximize);
+
+    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+    win.hide();
+}
+
+function maximize() {
+    removeTrayItem("maximize");
+    addTrayItem("hide", "Verstecken", "normal", hide);
+
+    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+    win.show();
+}
+
+function download() {
+    win.webContents.send("download");
+}
+
+function abort() {
+    win.webContents.send("abort");
+}
+
+function addTrayItem(id, label, type, click) {
+    trayMenu.items.unshift(new MenuItem({id: id, label: label, type: type, click: click}));
+}
+
+function removeTrayItem(id) {
+    for( let i = 0; i < trayMenu.items.length; i++){
+        if ( trayMenu.items[i].id === id) {
+            trayMenu.items.splice(i, 1);
+            break;
+        }
+    }
+}

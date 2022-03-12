@@ -132,22 +132,41 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
     let items = listBox.querySelectorAll("li");
 
+    console.log(document.visibilityState);
+    console.log(document.hidden);
+
     if (!items.length) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
+
         return;
     }
 
     if (!mode.getAttribute("data-value")) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
+
         return;
     } else if (mode.getAttribute("data-value") === "audio") {
         if (!codec.getAttribute("data-value")) {
             showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
             return;
         }
 
         if (!quality.getAttribute("data-value")) {
             showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
             return;
         } else {
             switch (quality.getAttribute("data-value")) {
@@ -166,11 +185,16 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
     if (!location.value) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+
         return;
     }
 
     tools.setDisabled();
     ipcRenderer.send('set_percentage', 0);
+    ipcRenderer.send('add_abort');
 
     let progressTotal = document.querySelector(".progress-total progress");
     let infoTotal = document.querySelector(".progress-total .info p");
@@ -227,6 +251,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     } else {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
     }
+
+    ipcRenderer.send('remove_abort');
 });
 
 // TODO: Comment
@@ -279,6 +305,16 @@ ipcRenderer.on('selected_file', function (event, path) {
 
     location.value = path;
     locationButton.ariaDisabled = "false";
+});
+
+// TODO: Comment
+ipcRenderer.on('download', function () {
+    document.querySelector(".startAbort .start-button").click();
+});
+
+// TODO: Comment
+ipcRenderer.on('abort', function () {
+    document.querySelector(".startAbort .abort-button").click();
 });
 
 // TODO: Comment
