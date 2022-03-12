@@ -38,10 +38,11 @@
     },
     "js": {
       "noURL": "Sie haben keinen Link angegeben",
+      "noClipboard": "In der Zwischenablage befindet sich nichts",
       "noValidURL": "Sie haben keinen gültigen Link angegeben",
       "urlInList": "Dieser Link befindet sich bereits in der Liste",
       "urlAdded": "Link wurde zur Liste hinzugefügt",
-      "noURLs": "Sie haben keine URLs eingegeben",
+      "noURLs": "Sie haben keine Links eingegeben",
       "downloadMode": "Sie haben in den Einstellungen keinen Download-Modus ausgewählt",
       "codec": "Sie haben in den Einstellungen keinen Codec ausgewählt",
       "quality": "Sie haben in den Einstellungen keine Qualität ausgewählt",
@@ -94,6 +95,7 @@
     },
     "js": {
       "noURL": "You didn't enter a URL",
+      "noClipboard": "Theres nothing in your clipboard",
       "noValidURL": "You didn't enter a valid URL",
       "urlInList": "This URL is already in the list",
       "urlAdded": "URL has been added to the list",

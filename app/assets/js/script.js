@@ -66,7 +66,9 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", fun
     let input = this.closest(".input").querySelector("input");
     input.value = clipboard.readText();
 
-    tools.addLinkToList(this);
+    if (!input.value) {
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"]);
+    } else tools.addLinkToList(this);
 });
 
 // TODO: Comment
