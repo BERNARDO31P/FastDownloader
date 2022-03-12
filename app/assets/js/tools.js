@@ -16,7 +16,7 @@ export let __realdir = null;
 let languageDB = {};
 export let selectedLang = null;
 
-let theme = getCookie("theme");
+export let theme = getCookie("theme");
 if (!theme) theme = "light";
 setCookie("theme", theme);
 
@@ -519,4 +519,10 @@ export function setThemeIcon() {
             else icon.classList.add("fa-sun");
         }
     }, 500);
+}
+
+// TODO: Comment
+export function setTheme(themeSet) {
+    theme = themeSet;
+    setCookie("theme", themeSet);
 }

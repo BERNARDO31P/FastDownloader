@@ -244,9 +244,17 @@ progress::-webkit-progress-bar {
 
     resize: vertical;
 
-    & li {
-      border-radius: 5px;
+    & li:first-of-type {
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+    }
 
+    & li:last-of-type {
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+    }
+
+    & li {
       transition: 0.2s;
       padding: 5px 10px;
 

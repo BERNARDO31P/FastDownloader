@@ -3,6 +3,13 @@ import {showNotification} from "./tools.js";
 
 const {clipboard, ipcRenderer, shell} = require('electron');
 
+let lastClicked = null;
+
+// TODO: Comment
+document.onclick = function (e) {
+    lastClicked = e.target;
+}
+
 // TODO: Comment
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
     tools.addLinkToList(this);
@@ -99,8 +106,7 @@ tools.bindEvent("click", ".theme-toggler", function () {
             icon.classList.add("fa-moon");
         }
 
-        theme = "light";
-        tools.setCookie("theme", "light");
+        tools.setTheme("light");
     } else {
         html.setAttribute("data-theme", "dark");
 
@@ -110,8 +116,7 @@ tools.bindEvent("click", ".theme-toggler", function () {
             icon.classList.add("fa-sun");
         }
 
-        theme = "dark";
-        tools.setCookie("theme", "dark");
+        tools.setTheme("dark");
     }
 });
 
@@ -278,6 +283,19 @@ ipcRenderer.on('selected_file', function (event, path) {
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {
         tools.removeActiveListItems();
+    }
+
+
+    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null) {
+        let items = document.querySelectorAll(".listBox li");
+
+        for (let item of items) {
+            item.classList.add("active");
+        }
+
+        setTimeout(function () {
+            document.getSelection().removeAllRanges();
+        });
     }
 });
 
