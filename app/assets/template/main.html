@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h2>Fast Downloader</h2>
+    <div class="theme-toggler"><i class="fas"></i></div>
+    <div id="settings-open"><i class="fas fa-tools"></i></div>
+    <div class="input">
+        <label for="url">URL</label>
+        <div class="flex">
+            <input type="text" id="url"/>
+            <button class="add-button">{{main.button.add}}</button>
+            <button class="paste-button"><i class="fa-solid fa-paste"></i></button>
+        </div>
+    </div>
+    <div class="listBox">
+        <ul></ul>
+        <button class="delete-button">{{main.button.remove}}</button>
+    </div>
+    <div class="progress-total">
+        <div class="info">
+            <label>{{main.label.progressTotal}}:</label>
+            <p>0%</p>
+        </div>
+        <progress value="0"></progress>
+    </div>
+    <div class="progress-song">
+        <div class="info">
+            <label>{{main.label.progress}}:</label>
+            <p>0%</p>
+        </div>
+        <progress value="0"></progress>
+    </div>
+    <div class="location">
+        <div class="input">
+            <label for="location">{{main.label.storageLocation}}</label>
+            <div class="flex">
+                <input type="text" id="location" readonly/>
+                <button class="search-button">{{main.button.browse}}</button>
+                <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="startAbort">
+        <button class="start-button">{{main.button.download}}</button>
+        <button class="abort-button" aria-disabled="true">{{main.button.abort}}</button>
+    </div>
+
+    <div id="settings">
+        <h2>{{settings.title}}</h2>
+        <div class="theme-toggler"><i class="fas"></i></div>
+        <div id="settings-close"><i class="fas fa-angle-down"></i></div>
+
+        <div class="save">
+            <label for="save">{{settings.label.saveSettings}}</label>
+            <div class="checkbox" id="save">
+                <div class="toggle"></div>
+            </div>
+        </div>
+        <div class="lang">
+            <label for="lang">{{settings.label.language}}</label>
+            <div class="select" id="lang">
+                <div class="head">
+                    <div class="button">{{settings.button.nothingSelected}}</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    </div>
+                    <div class="option" data-value="de">Deutsch</div>
+                    <div class="option" data-value="en">English</div>
+                </div>
+            </div>
+        </div>
+        <div class="mode">
+            <label for="mode">{{settings.label.downloadMode}}</label>
+            <div class="select" id="mode">
+                <div class="head">
+                    <div class="button">{{settings.button.nothingSelected}}</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    </div>
+                    <div class="option" data-value="video">{{settings.option.videoAudio}}</div>
+                    <div class="option" data-value="audio">{{settings.option.audioOnly}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="quality">
+            <label for="quality">{{settings.label.quality}}</label>
+            <div class="select" id="quality">
+                <div class="head">
+                    <div class="button">{{settings.button.nothingSelected}}</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    </div>
+                    <div class="option" data-value="best">{{settings.option.best}}</div>
+                    <div class="option" data-value="medium">{{settings.option.medium}}</div>
+                    <div class="option" data-value="bad">{{settings.option.bad}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="codec">
+            <label for="codec">{{settings.label.codec}}</label>
+            <div class="select" id="codec">
+                <div class="head">
+                    <div class="button">{{settings.button.nothingSelected}}</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    </div>
+                    <div class="option" data-value="aac">aac</div>
+                    <div class="option" data-value="flac">flac</div>
+                    <div class="option" data-value="mp3">mp3</div>
+                    <div class="option" data-value="m4a">m4a</div>
+                    <div class="option" data-value="opus">opus</div>
+                    <div class="option" data-value="vorbis">vorbis</div>
+                    <div class="option" data-value="wav">wav</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="updateNotification" class="hidden">
+        <p class="message"></p>
+        <button class="close-button">{{main.button.close}}</button>
+        <button class="restart-button hidden">{{main.button.restart}}</button>
+    </div>
+</body>
+</html>

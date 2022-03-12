@@ -3,10 +3,6 @@ import {showNotification} from "./tools.js";
 
 const {clipboard, ipcRenderer, shell} = require('electron');
 
-let theme = tools.getCookie("theme");
-if (!theme) theme = "light";
-document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
-
 // TODO: Comment
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
     tools.addLinkToList(this);
@@ -286,7 +282,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 // TODO: Comment
-window.onload = function () {
+window.onload = async function () {
     const title = document.getElementsByTagName("title")[0];
 
     ipcRenderer.send('app_version');
@@ -299,6 +295,9 @@ window.onload = function () {
     ipcRenderer.on('dir_name', (event, dirname) => {
         tools.setRealDir(dirname);
     });
+
+    await tools.loadLanguage();
+    tools.loadSettings();
 
     const notification = document.getElementById('updateNotification');
     const message = notification.querySelector(".message");
@@ -317,13 +316,5 @@ window.onload = function () {
         notification.classList.remove('hidden');
     });
 
-    setTimeout(function () {
-        let icons = document.querySelectorAll(".theme-toggler svg");
-        for (let icon of icons) {
-            if (theme === "light") icon.classList.add("fa-moon");
-            else icon.classList.add("fa-sun");
-        }
-    }, 500);
-
-    tools.loadSettings();
+    tools.setThemeIcon();
 }

@@ -1,0 +1,78 @@
+{
+  "de": {
+    "main": {
+      "button": {
+        "add": "Hinzufügen",
+        "remove": "Entfernen",
+        "browse": "Durchsuchen",
+        "download": "Herunterladen",
+        "abort": "Abbrechen",
+        "close": "Schliessen",
+        "restart": "Neustarten"
+      },
+      "label": {
+        "progressTotal": "Fortschritt insgesamt",
+        "progress": "Fortschritt",
+        "storageLocation": "Speicherort"
+      }
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "label": {
+        "saveSettings": "Einstellungen speichern",
+        "downloadMode": "Download-Modus",
+        "quality": "Qualität",
+        "codec": "Codec",
+        "language": "Sprache"
+      },
+      "button": {
+        "nothingSelected": "Nichts ausgewählt"
+      },
+      "option": {
+        "videoAudio": "Video und Audio",
+        "audioOnly": "Nur Audio",
+        "best": "Beste",
+        "medium": "Mittlere",
+        "bad": "Schlechte"
+      }
+    }
+  },
+  "en": {
+    "main": {
+      "button": {
+        "add": "Add",
+        "remove": "Remove",
+        "browse": "Browse",
+        "download": "Download",
+        "abort": "Abort",
+        "close": "Close",
+        "restart": "Restart"
+      },
+      "label": {
+        "progressTotal": "Total progress",
+        "progress": "Progress",
+        "storageLocation": "Storage location"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "label": {
+        "saveSettings": "Save settings",
+        "downloadMode": "Download mode",
+        "quality": "Quality",
+        "codec": "Codec",
+        "language": "Language"
+      },
+      "button": {
+        "nothingSelected": "Nothing selected"
+      },
+      "option": {
+        "videoAudio": "Video and audio",
+        "audioOnly": "Audio only",
+        "best": "Best",
+        "medium": "Medium",
+        "bad": "Bad"
+      }
+    }
+  }
+}

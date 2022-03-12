@@ -36,11 +36,12 @@ tools.bindEvent("click", "#settings-close", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select:not([aria-disabled='true']) .option", function () {
+tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function () {
     tools.selectOption(this);
 
     for (let element of hiddenElements) {
-        element.style.display = "block";
+        element.style.opacity = "1";
+        element.style.pointerEvents = "";
     }
     hiddenElements = [];
 
@@ -49,8 +50,12 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .option", function
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select#mode .option", function () {
-    tools.toggleVisibility();
+tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", async function () {
+    let lang = this.getAttribute("data-value");
+    tools.setCookie("lang", lang);
+
+    await tools.loadLanguage();
+    tools.setThemeIcon();
 });
 
 // TODO: Comment
@@ -72,13 +77,14 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
 
                 height += rect.height;
 
-                if (style.display !== "none")
+                if (style.opacity !== "0")
                     hiddenElements.push(nextElement);
 
                 if (height > 100) {
                     clearInterval(interval);
                     for (let element of hiddenElements) {
-                        element.style.display = "none";
+                        element.style.opacity = "0";
+                        element.style.pointerEvents = "none";
                     }
 
                     tools.selectClick(clicked);
@@ -86,7 +92,8 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
             } else {
                 clearInterval(interval);
                 for (let element of hiddenElements) {
-                    element.style.display = "none";
+                    element.style.opacity = "0";
+                    element.style.pointerEvents = "none";
                 }
 
                 tools.selectClick(clicked);
@@ -94,7 +101,8 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
         }, 50);
     } else {
         for (let element of hiddenElements) {
-            element.style.display = "block";
+            element.style.opacity = "1";
+            element.style.pointerEvents = "";
         }
 
         hiddenElements = [];

@@ -1,3 +1,5 @@
+import mustache from "./lib/mustache.min.js";
+
 const {promisify} = require('util');
 const ytpl = require('ytpl');
 const {ipcRenderer} = require('electron');
@@ -10,6 +12,15 @@ const execSync = promisify(require('child_process').exec);
 
 export let childProcess = null, downloadAborted = false, playlistCount = 1;
 export let __realdir = null;
+
+let languageDB = {};
+export let selectedLang = null;
+
+let theme = getCookie("theme");
+if (!theme) theme = "light";
+setCookie("theme", theme);
+
+document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -433,10 +444,12 @@ export function loadSettings() {
     let mode = document.querySelector("#settings .mode .select");
     let quality = document.querySelector("#settings .quality .select");
     let codec = document.querySelector("#settings .codec .select");
+    let lang = document.querySelector("#settings .lang .select");
 
     let modeValue = getCookie("mode");
     let qualityValue = getCookie("quality");
     let codecValue = getCookie("codec");
+    let langValue = getCookie("lang");
     let save = getCookie("save");
 
     let option;
@@ -455,6 +468,55 @@ export function loadSettings() {
         selectOption(option);
     }
 
+    if (langValue) {
+        option = lang.querySelector("[data-value='" + langValue + "']");
+        selectOption(option);
+    }
+
     let saveButton = document.querySelector("#settings #save");
     if (save) saveButton.classList.add("active");
+}
+
+// TODO: Comment
+export async function loadLanguage() {
+    if (!Object.keys(languageDB).length) {
+        await fetch("assets/db/language.json").then(response => {
+            return response.json();
+        }).then(jsonData => languageDB = jsonData);
+    }
+
+    let cookie = getCookie("lang");
+    let lang = null;
+    if (cookie) {
+        lang = cookie;
+    } else {
+        for (let language of navigator.languages) {
+            if (typeof languageDB[language] !== "undefined")
+                lang = language;
+        }
+        if (!lang) lang = "en";
+
+        setCookie("lang", lang);
+    }
+    selectedLang = lang;
+
+    await fetch("assets/template/main.html").then(response => {
+        return response.text();
+    }).then(htmlData => {
+        let main = document.getElementsByTagName("main")[0];
+        let template = new DOMParser().parseFromString(htmlData, 'text/html').body;
+
+        main.innerHTML = mustache.render(template.innerHTML, languageDB[lang]);
+    });
+}
+
+// TODO: Comment
+export function setThemeIcon() {
+    setTimeout(function () {
+        let icons = document.querySelectorAll(".theme-toggler svg");
+        for (let icon of icons) {
+            if (theme === "light") icon.classList.add("fa-moon");
+            else icon.classList.add("fa-sun");
+        }
+    }, 500);
 }
