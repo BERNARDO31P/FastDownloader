@@ -250,6 +250,9 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
     } else {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
     }
 
     ipcRenderer.send('remove_abort');
