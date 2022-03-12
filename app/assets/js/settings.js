@@ -56,6 +56,7 @@ tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", as
 
     await tools.loadLanguage();
     tools.setThemeIcon();
+    tools.loadSettings();
 });
 
 // TODO: Comment

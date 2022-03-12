@@ -291,6 +291,7 @@ document.addEventListener("keydown", function (e) {
 
         for (let item of items) {
             item.classList.add("active");
+
         }
 
         setTimeout(function () {
