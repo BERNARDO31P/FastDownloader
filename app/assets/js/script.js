@@ -131,21 +131,21 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     let items = listBox.querySelectorAll("li");
 
     if (!items.length) {
-        showNotification("Sie haben keine URLs eingegeben");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
         return;
     }
 
     if (!mode.getAttribute("data-value")) {
-        showNotification("Sie haben in den Einstellungen keinen Download-Modus ausgewählt");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
         return;
     } else if (mode.getAttribute("data-value") === "audio") {
         if (!codec.getAttribute("data-value")) {
-            showNotification("Sie haben in den Einstellungen keinen Codec ausgewählt");
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
             return;
         }
 
         if (!quality.getAttribute("data-value")) {
-            showNotification("Sie haben in den Einstellungen keine Qualität ausgewählt");
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
             return;
         } else {
             switch (quality.getAttribute("data-value")) {
@@ -163,7 +163,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     }
 
     if (!location.value) {
-        showNotification("Sie haben keinen Speicherort angegeben");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
         return;
     }
 
@@ -221,9 +221,9 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
     tools.setEnabled();
     if (!aborted) {
-        ipcRenderer.send('show_notification', "Erfolg", "Alle Lieder wurden erfolgreich heruntergeladen");
+        ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
     } else {
-        showNotification("Das Herunterladen wurde erfolgreich abgebrochen.");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
     }
 });
 
@@ -324,13 +324,13 @@ window.onload = async function () {
 
     ipcRenderer.on('update_available', () => {
         ipcRenderer.removeAllListeners('update_available');
-        message.innerText = 'Eine neue Version ist verfügbar und wird heruntergeladen..';
+        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersiosettingsSavedn"];
         notification.classList.remove('hidden');
     });
 
     ipcRenderer.on('update_downloaded', () => {
         ipcRenderer.removeAllListeners('update_downloaded');
-        message.innerText = 'Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.';
+        message.innerText = tools.languageDB[tools.selectedLang]["js"]["updateDownloaded"];
         restartButton.classList.remove('hidden');
         notification.classList.remove('hidden');
     });

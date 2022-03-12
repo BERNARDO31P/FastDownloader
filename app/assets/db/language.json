@@ -35,6 +35,24 @@
         "medium": "Mittlere",
         "bad": "Schlechte"
       }
+    },
+    "js": {
+      "noURL": "Sie haben keinen Link angegeben",
+      "noValidURL": "Sie haben keinen gültigen Link angegeben",
+      "urlInList": "Dieser Link befindet sich bereits in der Liste",
+      "urlAdded": "Link wurde zur Liste hinzugefügt",
+      "noURLs": "Sie haben keine URLs eingegeben",
+      "downloadMode": "Sie haben in den Einstellungen keinen Download-Modus ausgewählt",
+      "codec": "Sie haben in den Einstellungen keinen Codec ausgewählt",
+      "quality": "Sie haben in den Einstellungen keine Qualität ausgewählt",
+      "storageLocation": "Sie haben keinen Speicherort angegeben",
+      "success": "Erfolg",
+      "songsDownloaded": "Alle Lieder wurden erfolgreich heruntergeladen",
+      "downloadAborted": "Das Herunterladen wurde erfolgreich abgebrochen",
+      "newVersion": "Eine neue Version ist verfügbar und wird heruntergeladen..",
+      "updateDownloaded": "Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.",
+      "settingsSaved": "Die Einstellungen werden ab jetzt gespeichert",
+      "settingsAborted": "Die Einstellungen werden nicht mehr gespeichert"
     }
   },
   "en": {
@@ -73,6 +91,24 @@
         "medium": "Medium",
         "bad": "Bad"
       }
+    },
+    "js": {
+      "noURL": "You didn't enter a URL",
+      "noValidURL": "You didn't enter a valid URL",
+      "urlInList": "This URL is already in the list",
+      "urlAdded": "URL has been added to the list",
+      "noURLs": "You didn't enter any URLs",
+      "downloadMode": "You didn't choose a download mode in the settings",
+      "codec": "You didn't choose a codec in the settings",
+      "quality": "You didn't choose a quality in the settings",
+      "storageLocation": "You didn't choose a storage location",
+      "success": "Success",
+      "songsDownloaded": "All songs have been successfully downloaded",
+      "downloadAborted": "The download has been successfully aborted",
+      "newVersion": "A new version is available and is being downloaded..",
+      "updateDownloaded": "Updated downloaded. Restart the application now to apply the changes.",
+      "settingsSaved": "The settings are saved from now on",
+      "settingsAborted": "The settings are no longer saved"
     }
   }
 }

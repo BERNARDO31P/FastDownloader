@@ -8,12 +8,12 @@ tools.bindEvent("click", "#settings .save .checkbox", function () {
         this.classList.remove("active");
         tools.deleteSettings();
 
-        showNotification("Die Einstellungen werden nicht mehr gespeichert");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsAborted"]);
     } else {
         this.classList.add("active");
         tools.saveSettings();
 
-        showNotification("Die Einstellungen werden ab jetzt gespeichert");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsSaved"]);
     }
 });
 

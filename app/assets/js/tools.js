@@ -13,7 +13,7 @@ const execSync = promisify(require('child_process').exec);
 export let childProcess = null, downloadAborted = false, playlistCount = 1;
 export let __realdir = null;
 
-let languageDB = {};
+export let languageDB = {};
 export let selectedLang = null;
 
 export let theme = getCookie("theme");
@@ -179,7 +179,7 @@ export function addLinkToList(eventElement) {
     let input = eventElement.closest(".input").querySelector("input");
 
     if (!input.value) {
-        showNotification("Sie haben keinen Link angegeben");
+        showNotification(languageDB[selectedLang]["js"]["noURL"]);
         return;
     }
 
@@ -189,7 +189,7 @@ export function addLinkToList(eventElement) {
     let foundNF = input.value.match("http(?:s?):\\/\\/(?:www\\.)?netflix.com");
 
     if (!foundYT && !foundNF) {
-        showNotification("Sie haben keinen gültigen Link angegeben");
+        showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
         return;
     }
 
@@ -197,7 +197,7 @@ export function addLinkToList(eventElement) {
     let elements = ul.querySelectorAll("li");
     for (let element of elements) {
         if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
-            showNotification("Dieser Link befindet sich bereits in der Liste");
+            showNotification(languageDB[selectedLang]["js"]["urlInList"]);
             return;
         }
     }
@@ -215,7 +215,7 @@ export function addLinkToList(eventElement) {
 
     ul.scrollTop = ul.scrollHeight;
 
-    showNotification("Link wurde zur Liste hinzugefügt");
+    showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
 }
 
 // TODO: Comment
