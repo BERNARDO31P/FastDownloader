@@ -245,7 +245,10 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         }
     }
 
+    progressTotal.value = 1;
+    infoTotal.textContent = "100%";
     tools.setEnabled();
+
     if (!aborted) {
         ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
     } else {

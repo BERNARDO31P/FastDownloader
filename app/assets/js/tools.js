@@ -281,13 +281,14 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
 
         childProcess.on('close', function () {
             let percentageTotal = progressTotal.value + Math.round((percentage / 100) * 100) / 100;
+
             progressTotal.value = percentageTotal;
+            infoTotal.textContent = percentageTotal * 100 + "%";
+
             progressSong.value = 1;
+            infoSong.textContent = "100%";
 
             ipcRenderer.send('set_percentage', percentageTotal);
-
-            infoTotal.textContent = Number(infoTotal.textContent.replace("%", "")) + percentage + "%";
-            infoSong.textContent = "100%";
 
             if (!downloadAborted) {
                 resolve(true);

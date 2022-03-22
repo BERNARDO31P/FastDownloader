@@ -9,10 +9,15 @@ Store.initRenderer();
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 
 function createWindow() {
+    const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
+    const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
+
     win = new BrowserWindow({
         minWidth: 900,
         minHeight: 580,
-        center: true,
+        x: currentScreen.workArea.x,
+        y: currentScreen.workArea.y,
+        alwaysOnTop: true,
         autoHideMenuBar: true,
         icon: __dirname + "/resources/256x256.png",
         webPreferences: {
@@ -24,14 +29,8 @@ function createWindow() {
         }
     });
 
-    win.loadFile('app/index.html');
-
-    const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
-    const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
-
-    win.setBounds(currentScreen.workArea);
-    win.setSize(900, 580);
     win.center();
+    win.loadFile('app/index.html');
 
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
