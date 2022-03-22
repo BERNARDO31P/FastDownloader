@@ -180,6 +180,10 @@ export function addLinkToList(eventElement) {
 
     if (!input.value) {
         showNotification(languageDB[selectedLang]["js"]["noURL"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
+
         return;
     }
 
@@ -190,6 +194,10 @@ export function addLinkToList(eventElement) {
 
     if (!foundYT && !foundNF) {
         showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
+
         return;
     }
 
@@ -198,6 +206,10 @@ export function addLinkToList(eventElement) {
     for (let element of elements) {
         if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
             showNotification(languageDB[selectedLang]["js"]["urlInList"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+
             return;
         }
     }
@@ -216,6 +228,9 @@ export function addLinkToList(eventElement) {
     ul.scrollTop = ul.scrollHeight;
 
     showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
+
+    if (document.hidden)
+        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
 }
 
 // TODO: Comment

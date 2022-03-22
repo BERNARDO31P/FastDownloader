@@ -1,4 +1,15 @@
-const {app, BrowserWindow, ipcMain, dialog, Notification, screen, Menu, Tray, MenuItem} = require('electron');
+const {
+    app,
+    BrowserWindow,
+    ipcMain,
+    dialog,
+    Notification,
+    screen,
+    Menu,
+    Tray,
+    MenuItem,
+    clipboard
+} = require('electron');
 const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
 
@@ -7,6 +18,24 @@ const {exec} = require("child_process");
 Store.initRenderer();
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
+let lang = null, languageDB = {
+    "de": {
+        "hide": "Verstecken",
+        "addUrl": "URL hinzufügen",
+        "download": "Herunterladen",
+        "close": "Schliessen",
+        "maximize": "Maximieren",
+        "abort": "Abbrechen"
+    },
+    "en": {
+        "hide": "Hide",
+        "addUrl": "Add URL",
+        "download": "Download",
+        "close": "Close",
+        "maximize": "Maximize",
+        "abort": "Abort"
+    }
+}
 
 function createWindow() {
     const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
@@ -34,6 +63,24 @@ function createWindow() {
 
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
+
+        trayIcon = new Tray(__dirname + "/resources/256x256.png");
+        trayIcon.setTitle("Fast Downloader");
+        trayIcon.setToolTip("Fast Downloader");
+
+        win.webContents.send("lang");
+        ipcMain.on("lang", function (event, selectedLang) {
+            lang = selectedLang;
+
+            trayMenu = Menu.buildFromTemplate([
+                {id: "hide", label: languageDB[lang]["hide"], type: "normal", click: hide},
+                {id: "addUrl", label: languageDB[lang]["addUrl"], type: "normal", click: addURL},
+                {id: "download", label: languageDB[lang]["download"], type: "normal", click: download},
+                {id: "close", label: languageDB[lang]["close"], type: "normal", click: exit}
+            ]);
+
+            trayIcon.setContextMenu(trayMenu);
+        });
     });
 
     win.on('close', function (event) {
@@ -42,6 +89,23 @@ function createWindow() {
 
         return false;
     });
+
+    win.on('hide', function () {
+
+        removeTrayItem("hide");
+        addTrayItem("maximize", languageDB[lang]["maximize"], "normal", maximize);
+
+        trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+
+    });
+
+    win.on('show', function () {
+
+        removeTrayItem("maximize");
+        addTrayItem("hide", languageDB[lang]["hide"], "normal", hide);
+
+        trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+    })
 
     app.setAppUserModelId("Fast Downloader");
 }
@@ -54,22 +118,6 @@ app.on('window-all-closed', () => {
 
 app.on('activate', function () {
     if (win === null) createWindow();
-});
-
-app.whenReady().then(() => {
-    createWindow();
-
-    trayIcon = new Tray(__dirname + "/resources/256x256.png");
-    trayIcon.setTitle("Fast Downloader");
-    trayIcon.setToolTip("Fast Downloader");
-
-    trayMenu = Menu.buildFromTemplate([
-        {id: "hide", label: "Verstecken", type: "normal", click: hide},
-        {id: "download", label: "Herunterladen", type: "normal", click: download},
-        {id: "close", label: "Schliessen", type: "normal", click: exit}
-    ]);
-
-    trayIcon.setContextMenu(trayMenu);
 });
 
 ipcMain.on('app_version', (event) => {
@@ -98,11 +146,7 @@ ipcMain.on("open_file_dialog", () => {
 });
 
 ipcMain.on("show_notification", (event, title, message) => {
-    new Notification({
-        title: title,
-        body: message,
-        icon: __dirname + "/app/assets/ico/icon_64x64.png"
-    }).show();
+    showNotification(title, message);
 });
 
 ipcMain.on("kill_pid", (event, pid) => {
@@ -115,14 +159,14 @@ ipcMain.on("kill_pid", (event, pid) => {
 
 ipcMain.on("add_abort", () => {
     removeTrayItem("download");
-    addTrayItem("abort", "Abbrechen", "normal", abort);
+    addTrayItem("abort", languageDB[lang]["abort"], "normal", abort);
 
     trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
 });
 
 ipcMain.on("remove_abort", () => {
     removeTrayItem("abort");
-    addTrayItem("download", "Herunterladen", "normal", download);
+    addTrayItem("download", languageDB[lang]["download"], "normal", download);
 
     trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
 });
@@ -140,18 +184,10 @@ function exit() {
 }
 
 function hide() {
-    removeTrayItem("hide");
-    addTrayItem("maximize", "Maximieren", "normal", maximize);
-
-    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
     win.hide();
 }
 
 function maximize() {
-    removeTrayItem("maximize");
-    addTrayItem("hide", "Verstecken", "normal", hide);
-
-    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
     win.show();
 }
 
@@ -163,15 +199,39 @@ function abort() {
     win.webContents.send("abort");
 }
 
+function showNotification(title, message) {
+    new Notification({
+        title: title,
+        body: message,
+        icon: __dirname + "/app/assets/ico/icon_64x64.png"
+    }).show();
+}
+
+function addURL() {
+    let value = clipboard.readText();
+
+    win.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
+    ipcMain.on("translation", function (event, translations) {
+
+        if (!value)
+            showNotification(translations[0], translations[1]);
+        else win.webContents.send("url", value);
+    });
+}
+
 function addTrayItem(id, label, type, click) {
     trayMenu.items.unshift(new MenuItem({id: id, label: label, type: type, click: click}));
 }
 
 function removeTrayItem(id) {
-    for( let i = 0; i < trayMenu.items.length; i++){
-        if ( trayMenu.items[i].id === id) {
+    for (let i = 0; i < trayMenu.items.length; i++) {
+        if (trayMenu.items[i].id === id) {
             trayMenu.items.splice(i, 1);
             break;
         }
     }
 }
+
+app.whenReady().then(() => {
+    createWindow();
+});

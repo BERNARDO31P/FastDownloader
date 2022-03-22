@@ -324,6 +324,38 @@ ipcRenderer.on('abort', function () {
 });
 
 // TODO: Comment
+ipcRenderer.on('url', function (event, value) {
+    let input = document.querySelector(".input input");
+    input.value = value;
+
+    tools.addLinkToList(input);
+});
+
+// TODO: Comment
+ipcRenderer.on('translate', function (event, array) {
+    let value = [];
+    let language = tools.languageDB[tools.selectedLang];
+
+    let i = 0;
+    for (let arrayLevels of array) {
+        let tmpLanguage = language;
+
+        for (let arrayLevel of arrayLevels) {
+            value[i] = tmpLanguage[arrayLevel];
+            tmpLanguage = tmpLanguage[arrayLevel];
+        }
+        i++;
+    }
+
+    ipcRenderer.send("translation", value);
+});
+
+// TODO: Comment
+ipcRenderer.on("lang", function () {
+    ipcRenderer.send("lang", tools.selectedLang);
+});
+
+// TODO: Comment
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {
         tools.removeActiveListItems();
@@ -368,7 +400,7 @@ window.onload = async function () {
 
     ipcRenderer.on('update_available', () => {
         ipcRenderer.removeAllListeners('update_available');
-        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersiosettingsSavedn"];
+        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"];
         notification.classList.remove('hidden');
     });
 
