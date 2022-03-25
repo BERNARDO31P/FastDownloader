@@ -374,6 +374,10 @@ document.addEventListener("keydown", function (e) {
             document.getSelection().removeAllRanges();
         });
     }
+
+    if (e.code === "KeyC" && e.ctrlKey && lastClicked.nodeName === "LI" && lastClicked.classList.contains("active")) {
+        clipboard.writeText(lastClicked.textContent);
+    }
 });
 
 // TODO: Comment
