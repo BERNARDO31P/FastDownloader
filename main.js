@@ -46,7 +46,6 @@ function createWindow() {
         minHeight: 580,
         x: currentScreen.workArea.x,
         y: currentScreen.workArea.y,
-        alwaysOnTop: true,
         autoHideMenuBar: true,
         icon: __dirname + "/resources/256x256.png",
         webPreferences: {
@@ -63,6 +62,7 @@ function createWindow() {
 
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
+        win.focus();
 
         trayIcon = new Tray(__dirname + "/resources/256x256.png");
         trayIcon.setTitle("Fast Downloader");
