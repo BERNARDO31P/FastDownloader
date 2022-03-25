@@ -18,7 +18,8 @@ const {exec} = require("child_process");
 Store.initRenderer();
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
-let lang = null, languageDB = {
+let lang = null;
+const languageDB = {
     "de": {
         "hide": "Verstecken",
         "addUrl": "URL hinzufügen",
@@ -62,7 +63,6 @@ function createWindow() {
 
     win.once('ready-to-show', () => {
         autoUpdater.checkForUpdatesAndNotify();
-        win.focus();
 
         trayIcon = new Tray(__dirname + "/resources/256x256.png");
         trayIcon.setTitle("Fast Downloader");
@@ -80,6 +80,9 @@ function createWindow() {
             ]);
 
             trayIcon.setContextMenu(trayMenu);
+
+            win.show();
+            win.focus();
         });
     });
 
@@ -105,7 +108,7 @@ function createWindow() {
         addTrayItem("hide", languageDB[lang]["hide"], "normal", hide);
 
         trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
-    })
+    });
 
     app.setAppUserModelId("Fast Downloader");
 }
@@ -179,6 +182,30 @@ autoUpdater.on('update-downloaded', () => {
     win.webContents.send('update_downloaded');
 });
 
+function showNotification(title, message) {
+    new Notification({
+        title: title,
+        body: message,
+        icon: __dirname + "/app/assets/ico/icon_64x64.png"
+    }).show();
+}
+
+function addTrayItem(id, label, type, click) {
+    for (let trayItem of trayMenu.items)
+        if (trayItem.id === id) return;
+
+    trayMenu.items.unshift(new MenuItem({id: id, label: label, type: type, click: click}));
+}
+
+function removeTrayItem(id) {
+    for (let i = 0; i < trayMenu.items.length; i++) {
+        if (trayMenu.items[i].id === id) {
+            trayMenu.items.splice(i, 1);
+            break;
+        }
+    }
+}
+
 function exit() {
     app.exit(0);
 }
@@ -199,14 +226,6 @@ function abort() {
     win.webContents.send("abort");
 }
 
-function showNotification(title, message) {
-    new Notification({
-        title: title,
-        body: message,
-        icon: __dirname + "/app/assets/ico/icon_64x64.png"
-    }).show();
-}
-
 function addURL() {
     let value = clipboard.readText();
 
@@ -217,19 +236,6 @@ function addURL() {
             showNotification(translations[0], translations[1]);
         else win.webContents.send("url", value);
     });
-}
-
-function addTrayItem(id, label, type, click) {
-    trayMenu.items.unshift(new MenuItem({id: id, label: label, type: type, click: click}));
-}
-
-function removeTrayItem(id) {
-    for (let i = 0; i < trayMenu.items.length; i++) {
-        if (trayMenu.items[i].id === id) {
-            trayMenu.items.splice(i, 1);
-            break;
-        }
-    }
 }
 
 app.whenReady().then(() => {

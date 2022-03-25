@@ -352,7 +352,7 @@ ipcRenderer.on('translate', function (event, array) {
 
 // TODO: Comment
 ipcRenderer.on("lang", function () {
-    ipcRenderer.send("lang", tools.selectedLang);
+    ipcRenderer.send("lang", tools.selectedLang ?? tools.getCookie("lang") ?? "en");
 });
 
 // TODO: Comment

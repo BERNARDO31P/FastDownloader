@@ -522,7 +522,7 @@ export async function loadLanguage() {
         let main = document.getElementsByTagName("main")[0];
         let template = new DOMParser().parseFromString(htmlData, 'text/html').body;
 
-        main.innerHTML = mustache.render(template.innerHTML, languageDB[lang]);
+        main.innerHTML = mustache.render(template.innerHTML, languageDB[selectedLang]);
     });
 }
 
