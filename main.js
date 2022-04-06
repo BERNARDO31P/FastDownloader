@@ -174,6 +174,14 @@ ipcMain.on("remove_abort", () => {
     trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
 });
 
+ipcMain.on("translation", function (event, translations) {
+    let value = clipboard.readText();
+
+    if (!value)
+        showNotification(translations[0], translations[1]);
+    else win.webContents.send("url", value);
+});
+
 autoUpdater.on('update-available', () => {
     win.webContents.send('update_available');
 });
@@ -227,15 +235,7 @@ function abort() {
 }
 
 function addURL() {
-    let value = clipboard.readText();
-
     win.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
-    ipcMain.on("translation", function (event, translations) {
-
-        if (!value)
-            showNotification(translations[0], translations[1]);
-        else win.webContents.send("url", value);
-    });
 }
 
 app.whenReady().then(() => {
