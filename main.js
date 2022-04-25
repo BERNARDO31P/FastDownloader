@@ -12,6 +12,7 @@ const {
 } = require('electron');
 const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
+const fs = require('fs');
 
 const {exec} = require("child_process");
 
@@ -180,6 +181,17 @@ ipcMain.on("translation", function (event, translations) {
     if (!value)
         showNotification(translations[0], translations[1]);
     else win.webContents.send("url", value);
+});
+
+ipcMain.on("saveCache", function (event, data) {
+    fs.writeFileSync(".cache.json", JSON.stringify(data), 'utf-8');
+});
+
+ipcMain.on("loadCache", function (event) {
+    let data = fs.readFileSync(".cache.json", 'utf-8');
+    win.webContents.send("loadCache", JSON.parse(data));
+
+    fs.unlinkSync(".cache.json");
 });
 
 autoUpdater.on('update-available', () => {

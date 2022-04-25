@@ -1,5 +1,6 @@
 import * as tools from "./tools.js";
 import {showNotification} from "./tools.js";
+const {ipcRenderer} = require('electron');
 
 let hiddenElements = [];
 
@@ -54,9 +55,18 @@ tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", as
     let lang = this.getAttribute("data-value");
     tools.setCookie("lang", lang);
 
+    let data = tools.getAllData();
+    ipcRenderer.send("saveCache", data);
+
     await tools.loadLanguage();
     tools.setThemeIcon();
     tools.loadSettings();
+
+    ipcRenderer.send("loadCache");
+});
+
+ipcRenderer.on("loadCache", function (event, data) {
+    tools.loadAllData(data);
 });
 
 // TODO: Comment

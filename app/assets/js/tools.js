@@ -108,6 +108,35 @@ export function removeActiveListItems() {
     else ul.style.width = "100%";
 }
 
+// TODO: Comment
+export function loadAllData(data) {
+    console.log(data["location"])
+    document.getElementById("location").value = data["location"];
+
+    let listBox = document.querySelector(".listBox ul");
+    for (let listItem of data["listItems"]) {
+        let li = document.createElement("li");
+        li.textContent = listItem;
+
+        listBox.appendChild(li);
+    }
+}
+
+// TODO: Comment
+export function getAllData() {
+    let data = {};
+    let listItems = document.querySelectorAll(".listBox ul li");
+
+    data["listItems"] = [];
+    for (let listItem of listItems) {
+        data["listItems"].push(listItem.textContent);
+    }
+
+    data["location"] = document.getElementById("location").value;
+
+    return data;
+}
+
 /*
  * Funktion: showNotification()
  * Autor: Bernardo de Oliveira
