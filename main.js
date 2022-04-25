@@ -184,14 +184,14 @@ ipcMain.on("translation", function (event, translations) {
 });
 
 ipcMain.on("saveCache", function (event, data) {
-    fs.writeFileSync(".cache.json", JSON.stringify(data), 'utf-8');
+    fs.writeFileSync(__dirname + "/.cache.json", JSON.stringify(data), 'utf-8');
 });
 
 ipcMain.on("loadCache", function (event) {
-    let data = fs.readFileSync(".cache.json", 'utf-8');
+    let data = fs.readFileSync(__dirname + "/.cache.json", 'utf-8');
     win.webContents.send("loadCache", JSON.parse(data));
 
-    fs.unlinkSync(".cache.json");
+    fs.unlinkSync(__dirname + "/.cache.json");
 });
 
 autoUpdater.on('update-available', () => {
