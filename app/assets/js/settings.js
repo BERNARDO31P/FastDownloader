@@ -55,18 +55,12 @@ tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", as
     let lang = this.getAttribute("data-value");
     tools.setCookie("lang", lang);
 
-    let data = tools.getAllData();
-    ipcRenderer.send("saveCache", data);
-
+    tools.getAllData();
     await tools.loadLanguage();
     tools.setThemeIcon();
     tools.loadSettings();
 
-    ipcRenderer.send("loadCache");
-});
-
-ipcRenderer.on("loadCache", function (event, data) {
-    tools.loadAllData(data);
+    tools.loadAllData();
 });
 
 // TODO: Comment

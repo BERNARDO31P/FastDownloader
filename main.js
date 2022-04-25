@@ -183,17 +183,6 @@ ipcMain.on("translation", function (event, translations) {
     else win.webContents.send("url", value);
 });
 
-ipcMain.on("saveCache", function (event, data) {
-    fs.writeFileSync(__dirname + "/.cache.json", JSON.stringify(data), 'utf-8');
-});
-
-ipcMain.on("loadCache", function (event) {
-    let data = fs.readFileSync(__dirname + "/.cache.json", 'utf-8');
-    win.webContents.send("loadCache", JSON.parse(data));
-
-    fs.unlinkSync(__dirname + "/.cache.json");
-});
-
 autoUpdater.on('update-available', () => {
     win.webContents.send('update_available');
 });

@@ -109,8 +109,8 @@ export function removeActiveListItems() {
 }
 
 // TODO: Comment
-export function loadAllData(data) {
-    console.log(data["location"])
+export function loadAllData() {
+    let data = store.get("cache");
     document.getElementById("location").value = data["location"];
 
     let listBox = document.querySelector(".listBox ul");
@@ -120,6 +120,8 @@ export function loadAllData(data) {
 
         listBox.appendChild(li);
     }
+
+    store.delete("cache");
 }
 
 // TODO: Comment
@@ -134,7 +136,7 @@ export function getAllData() {
 
     data["location"] = document.getElementById("location").value;
 
-    return data;
+    store.set("cache", data);
 }
 
 /*
