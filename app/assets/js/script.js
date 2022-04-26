@@ -54,6 +54,14 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
         if (this.classList.contains("active")) this.classList.remove("active");
         else this.classList.add("active");
     }
+
+    actives = listBox.querySelectorAll("li.active");
+    let linkCount = document.getElementById("link-count");
+
+    if (actives.length) {
+        linkCount.style.opacity = "1";
+        linkCount.querySelector("a").textContent = actives.length.toString();
+    } else linkCount.style.opacity = "0";
 });
 
 // TODO: Comment
@@ -275,6 +283,17 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
 });
 
 // TODO: Comment
+tools.bindEvent("contextmenu", ".listBox", function (e) {
+    e.preventDefault();
+
+    if (!e.target.textContent.includes("playlist?list=")) {
+        alert(e.target.textContent);
+    } else {
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["playlistContext"]);
+    }
+});
+
+// TODO: Comment
 tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", function () {
     ipcRenderer.send('open_file_dialog');
 });
@@ -361,22 +380,30 @@ document.addEventListener("keydown", function (e) {
         tools.removeActiveListItems();
     }
 
-
     if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null) {
-        let items = document.querySelectorAll(".listBox li");
-
-        for (let item of items) {
-            item.classList.add("active");
-
-        }
-
         setTimeout(function () {
             document.getSelection().removeAllRanges();
         });
+
+        let items = document.querySelectorAll(".listBox li");
+        let linkCount = document.getElementById("link-count");
+
+        for (let item of items) {
+            item.classList.add("active");
+        }
+
+       linkCount.querySelector("a").textContent = items.length.toString();
+       linkCount.style.opacity = "1";
     }
 
-    if (e.code === "KeyC" && e.ctrlKey && lastClicked.nodeName === "LI" && lastClicked.classList.contains("active")) {
-        clipboard.writeText(lastClicked.textContent);
+    if (e.code === "KeyC" && e.ctrlKey) {
+        let actives = document.querySelectorAll(".listBox li.active");
+        let clipText = "";
+
+        for (let active of actives)
+            clipText += active.textContent + "\n";
+
+        clipboard.writeText(clipText);
     }
 });
 

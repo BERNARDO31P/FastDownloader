@@ -1,6 +1,5 @@
 import * as tools from "./tools.js";
 import {showNotification} from "./tools.js";
-const {ipcRenderer} = require('electron');
 
 let hiddenElements = [];
 

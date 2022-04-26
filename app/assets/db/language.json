@@ -13,7 +13,8 @@
       "label": {
         "progressTotal": "Fortschritt insgesamt",
         "progress": "Fortschritt",
-        "storageLocation": "Speicherort"
+        "storageLocation": "Speicherort",
+        "selected": "ausgewählt"
       }
     },
     "settings": {
@@ -54,7 +55,8 @@
       "newVersion": "Eine neue Version ist verfügbar und wird heruntergeladen..",
       "updateDownloaded": "Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.",
       "settingsSaved": "Die Einstellungen werden ab jetzt gespeichert",
-      "settingsAborted": "Die Einstellungen werden nicht mehr gespeichert"
+      "settingsAborted": "Die Einstellungen werden nicht mehr gespeichert",
+      "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists"
     }
   },
   "en": {
@@ -71,7 +73,8 @@
       "label": {
         "progressTotal": "Total progress",
         "progress": "Progress",
-        "storageLocation": "Storage location"
+        "storageLocation": "Storage location",
+        "selected": "selected"
       }
     },
     "settings": {
@@ -112,7 +115,8 @@
       "newVersion": "A new version is available and is being downloaded..",
       "updateDownloaded": "Updated downloaded. Restart the application now to apply the changes.",
       "settingsSaved": "The settings are saved from now on",
-      "settingsAborted": "The settings are no longer saved"
+      "settingsAborted": "The settings are no longer saved",
+      "playlistContext": "There are no options for playlists"
     }
   }
 }

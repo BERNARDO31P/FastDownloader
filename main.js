@@ -19,7 +19,7 @@ const {exec} = require("child_process");
 Store.initRenderer();
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
-let lang = null;
+let lang = null, hidden = false;
 const languageDB = {
     "de": {
         "hide": "Verstecken",
@@ -95,6 +95,7 @@ function createWindow() {
     });
 
     win.on('hide', function () {
+        hidden = true;
 
         removeTrayItem("hide");
         addTrayItem("maximize", languageDB[lang]["maximize"], "normal", maximize);
@@ -104,6 +105,7 @@ function createWindow() {
     });
 
     win.on('show', function () {
+        hidden = false;
 
         removeTrayItem("maximize");
         addTrayItem("hide", languageDB[lang]["hide"], "normal", hide);
