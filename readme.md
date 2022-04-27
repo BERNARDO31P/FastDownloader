@@ -2,7 +2,7 @@
 This is a fast YouTube downloader written in Electron. 
 
 ## Screenshots
-**Main windows - light mode**
+**Main window - light mode**
 ![Main window - light theme](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/screenshot/main_light.png)
 
 **Settings**
