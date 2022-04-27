@@ -287,7 +287,8 @@ tools.bindEvent("contextmenu", ".listBox", function (e) {
     e.preventDefault();
 
     if (!e.target.textContent.includes("playlist?list=")) {
-        alert(e.target.textContent);
+        console.log(e.pageX);
+        console.log(e.pageY);
     } else {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["playlistContext"]);
     }

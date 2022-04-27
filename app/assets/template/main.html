@@ -5,49 +5,52 @@
     <title>Title</title>
 </head>
 <body>
-    <h2>Fast Downloader</h2>
-    <div class="theme-toggler"><i class="fas"></i></div>
-    <div id="settings-open"><i class="fas fa-tools"></i></div>
-    <div class="input">
-        <label for="url">URL</label>
-        <div class="flex">
-            <input type="text" id="url"/>
-            <button class="add-button">{{main.button.add}}</button>
-            <button class="paste-button"><i class="fa-solid fa-paste"></i></button>
-        </div>
-    </div>
-    <div class="listBox">
-        <ul></ul>
-        <button class="delete-button">{{main.button.remove}}</button>
-    </div>
-    <label id="link-count"><a>0</a> {{main.label.selected}}</label>
-    <div class="progress-total">
-        <div class="info">
-            <label>{{main.label.progressTotal}}:</label>
-            <p>0%</p>
-        </div>
-        <progress value="0"></progress>
-    </div>
-    <div class="progress-song">
-        <div class="info">
-            <label>{{main.label.progress}}:</label>
-            <p>0%</p>
-        </div>
-        <progress value="0"></progress>
-    </div>
-    <div class="location">
+    <div id="main">
+        <h2>Fast Downloader</h2>
+        <div class="theme-toggler"><i class="fas"></i></div>
+        <div id="settings-open"><i class="fas fa-tools"></i></div>
         <div class="input">
-            <label for="location">{{main.label.storageLocation}}</label>
+            <label for="url">URL</label>
             <div class="flex">
-                <input type="text" id="location" readonly/>
-                <button class="search-button">{{main.button.browse}}</button>
-                <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
+                <input type="text" id="url"/>
+                <button class="add-button">{{main.button.add}}</button>
+                <button class="paste-button"><i class="fa-solid fa-paste"></i></button>
             </div>
         </div>
-    </div>
-    <div class="startAbort">
-        <button class="start-button">{{main.button.download}}</button>
-        <button class="abort-button" aria-disabled="true">{{main.button.abort}}</button>
+        <div class="listBox">
+            <ul></ul>
+            <button class="delete-button">{{main.button.remove}}</button>
+        </div>
+        <label id="link-count"><a>0</a> {{main.label.selected}}</label>
+        <div class="progress-total">
+            <div class="info">
+                <label>{{main.label.progressTotal}}:</label>
+                <p>0%</p>
+            </div>
+            <progress value="0"></progress>
+        </div>
+        <div class="progress-song">
+            <div class="info">
+                <label>{{main.label.progress}}:</label>
+                <p>0%</p>
+            </div>
+            <progress value="0"></progress>
+        </div>
+        <div class="location">
+            <div class="input">
+                <label for="location">{{main.label.storageLocation}}</label>
+                <div class="flex">
+                    <input type="text" id="location" readonly/>
+                    <button class="search-button">{{main.button.browse}}</button>
+                    <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="startAbort">
+            <button class="start-button">{{main.button.download}}</button>
+            <button class="abort-button" aria-disabled="true">{{main.button.abort}}</button>
+        </div>
+        <div id="contextMenu"></div>
     </div>
 
     <div id="settings">
@@ -69,7 +72,8 @@
                     <i class="fas fa-angle-down"></i>
                 </div>
                 <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                        {{settings.button.nothingSelected}}
                     </div>
                     <div class="option" data-value="de">Deutsch</div>
                     <div class="option" data-value="en">English</div>
@@ -84,7 +88,8 @@
                     <i class="fas fa-angle-down"></i>
                 </div>
                 <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                        {{settings.button.nothingSelected}}
                     </div>
                     <div class="option" data-value="video">{{settings.option.videoAudio}}</div>
                     <div class="option" data-value="audio">{{settings.option.audioOnly}}</div>
@@ -99,7 +104,8 @@
                     <i class="fas fa-angle-down"></i>
                 </div>
                 <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                        {{settings.button.nothingSelected}}
                     </div>
                     <div class="option" data-value="best">{{settings.option.best}}</div>
                     <div class="option" data-value="medium">{{settings.option.medium}}</div>
@@ -115,7 +121,8 @@
                     <i class="fas fa-angle-down"></i>
                 </div>
                 <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">{{settings.button.nothingSelected}}
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                        {{settings.button.nothingSelected}}
                     </div>
                     <div class="option" data-value="aac">aac</div>
                     <div class="option" data-value="flac">flac</div>
