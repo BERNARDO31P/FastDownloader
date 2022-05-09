@@ -331,6 +331,8 @@ progress::-webkit-progress-bar {
 
       cursor: pointer;
 
+      user-select: none;
+
       &.active {
         background-color: #3f6d952b;
       }
