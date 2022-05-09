@@ -2,7 +2,7 @@ import mustache from "./lib/mustache.min.js";
 
 const {promisify} = require('util');
 const ytpl = require('ytpl');
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, clipboard} = require('electron');
 
 const Store = require('electron-store');
 const store = new Store();
@@ -95,17 +95,33 @@ export function setCookie(name, value, expiresAt = "") {
 }
 
 // TODO: Comment
-export function removeActiveListItems() {
-    let ul = document.querySelector(".listBox ul");
-    let actives = ul.querySelectorAll("li.active");
-    if (actives) {
-        for (let active of actives) {
-            active.remove();
-        }
+export function removeActives (element) {
+    let actives = element.querySelectorAll(".active");
+    for (let active of actives) {
+        active.classList.remove("active");
     }
+}
 
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
+// TODO: Comment
+export function updateSelected() {
+    let actives = document.querySelectorAll(".listBox li.active");
+    let linkCount = document.getElementById("link-count");
+
+    if (actives.length) {
+        linkCount.style.opacity = "1";
+        linkCount.querySelector("a").textContent = actives.length.toString();
+    } else linkCount.style.opacity = "0";
+}
+
+// TODO: Comment
+export function activeToClipboard () {
+    let actives = document.querySelectorAll(".listBox li.active");
+    let clipText = "";
+
+    for (let active of actives)
+        clipText += active.textContent + "\n";
+
+    clipboard.writeText(clipText);
 }
 
 // TODO: Comment
@@ -246,6 +262,9 @@ export function addLinkToList(eventElement) {
     }
 
     let li = document.createElement("li");
+
+    let elementCount = ul.querySelectorAll("li").length;
+    li.setAttribute("data-id", elementCount.toString());
 
     if (foundYT) li.textContent = foundYT[0];
     else li.textContent = foundNF[0];
@@ -402,7 +421,8 @@ export async function getChildProcessRecursive(ppid) {
     if (process.platform === "win32") {
         tempOutput = await execSync("wmic process where (ParentProcessId=" + ppid + ") get ProcessId");
     } else {
-        tempOutput = await execSync("pgrep -P " + ppid).catch(() => {});
+        tempOutput = await execSync("pgrep -P " + ppid).catch(() => {
+        });
         if (!tempOutput) tempOutput = [];
     }
 

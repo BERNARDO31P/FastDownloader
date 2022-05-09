@@ -36,7 +36,7 @@ tools.bindEvent("click", "#settings-close", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select .option:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", "#settings .select .option:not([aria-disabled='true'])", function () {
     tools.selectOption(this);
 
     for (let element of hiddenElements) {

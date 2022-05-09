@@ -3,11 +3,35 @@ import {showNotification} from "./tools.js";
 
 const {clipboard, ipcRenderer, shell} = require('electron');
 
-let lastClicked = null;
+let lastClicked = null, contextElement = null;
+let specificSettings = {}
 
 // TODO: Comment
 document.onclick = function (e) {
     lastClicked = e.target;
+
+    let context = document.getElementById("contextMenu");
+    if (context.classList.contains("show") && lastClicked.closest("#contextMenu") === null) {
+        context.classList.remove("show");
+        contextElement = null;
+    }
+}
+
+// TODO: Comment
+function removeActiveListItems() {
+    let ul = document.querySelector(".listBox ul");
+    let actives = ul.querySelectorAll("li.active");
+    if (actives) {
+        for (let active of actives) {
+            let id = active.getAttribute("data-id");
+
+            delete specificSettings[id];
+            active.remove();
+        }
+    }
+
+    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
+    else ul.style.width = "100%";
 }
 
 // TODO: Comment
@@ -55,18 +79,12 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
         else this.classList.add("active");
     }
 
-    actives = listBox.querySelectorAll("li.active");
-    let linkCount = document.getElementById("link-count");
-
-    if (actives.length) {
-        linkCount.style.opacity = "1";
-        linkCount.querySelector("a").textContent = actives.length.toString();
-    } else linkCount.style.opacity = "0";
+    tools.updateSelected();
 });
 
 // TODO: Comment
 tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", function () {
-    tools.removeActiveListItems();
+    removeActiveListItems();
 });
 
 // TODO: Comment
@@ -140,9 +158,6 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
     let items = listBox.querySelectorAll("li");
 
-    console.log(document.visibilityState);
-    console.log(document.hidden);
-
     if (!items.length) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
@@ -176,18 +191,6 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
 
             return;
-        } else {
-            switch (quality.getAttribute("data-value")) {
-                case "best":
-                    quality = 0;
-                    break;
-                case "medium":
-                    quality = 5;
-                    break;
-                case "worst":
-                    quality = 9;
-                    break;
-            }
         }
     }
 
@@ -229,17 +232,33 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
     let percentage = Math.floor(100 / count * 100) / 100;
     let aborted = false;
+    let i = 0;
     for (let url of allUrls) {
         let success = false;
 
         if (!url.includes("netflix")) {
+            let qualityString = specificSettings[i]["quality"] ?? quality.getAttribute("data-value");
+            let qualityInt = 0;
+
+            switch (qualityString) {
+                case "best":
+                    qualityInt = 0;
+                    break;
+                case "medium":
+                    qualityInt = 5;
+                    break;
+                case "bad":
+                    qualityInt = 9;
+                    break;
+            }
+
             success = await tools.downloadYTURL(
-                mode.getAttribute("data-value"),
-                location.value,
+                specificSettings[i]["mode"] ?? mode.getAttribute("data-value"),
+                specificSettings[i]["location"] ?? location.value,
                 url,
                 percentage,
-                codec.getAttribute("data-value"),
-                quality,
+                specificSettings[i]["codec"] ?? codec.getAttribute("data-value"),
+                qualityInt,
                 tools.playlistCount
             );
         } else {
@@ -251,6 +270,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             aborted = true;
             break;
         }
+
+        i++;
     }
 
     progressTotal.value = 1;
@@ -283,20 +304,155 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
 });
 
 // TODO: Comment
-tools.bindEvent("contextmenu", ".listBox", function (e) {
+tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", function (e) {
     e.preventDefault();
 
     if (!e.target.textContent.includes("playlist?list=")) {
-        console.log(e.pageX);
-        console.log(e.pageY);
+        let context = document.getElementById("contextMenu");
+        let mode = document.querySelector("#settings .mode .select");
+        let id = this.getAttribute("data-id");
+
+        let specificAudio = false;
+        if (typeof specificSettings[id] !== 'undefined' && specificSettings[id]["mode"] === "audio") {
+            specificAudio = true;
+        }
+
+        tools.removeActives(context.querySelector(".mode"));
+        if (specificAudio || mode.getAttribute("data-value") === "audio") {
+            context.querySelector(".codec").style.display = "";
+            context.querySelector(".quality").style.display = "";
+
+            context.querySelector(".mode [data-value='audio']").classList.add("active");
+        } else {
+            context.querySelector(".codec").style.display = "none";
+            context.querySelector(".quality").style.display = "none";
+
+            context.querySelector(".mode [data-value='video']").classList.add("active");
+        }
+
+        tools.removeActives(context.querySelector(".quality"));
+        if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["quality"] !== "undefined") {
+            context.querySelector(".quality [data-value='" + specificSettings[id]["quality"] + "']").classList.add("active");
+        } else {
+            let quality = document.querySelector("#settings .quality .select");
+            context.querySelector(".quality [data-value='" + quality.getAttribute("data-value") + "']").classList.add("active");
+        }
+
+        tools.removeActives(context.querySelector(".codec"));
+        if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["codec"] !== "undefined") {
+            context.querySelector(".codec [data-value='" + specificSettings[id]["codec"] + "']").classList.add("active");
+        } else {
+            let codec = document.querySelector("#settings .codec .select");
+            context.querySelector(".codec [data-value='" + codec.getAttribute("data-value") + "']").classList.add("active");
+        }
+
+        contextElement = e.target;
+        context.classList.add("show");
+
+        context.style.left = e.pageX + "px";
+        context.style.top = e.pageY + "px";
+
+        let contextBounding = context.getBoundingClientRect();
+        if (contextBounding.right > document.body.clientWidth) {
+            context.style.left = contextBounding.left + (document.body.clientWidth - contextBounding.left - contextBounding.width - 10) + "px";
+        }
+
+        this.classList.add("active");
+        tools.updateSelected();
     } else {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["playlistContext"]);
     }
 });
 
 // TODO: Comment
+tools.bindEvent("mouseover", "#contextMenu .nav-select", function () {
+    let select = this.querySelector(".select");
+    let contextMenu = this.closest("#contextMenu");
+    let left = contextMenu.getBoundingClientRect().width;
+
+    select.classList.add("show");
+    select.style.left = left - 5 + "px";
+
+    let selectBounding = select.getBoundingClientRect();
+    if (selectBounding.right > document.body.clientWidth) {
+        select.style.left = "-" + (selectBounding.width - 5) + "px"
+    }
+
+    this.addEventListener("mouseleave", function mouseleave () {
+        select.classList.remove("show");
+
+        this.removeEventListener("mouseleave", mouseleave);
+    });
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", function () {
+    let navSelect = this.closest(".nav-select");
+    let className = navSelect.classList[0];
+
+    let actives = document.querySelectorAll(".listBox li.active");
+    for (let active of actives) {
+        let id = active.getAttribute("data-id");
+
+        if (typeof specificSettings[id] === 'undefined')
+            specificSettings[id] = {};
+
+        specificSettings[id][className] = this.getAttribute("data-value");
+    }
+
+    let activeOptions = navSelect.querySelectorAll(".active");
+    for (let activeOption of activeOptions) {
+        activeOption.classList.remove("active");
+    }
+
+    this.classList.add("active");
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#contextMenu .copy", function () {
+    tools.activeToClipboard();
+
+    this.closest("#contextMenu").classList.remove("show");
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#contextMenu .location", function () {
+    ipcRenderer.send('open_file_dialog');
+
+    ipcRenderer.on("selected_file", function specificLocation (event, path) {
+        let actives = document.querySelectorAll(".listBox li.active");
+        if (!actives.length) actives[actives.length] = contextElement;
+
+        for (let active of actives) {
+            let id = active.getAttribute("data-id");
+
+            if (typeof specificSettings[id] !== "object")
+                specificSettings[id] = {};
+
+            specificSettings[id]["location"] = path;
+        }
+
+        showNotification("Specific location has been set.");
+        ipcRenderer.off("selected_file", specificLocation);
+    });
+
+    this.closest("#contextMenu").classList.remove("show");
+});
+
+// TODO: Comment
 tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", function () {
     ipcRenderer.send('open_file_dialog');
+
+    // TODO: Comment
+    ipcRenderer.on("selected_file", function mainLocation (event, path) {
+        let location = document.querySelector(".location #location");
+        let locationButton = document.querySelector(".location .location-button");
+
+        location.value = path;
+        locationButton.ariaDisabled = "false";
+
+        this.off("selected_file", mainLocation);
+    });
 });
 
 // TODO: Comment
@@ -322,15 +478,6 @@ tools.bindEvent("click", "#settings-open", function () {
     }, function () {
         body.style.overflow = "";
     });
-});
-
-// TODO: Comment
-ipcRenderer.on('selected_file', function (event, path) {
-    let location = document.querySelector(".location #location");
-    let locationButton = document.querySelector(".location .location-button");
-
-    location.value = path;
-    locationButton.ariaDisabled = "false";
 });
 
 // TODO: Comment
@@ -378,7 +525,7 @@ ipcRenderer.on("lang", function () {
 // TODO: Comment
 document.addEventListener("keydown", function (e) {
     if (e.code === "Delete") {
-        tools.removeActiveListItems();
+        removeActiveListItems();
     }
 
     if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null) {
@@ -398,13 +545,7 @@ document.addEventListener("keydown", function (e) {
     }
 
     if (e.code === "KeyC" && e.ctrlKey) {
-        let actives = document.querySelectorAll(".listBox li.active");
-        let clipText = "";
-
-        for (let active of actives)
-            clipText += active.textContent + "\n";
-
-        clipboard.writeText(clipText);
+        tools.activeToClipboard();
     }
 });
 

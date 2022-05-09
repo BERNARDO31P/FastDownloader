@@ -171,6 +171,66 @@ progress::-webkit-progress-bar {
   right: 25px;
 }
 
+#contextMenu {
+  position: absolute;
+
+  display: none;
+
+  border-radius: 5px;
+  padding: 5px;
+
+  background-color: var(--notification-background);
+  box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
+
+  & > div {
+    cursor: pointer;
+    border-radius: 2px;
+
+    padding: 2px 4px;
+
+    display: flex;
+
+    & > p {
+      white-space: nowrap;
+    }
+
+    & > .select {
+      position: absolute;
+      background-color: var(--notification-background);
+      box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
+
+      display: none;
+      padding: 5px;
+
+      & > .option {
+        padding: 4px;
+        border-radius: 2px;
+        white-space: nowrap;
+
+        &.active {
+          background-color: var(--active-background);
+        }
+
+        &:hover {
+          background-color: var(--hover-background);
+        }
+      }
+
+      &.show {
+        display: table;
+      }
+    }
+
+    &:hover {
+      background-color: var(--hover-background);
+    }
+  }
+
+  &.show {
+    display: initial;
+  }
+}
+
 #settings-open, #settings-close {
   right: 70px;
 }
@@ -362,6 +422,7 @@ progress::-webkit-progress-bar {
       cursor: pointer;
       transition: 0.2s;
       padding: 5px;
+      border-radius: 2px;
 
       &[aria-disabled='true'] {
         color: var(--text-color-artist)
