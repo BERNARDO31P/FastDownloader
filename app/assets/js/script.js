@@ -32,6 +32,8 @@ function removeActiveListItems() {
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
     else ul.style.width = "100%";
+
+    tools.updateSelected();
 }
 
 // TODO: Comment
