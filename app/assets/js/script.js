@@ -436,6 +436,18 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
     }
 
     this.classList.add("active");
+
+    if (navSelect.classList.contains("mode")) {
+        let context = document.getElementById("contextMenu");
+
+        if (this.getAttribute("data-value") === "audio") {
+            context.querySelector(".codec").style.display = "";
+            context.querySelector(".quality").style.display = "";
+        } else {
+            context.querySelector(".codec").style.display = "none";
+            context.querySelector(".quality").style.display = "none";
+        }
+    }
 });
 
 // TODO: Comment
