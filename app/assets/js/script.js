@@ -42,6 +42,18 @@ tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", funct
 });
 
 // TODO: Comment
+tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
+    if (e.target === this) {
+        let actives = document.querySelectorAll(".listBox li.active");
+
+        for (let active of actives)
+            active.classList.remove("active");
+
+        tools.updateSelected();
+    }
+});
+
+// TODO: Comment
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e) {
     let listBox = this.closest(".listBox");
     let actives = listBox.querySelectorAll("li.active");
@@ -331,13 +343,12 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
         let mode = document.querySelector("#settings .mode .select");
         let id = this.getAttribute("data-id");
 
-        let specificAudio = false;
-        if (typeof specificSettings[id] !== 'undefined' && specificSettings[id]["mode"] === "audio") {
-            specificAudio = true;
-        }
+        let modeValue = mode.getAttribute("data-value");
+        if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["mode"] !== 'undefined')
+            modeValue = specificSettings[id]["mode"];
 
         tools.removeActives(context.querySelector(".mode"));
-        if (specificAudio || mode.getAttribute("data-value") === "audio") {
+        if (modeValue === "audio") {
             context.querySelector(".codec").style.display = "";
             context.querySelector(".quality").style.display = "";
 
