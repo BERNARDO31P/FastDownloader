@@ -239,10 +239,27 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         let success = false;
 
         if (!url.includes("netflix")) {
-            let qualityString = specificSettings[i]["quality"] ?? quality.getAttribute("data-value");
-            let qualityInt = 0;
+            let qualityValue = quality.getAttribute("data-value");
+            let modeValue = mode.getAttribute("data-value");
+            let codecValue = codec.getAttribute("data-value");
+            let locationValue = location.value;
 
-            switch (qualityString) {
+            if (typeof specificSettings[i] !== 'undefined') {
+                if (typeof specificSettings[i]["quality"] !== 'undefined')
+                    qualityValue = specificSettings[i]["quality"];
+
+                if (typeof specificSettings[i]["mode"] !== 'undefined')
+                    modeValue = specificSettings[i]["mode"];
+
+                if (typeof specificSettings[i]["codec"] !== 'undefined')
+                    codecValue = specificSettings[i]["codec"];
+
+                if (typeof specificSettings[i]["location"] !== 'undefined')
+                    locationValue = specificSettings[i]["location"];
+            }
+
+            let qualityInt = 0;
+            switch (qualityValue) {
                 case "best":
                     qualityInt = 0;
                     break;
@@ -255,11 +272,11 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             }
 
             success = await tools.downloadYTURL(
-                specificSettings[i]["mode"] ?? mode.getAttribute("data-value"),
-                specificSettings[i]["location"] ?? location.value,
+                modeValue,
+                locationValue,
                 url,
                 percentage,
-                specificSettings[i]["codec"] ?? codec.getAttribute("data-value"),
+                codecValue,
                 qualityInt,
                 tools.playlistCount
             );
