@@ -556,15 +556,20 @@ export function loadSettings() {
         saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
-    let closingToTray = document.querySelector("#settings #closeToTray");
+    let closingToTray = document.querySelector("#settings .closeToTray");
     if (closeToTray) {
-        console.log("what");
-        closingToTray.classList.add("active");
+        closingToTray.querySelector("#closeToTray").classList.add("active");
+        closingToTray.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        closingToTray.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
-    let autostarting = document.querySelector("#settings #autostart");
+    let autostarting = document.querySelector("#settings .autostart");
     if (autostart) {
-        autostarting.classList.add("active");
+        autostarting.querySelector("#autostart").classList.add("active");
+        autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 }
 
