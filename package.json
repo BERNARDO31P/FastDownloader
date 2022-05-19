@@ -5,9 +5,12 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder build --win --linux --publish never",
     "build_win": "electron-builder build --win --publish never",
     "build_unix": "electron-builder build --linux --publish never",
-    "deploy": "electron-builder build --win --linux --publish always"
+    "deploy": "electron-builder build --win --linux --publish always",
+    "deploy_win": "electron-builder build --win --publish always",
+    "deploy_unix": "electron-builder build --linux --publish always"
   },
   "repository": {
     "type": "git",
