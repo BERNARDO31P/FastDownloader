@@ -540,8 +540,13 @@ export function loadSettings() {
         selectOption(option);
     }
 
-    let saveButton = document.querySelector("#settings #save");
-    if (save) saveButton.classList.add("active");
+    let saving = document.querySelector("#settings .save");
+    if (save) {
+        saving.querySelector("#save").classList.add("active");
+        saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+    }
 }
 
 // TODO: Comment

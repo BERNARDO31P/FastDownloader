@@ -3,14 +3,20 @@ import {showNotification} from "./tools.js";
 
 let hiddenElements = [];
 
-tools.bindEvent("click", "#settings .save .checkbox", function () {
+tools.bindEvent("click", "#settings .save .checkbox", function (e) {
+    let saving = this.closest(".save");
+
     if (this.classList.contains("active")) {
         this.classList.remove("active");
+        saving.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+
         tools.deleteSettings();
 
         showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsAborted"]);
     } else {
         this.classList.add("active");
+        saving.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+
         tools.saveSettings();
 
         showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsSaved"]);

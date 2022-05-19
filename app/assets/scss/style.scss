@@ -74,7 +74,7 @@ input {
 
   border: none;
   border-radius: 5px;
-  box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -5px -5px 7px var(--shadow-light);
 
   &:focus:not([readonly]) {
     box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
@@ -471,9 +471,21 @@ progress::-webkit-progress-bar {
   }
 }
 
+.row {
+  display: flex;
+}
+
+.save {
+  span {
+    margin: 0 0 0 10px;
+
+    font-weight: bold;
+  }
+}
+
 .checkbox {
   transition: 0.2s;
-  box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -5px -5px 7px var(--shadow-light);
 
   width: 45px;
   height: 20px;
@@ -483,6 +495,7 @@ progress::-webkit-progress-bar {
   background-color: var(--body-background);
 
   position: relative;
+  display: inline-block;
 
   cursor: pointer;
 
@@ -524,7 +537,7 @@ progress::-webkit-progress-bar {
   padding: 5px;
   border-radius: 5px;
 
-  box-shadow: inset 2px 2px 5px var(--shadow-dark),inset -5px -5px 7px var(--shadow-light);
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -5px -5px 7px var(--shadow-light);
 
   height: 30px;
   position: relative;

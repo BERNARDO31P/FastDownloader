@@ -57,7 +57,9 @@
       "updateDownloaded": "Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.",
       "settingsSaved": "Die Einstellungen werden ab jetzt gespeichert",
       "settingsAborted": "Die Einstellungen werden nicht mehr gespeichert",
-      "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists"
+      "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists",
+      "on": "An",
+      "off": "Aus"
     }
   },
   "en": {
@@ -118,7 +120,9 @@
       "updateDownloaded": "Updated downloaded. Restart the application now to apply the changes.",
       "settingsSaved": "The settings are saved from now on",
       "settingsAborted": "The settings are no longer saved",
-      "playlistContext": "There are no options for playlists"
+      "playlistContext": "There are no options for playlists",
+      "on": "On",
+      "off": "Off"
     }
   }
 }
