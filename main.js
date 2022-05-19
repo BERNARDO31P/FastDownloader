@@ -16,6 +16,9 @@ const fs = require('fs');
 
 const {exec} = require("child_process");
 
+const AutoLaunch = require('auto-launch');
+let autoLauncher = null;
+
 Store.initRenderer();
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
@@ -87,13 +90,6 @@ function createWindow() {
         });
     });
 
-    win.on('close', function (event) {
-        event.preventDefault();
-        win.hide();
-
-        return false;
-    });
-
     win.on('hide', function () {
         hidden = true;
 
@@ -114,6 +110,11 @@ function createWindow() {
     });
 
     app.setAppUserModelId("Fast Downloader");
+
+    autoLauncher = new AutoLaunch({
+        name: "FastDownloader",
+        path: app.getPath('exe'),
+    });
 }
 
 app.on('window-all-closed', () => {
@@ -192,6 +193,33 @@ autoUpdater.on('update-available', () => {
 autoUpdater.on('update-downloaded', () => {
     win.webContents.send('update_downloaded');
 });
+
+ipcMain.on("enableCloseToTray", function () {
+    win.on('close', closeToTray);
+});
+
+ipcMain.on("disableCloseToTray", function () {
+    win.off('close', closeToTray);
+});
+
+ipcMain.on("enableAutostart", function () {
+    autoLauncher.isEnabled().then((isEnabled) => {
+        if (!isEnabled) autoLauncher.enable();
+    });
+});
+
+ipcMain.on("disableAutostart", function () {
+    autoLauncher.isEnabled().then((isEnabled) => {
+        if (isEnabled) autoLauncher.disable();
+    });
+})
+
+function closeToTray (event) {
+    event.preventDefault();
+    win.hide();
+
+    return false;
+}
 
 function showNotification(title, message) {
     new Notification({

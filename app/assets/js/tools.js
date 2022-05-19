@@ -489,12 +489,16 @@ export function saveSettings() {
         let mode = document.querySelector("#settings .mode .select");
         let quality = document.querySelector("#settings .quality .select");
         let codec = document.querySelector("#settings .codec .select");
+        let closeToTray = document.querySelector("#settings #closeToTray");
+        let autostart = document.querySelector("#settings #autostart");
 
 
         setCookie("mode", mode.getAttribute("data-value"));
         setCookie("quality", quality.getAttribute("data-value"));
         setCookie("codec", codec.getAttribute("data-value"));
         setCookie("save", true);
+        setCookie("closeToTray", closeToTray.classList.contains("active"));
+        setCookie("autostart", autostart.classList.contains("active"));
     }
 }
 
@@ -504,6 +508,8 @@ export function deleteSettings() {
     setCookie("quality", "");
     setCookie("codec", "");
     setCookie("save", false);
+    setCookie("closeToTray", false);
+    setCookie("autostart", false);
 }
 
 // TODO: Comment
@@ -518,6 +524,8 @@ export function loadSettings() {
     let codecValue = getCookie("codec");
     let langValue = getCookie("lang");
     let save = getCookie("save");
+    let closeToTray = getCookie("closeToTray");
+    let autostart = getCookie("autostart");
 
     let option;
     if (modeValue) {
@@ -546,6 +554,17 @@ export function loadSettings() {
         saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
     } else {
         saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+    }
+
+    let closingToTray = document.querySelector("#settings #closeToTray");
+    if (closeToTray) {
+        console.log("what");
+        closingToTray.classList.add("active");
+    }
+
+    let autostarting = document.querySelector("#settings #autostart");
+    if (autostart) {
+        autostarting.classList.add("active");
     }
 }
 

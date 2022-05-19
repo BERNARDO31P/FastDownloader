@@ -473,13 +473,28 @@ progress::-webkit-progress-bar {
 
 .row {
   display: flex;
-}
+  justify-content: space-between;
 
-.save {
+  div:not(:only-of-type):not(:first-of-type) {
+    margin: 0 10px;
+  }
+
+  div:not(:only-of-type):first-of-type {
+    margin: 0 10px 0 0;
+  }
+
   span {
     margin: 0 0 0 10px;
 
     font-weight: bold;
+  }
+
+  .divider {
+    border: 1px solid var(--text-color);
+  }
+
+  .row {
+    justify-content: flex-start;
   }
 }
 

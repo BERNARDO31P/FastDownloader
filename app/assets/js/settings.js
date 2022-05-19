@@ -1,9 +1,12 @@
 import * as tools from "./tools.js";
 import {showNotification} from "./tools.js";
 
+const {ipcRenderer} = require('electron');
+
 let hiddenElements = [];
 
-tools.bindEvent("click", "#settings .save .checkbox", function (e) {
+// TODO: Comment
+tools.bindEvent("click", "#settings .save .checkbox", function () {
     let saving = this.closest(".save");
 
     if (this.classList.contains("active")) {
@@ -21,6 +24,52 @@ tools.bindEvent("click", "#settings .save .checkbox", function (e) {
 
         showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsSaved"]);
     }
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#settings .closeToTray .checkbox", function (){
+    let closingToTray = this.closest(".closeToTray");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        closingToTray.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+
+        ipcRenderer.send("disableCloseToTray");
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["closeToTrayDisabled"]);
+    } else {
+        this.classList.add("active");
+        closingToTray.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+
+        ipcRenderer.send("enableCloseToTray");
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["closeToTrayEnabled"]);
+    }
+
+    tools.saveSettings();
+});
+
+// TODO: Comment & implement
+tools.bindEvent("click", "#settings .autostart .checkbox", function () {
+    let autostarting = this.closest(".autostart");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        autostarting.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+
+        ipcRenderer.send("disableAutostart");
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["autostartDisabled"]);
+    } else {
+        this.classList.add("active");
+        autostarting.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+
+        ipcRenderer.send("enableAutostart");
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["autostartEnabled"]);
+    }
+
+    tools.saveSettings();
 });
 
 // TODO: Comment

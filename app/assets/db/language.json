@@ -22,6 +22,8 @@
       "title": "Einstellungen",
       "label": {
         "saveSettings": "Einstellungen speichern",
+        "closeToTray": "Ins Tray schliessen",
+        "autostart": "Automatisch bei Systemstart starten",
         "downloadMode": "Download-Modus",
         "quality": "Qualität",
         "codec": "Codec",
@@ -57,6 +59,10 @@
       "updateDownloaded": "Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.",
       "settingsSaved": "Die Einstellungen werden ab jetzt gespeichert",
       "settingsAborted": "Die Einstellungen werden nicht mehr gespeichert",
+      "closeToTrayEnabled": "Die Anwendung wird nun im Tray minimiert",
+      "closeToTrayDisabled": "Die Anwendung wird nun vollständig geschlossen",
+      "autostartEnabled": "Die Applikation wird automatisch beim Systemstart gestartet",
+      "autostartDisabled": "Die Applikation startet nicht mehr automatisch beim Systemstart",
       "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists",
       "on": "An",
       "off": "Aus"
@@ -85,6 +91,8 @@
       "title": "Settings",
       "label": {
         "saveSettings": "Save settings",
+        "closeToTray": "Close to tray",
+        "autostart": "Start automatically at system startup",
         "downloadMode": "Download mode",
         "quality": "Quality",
         "codec": "Codec",
@@ -120,6 +128,10 @@
       "updateDownloaded": "Updated downloaded. Restart the application now to apply the changes.",
       "settingsSaved": "The settings are saved from now on",
       "settingsAborted": "The settings are no longer saved",
+      "closeToTrayEnabled": "The application now closes to tray",
+      "closeToTrayDisabled": "The application now closes completely",
+      "autostartEnabled": "The application now starts with the system",
+      "autostartDisabled": "The application no longer starts with the system",
       "playlistContext": "There are no options for playlists",
       "on": "On",
       "off": "Off"

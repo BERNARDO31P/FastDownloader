@@ -88,15 +88,38 @@
         <div class="theme-toggler"><i class="fas"></i></div>
         <div id="settings-close"><i class="fas fa-angle-down"></i></div>
 
-        <div class="save">
-            <label for="save">{{settings.label.saveSettings}}</label>
-            <div class="row">
-                <div class="checkbox" id="save">
-                    <div class="toggle"></div>
+        <div class="row">
+            <div class="save">
+                <label for="save">{{settings.label.saveSettings}}</label>
+                <div class="row">
+                    <div class="checkbox" id="save">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
                 </div>
-                <span></span>
+            </div>
+            <div class="divider"></div>
+            <div class="closeToTray">
+                <label for="closeToTray">{{settings.label.closeToTray}}</label>
+                <div class="row">
+                    <div class="checkbox" id="closeToTray">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="autostart">
+                <label for="autostart">{{settings.label.autostart}}</label>
+                <div class="row">
+                    <div class="checkbox" id="autostart">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
+                </div>
             </div>
         </div>
+
         <div class="lang">
             <label for="lang">{{settings.label.language}}</label>
             <div class="select" id="lang">
