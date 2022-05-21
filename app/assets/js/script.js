@@ -103,12 +103,11 @@ tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", 
 
 // TODO: Comment
 tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", function () {
-    let input = this.closest(".input").querySelector("input");
-    input.value = clipboard.readText();
+    let clipboardText = clipboard.readText();
 
-    if (!input.value) {
+    if (!clipboardText) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"]);
-    } else tools.addLinkToList(this);
+    } else tools.addLinkToList(this, clipboardText);
 });
 
 // TODO: Comment

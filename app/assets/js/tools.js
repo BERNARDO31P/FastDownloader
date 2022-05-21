@@ -1,5 +1,6 @@
 import mustache from "./lib/mustache.min.js";
 
+const NP = require('number-precision');
 const {promisify} = require('util');
 const ytpl = require('ytpl');
 const {ipcRenderer, clipboard} = require('electron');
@@ -222,10 +223,10 @@ export function removeOpacityNotification(notification) {
 }
 
 // TODO: Comment
-export function addLinkToList(eventElement) {
+export function addLinkToList(eventElement, clipboardText = null) {
     let input = eventElement.closest(".input").querySelector("input");
 
-    if (!input.value) {
+    if (!input.value && !clipboardText) {
         showNotification(languageDB[selectedLang]["js"]["noURL"]);
 
         if (document.hidden)
@@ -234,42 +235,49 @@ export function addLinkToList(eventElement) {
         return;
     }
 
-    let foundYT = input.value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
-
-    // TODO: Complete regex for netflix
-    let foundNF = input.value.match("http(?:s?):\\/\\/(?:www\\.)?netflix.com");
-
-    if (!foundYT && !foundNF) {
-        showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
-
-        return;
-    }
+    let values;
+    if (clipboardText) values = clipboardText.split(/[\n\s]+/);
+    else values = input.value;
 
     let ul = document.querySelector(".listBox ul");
-    let elements = ul.querySelectorAll("li");
-    for (let element of elements) {
-        if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
-            showNotification(languageDB[selectedLang]["js"]["urlInList"]);
+    for (let value of values) {
+        let foundYT = value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
+
+        // TODO: Complete regex for netflix
+        let foundNF = value.match("http(?:s?):\\/\\/(?:www\\.)?netflix.com");
+
+        if (!foundYT && !foundNF) {
+            showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
 
             return;
         }
+
+        let elements = ul.querySelectorAll("li");
+        for (let element of elements) {
+            if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
+                showNotification(languageDB[selectedLang]["js"]["urlInList"]);
+
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+
+                return;
+            }
+        }
+
+        let li = document.createElement("li");
+
+        let elementCount = ul.querySelectorAll("li").length;
+        li.setAttribute("data-id", elementCount.toString());
+
+        if (foundYT) li.textContent = foundYT[0];
+        else li.textContent = foundNF[0];
+
+        ul.appendChild(li);
     }
 
-    let li = document.createElement("li");
-
-    let elementCount = ul.querySelectorAll("li").length;
-    li.setAttribute("data-id", elementCount.toString());
-
-    if (foundYT) li.textContent = foundYT[0];
-    else li.textContent = foundNF[0];
-
-    ul.appendChild(li);
     input.value = "";
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
@@ -345,10 +353,10 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
         });
 
         childProcess.on('close', function () {
-            let percentageTotal = progressTotal.value + Math.round((percentage / 100) * 100) / 100;
+            let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
 
-            progressTotal.value = percentageTotal;
-            infoTotal.textContent = percentageTotal * 100 + "%";
+            progressTotal.value = percentageTotal / 100;
+            infoTotal.textContent = percentageTotal + "%";
 
             progressSong.value = 1;
             infoSong.textContent = "100%";
