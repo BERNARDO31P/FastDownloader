@@ -26,14 +26,14 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^17.1.0",
-    "electron-builder": "~22.10.5"
+    "electron": "18.2.4",
+    "electron-builder": "23.0.3"
   },
   "dependencies": {
-    "auto-launch": "^5.0.5",
-    "electron-store": "^8.0.1",
-    "electron-updater": "^4.6.5",
-    "ytpl": "^2.2.3"
+    "auto-launch": "5.0.5",
+    "electron-store": "8.0.1",
+    "electron-updater": "5.0.1",
+    "ytpl": "2.3.0"
   },
   "build": {
     "productName": "Fast Downloader",
