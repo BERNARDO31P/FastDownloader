@@ -5,21 +5,20 @@ const {promisify} = require('util');
 const ytpl = require('ytpl');
 const {ipcRenderer, clipboard} = require('electron');
 
-const Store = require('electron-store');
-const store = new Store();
-
 const {exec} = require('child_process');
 const execSync = promisify(require('child_process').exec);
 
+let artistName = false;
+let theme = getCookie("theme");
+let __realdir = null;
+
+if (!theme) theme = "light";
+setCookie("theme", theme);
+
 export let childProcess = null, downloadAborted = false, playlistCount = 1;
-export let __realdir = null;
 
 export let languageDB = {};
 export let selectedLang = null;
-
-export let theme = getCookie("theme");
-if (!theme) theme = "light";
-setCookie("theme", theme);
 
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
@@ -30,6 +29,13 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
     animation.onfinish = function () {
         callback();
     }
+}
+
+// TODO: Comment
+export function setArtistName(value) {
+    artistName = value;
+
+    console.log(artistName);
 }
 
 /*
@@ -78,7 +84,11 @@ export function setRealDir(dirname) {
  * Gibt den Wert zurück
  */
 export function getCookie(name) {
-    return store.get(name);
+    let cookie = localStorage.getItem(name);
+
+    return cookie === 'true' ? true :
+        cookie === 'false' ? false :
+            cookie === 'null' ? null : cookie;
 }
 
 /*
@@ -92,11 +102,11 @@ export function getCookie(name) {
  * Erstellt einen Cookie und setzt die Werte
  */
 export function setCookie(name, value, expiresAt = "") {
-    store.set(name, value);
+    localStorage.setItem(name, value);
 }
 
 // TODO: Comment
-export function removeActives (element) {
+export function removeActives(element) {
     let actives = element.querySelectorAll(".active");
     for (let active of actives) {
         active.classList.remove("active");
@@ -115,7 +125,7 @@ export function updateSelected() {
 }
 
 // TODO: Comment
-export function activeToClipboard () {
+export function activeToClipboard() {
     let actives = document.querySelectorAll(".listBox li.active");
     let clipText = "";
 
@@ -127,18 +137,19 @@ export function activeToClipboard () {
 
 // TODO: Comment
 export function loadAllData() {
-    let data = store.get("cache");
+    let data = JSON.parse(getCookie("cache"));
+    setCookie("cache", null);
+
     document.getElementById("location").value = data["location"];
 
     let listBox = document.querySelector(".listBox ul");
+    console.log(listBox);
     for (let listItem of data["listItems"]) {
         let li = document.createElement("li");
         li.textContent = listItem;
 
         listBox.appendChild(li);
     }
-
-    store.delete("cache");
 }
 
 // TODO: Comment
@@ -153,7 +164,7 @@ export function getAllData() {
 
     data["location"] = document.getElementById("location").value;
 
-    store.set("cache", data);
+    setCookie("cache", JSON.stringify(data));
 }
 
 /*
@@ -330,15 +341,19 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
 
-        let command;
+        let command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f ";
         if (mode === "audio") {
-            if (codec === "mp3") {
-                command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --embed-thumbnail --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
-            } else {
-                command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --audio-format " + codec + " --audio-quality " + quality + " --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
-            }
+            command += "bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --audio-format " + codec + " --audio-quality " + quality + " ";
+
+            if (codec === "mp3") command += "--embed-thumbnail ";
         } else {
-            command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 --add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            command += "bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
+        }
+
+        if (artistName) {
+            command += "--add-metadata -o \"" + location + "/%(creator)s - %(title)s.%(ext)s\" " + url;
+        } else {
+            command += "--add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
         }
 
         childProcess = exec(command);
@@ -499,7 +514,7 @@ export function saveSettings() {
         let codec = document.querySelector("#settings .codec .select");
         let closeToTray = document.querySelector("#settings #closeToTray");
         let autostart = document.querySelector("#settings #autostart");
-
+        let artistName = document.querySelector("#settings #artistName");
 
         setCookie("mode", mode.getAttribute("data-value"));
         setCookie("quality", quality.getAttribute("data-value"));
@@ -507,6 +522,7 @@ export function saveSettings() {
         setCookie("save", true);
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
+        setCookie("artistName", artistName.classList.contains("active"));
     }
 }
 
@@ -521,7 +537,7 @@ export function deleteSettings() {
 }
 
 // TODO: Comment
-export function loadSettings() {
+function loadSettings() {
     let mode = document.querySelector("#settings .mode .select");
     let quality = document.querySelector("#settings .quality .select");
     let codec = document.querySelector("#settings .codec .select");
@@ -534,6 +550,7 @@ export function loadSettings() {
     let save = getCookie("save");
     let closeToTray = getCookie("closeToTray");
     let autostart = getCookie("autostart");
+    artistName = getCookie("artistName");
 
     let option;
     if (modeValue) {
@@ -579,10 +596,18 @@ export function loadSettings() {
     } else {
         autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
+
+    let artistNaming = document.querySelector("#settings .artistName");
+    if (artistName) {
+        artistNaming.querySelector("#artistName").classList.add("active");
+        artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+    }
 }
 
 // TODO: Comment
-export async function loadLanguage() {
+export async function loadMenu() {
     if (!Object.keys(languageDB).length) {
         await fetch("assets/db/language.json").then(response => {
             return response.json();
@@ -611,11 +636,14 @@ export async function loadLanguage() {
         let template = new DOMParser().parseFromString(htmlData, 'text/html').body;
 
         main.innerHTML = mustache.render(template.innerHTML, languageDB[selectedLang]);
+
+        loadSettings();
+        setThemeIcon();
     });
 }
 
 // TODO: Comment
-export function setThemeIcon() {
+function setThemeIcon() {
     setTimeout(function () {
         let icons = document.querySelectorAll(".theme-toggler svg");
         for (let icon of icons) {

@@ -10,16 +10,10 @@ const {
     MenuItem,
     clipboard
 } = require('electron');
-const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
-const fs = require('fs');
-
 const {exec} = require("child_process");
-
 const AutoLaunch = require('auto-launch');
 let autoLauncher = null;
-
-Store.initRenderer();
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 let lang = null, hidden = false;

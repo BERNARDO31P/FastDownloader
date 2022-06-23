@@ -605,8 +605,7 @@ window.onload = async function () {
         tools.setRealDir(dirname);
     });
 
-    await tools.loadLanguage();
-    tools.loadSettings();
+    await tools.loadMenu();
 
     const notification = document.getElementById('updateNotification');
     const message = notification.querySelector(".message");
@@ -624,6 +623,4 @@ window.onload = async function () {
         restartButton.classList.remove('hidden');
         notification.classList.remove('hidden');
     });
-
-    tools.setThemeIcon();
 }

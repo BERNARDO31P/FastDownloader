@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
@@ -26,13 +26,12 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "MIT",
   "devDependencies": {
-    "electron": "18.2.4",
-    "electron-builder": "23.0.3"
+    "electron": "19.0.6",
+    "electron-builder": "23.1.0"
   },
   "dependencies": {
     "auto-launch": "5.0.5",
-    "electron-store": "8.0.1",
-    "electron-updater": "5.0.1",
+    "electron-updater": "5.0.6",
     "number-precision": "1.5.2",
     "ytpl": "2.3.0"
   },

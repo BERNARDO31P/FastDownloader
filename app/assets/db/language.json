@@ -27,7 +27,8 @@
         "downloadMode": "Download-Modus",
         "quality": "Qualität",
         "codec": "Codec",
-        "language": "Sprache"
+        "language": "Sprache",
+        "artistName": "Künstername im Songtitel speichern"
       },
       "button": {
         "nothingSelected": "Nichts ausgewählt"
@@ -64,6 +65,8 @@
       "autostartEnabled": "Die Applikation wird automatisch beim Systemstart gestartet",
       "autostartDisabled": "Die Applikation startet nicht mehr automatisch beim Systemstart",
       "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists",
+      "artistNameEnabled": "Der Künstlername wird jetzt im Songtitel gespeichert",
+      "artistNameDisabled": "Der Künstlername wird nicht mehr im Songtitel gespeichert",
       "on": "An",
       "off": "Aus"
     }
@@ -96,7 +99,8 @@
         "downloadMode": "Download mode",
         "quality": "Quality",
         "codec": "Codec",
-        "language": "Language"
+        "language": "Language",
+        "artistName": "Save artist name in song title"
       },
       "button": {
         "nothingSelected": "Nothing selected"
@@ -133,6 +137,8 @@
       "autostartEnabled": "The application now starts with the system",
       "autostartDisabled": "The application no longer starts with the system",
       "playlistContext": "There are no options for playlists",
+      "artistNameEnabled": "The arist name will now be saved in the song title",
+      "artistNameDisabled": "The artist name will not be saved in the song title",
       "on": "On",
       "off": "Off"
     }
