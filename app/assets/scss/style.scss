@@ -46,8 +46,15 @@ body, #settings {
 }
 
 h2 {
-  margin: 15px 0 5px 0;
+  margin: 15px 0;
   text-align: center;
+
+  color: var(--text-color);
+}
+
+h3 {
+  margin: 15px 0 0 0;
+  display: block;
 
   color: var(--text-color);
 }
@@ -172,6 +179,37 @@ progress::-webkit-progress-bar {
   right: 25px;
 }
 
+#settings {
+  padding-bottom: 50px;
+
+  #nav {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background-color: var(--body-background);
+
+    z-index: 1;
+
+    transition: 0.2s;
+
+    &.shadow {
+      box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
+    }
+
+    &.static {
+      position: fixed;
+
+      left: 0;
+      top: 0;
+      width: 100%;
+
+      &+.row {
+        margin-top: 65px;
+      }
+    }
+  }
+}
+
 #contextMenu {
   position: absolute;
 
@@ -288,6 +326,10 @@ progress::-webkit-progress-bar {
   opacity: 0;
 }
 
+.divider {
+  border: 1px solid var(--divider-color);
+}
+
 .flex {
   display: flex;
 }
@@ -391,6 +433,10 @@ progress::-webkit-progress-bar {
   background-color: var(--body-background);
   border-radius: 5px;
 
+  & > div {
+    margin: 0 !important;
+  }
+
   .head {
     transition: 0.2s;
     cursor: pointer;
@@ -418,14 +464,12 @@ progress::-webkit-progress-bar {
     padding: 0 10px;
     overflow: hidden;
 
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-
     .option {
       cursor: pointer;
       transition: 0.2s;
       padding: 5px;
       border-radius: 2px;
+      height: 15px;
 
       &[aria-disabled='true'] {
         color: var(--text-color-artist)
@@ -442,12 +486,21 @@ progress::-webkit-progress-bar {
   }
 
   &.active {
+    &.top > .body {
+      margin-top: -155px !important;
+
+      border-radius: 5px 5px 0 0;
+    }
+
+    &.top > .head {
+      border-radius: 0 0 5px 5px;
+    }
+
     .head {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
+      border-radius: 5px 5px 0 0;
 
       box-shadow: inset 1px 1px 2px var(--shadow-dark), 0 0 0 var(--shadow-dark), inset -1px -1px 2px var(--shadow-light), inset -1px -1px 2px var(--shadow-light);
-      /* Oben, Unten, Rechts, Links */
+
     }
 
     .body {
@@ -459,6 +512,8 @@ progress::-webkit-progress-bar {
       height: initial;
 
       padding: 10px;
+
+      border-radius: 0 0 5px 5px;
     }
   }
 
@@ -488,10 +543,6 @@ progress::-webkit-progress-bar {
     margin: 0 0 0 10px;
 
     font-weight: bold;
-  }
-
-  .divider {
-    border: 1px solid var(--text-color);
   }
 
   .row {

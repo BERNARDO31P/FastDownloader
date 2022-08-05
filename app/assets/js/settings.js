@@ -3,7 +3,22 @@ import {showNotification} from "./tools.js";
 
 const {ipcRenderer} = require('electron');
 
-let hiddenElements = [];
+let body = document.getElementsByTagName("body")[0];
+
+setTimeout(function () {
+    let settings = document.getElementById("settings");
+    let nav = settings.querySelector("#nav");
+
+    body.onscroll = function () {
+        if (window.scrollY > 10 && !nav.classList.contains("shadow")) {
+            nav.classList.add("shadow");
+            nav.classList.add("static");
+        } else if (window.scrollY < 10 && nav.classList.contains("shadow")) {
+            nav.classList.remove("shadow");
+            nav.classList.remove("static");
+        }
+    }
+}, 500);
 
 
 // TODO: Comment
@@ -145,47 +160,5 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
     let clicked = this;
     if (active && select !== active) tools.hideSelect(active);
 
-    if (!select.classList.contains("active")) {
-        let nextElement = select.parentElement;
-        let height = 0;
-
-        let interval = setInterval(function () {
-            nextElement = nextElement.nextElementSibling;
-            if (nextElement) {
-                let rect = nextElement.getBoundingClientRect();
-                let style = getComputedStyle(nextElement);
-
-                height += rect.height;
-
-                if (style.opacity !== "0")
-                    hiddenElements.push(nextElement);
-
-                if (height > 100) {
-                    clearInterval(interval);
-                    for (let element of hiddenElements) {
-                        element.style.opacity = "0";
-                        element.style.pointerEvents = "none";
-                    }
-
-                    tools.selectClick(clicked);
-                }
-            } else {
-                clearInterval(interval);
-                for (let element of hiddenElements) {
-                    element.style.opacity = "0";
-                    element.style.pointerEvents = "none";
-                }
-
-                tools.selectClick(clicked);
-            }
-        }, 50);
-    } else {
-        for (let element of hiddenElements) {
-            element.style.opacity = "1";
-            element.style.pointerEvents = "";
-        }
-
-        hiddenElements = [];
-        tools.selectClick(clicked);
-    }
+    tools.selectClick(clicked);
 });

@@ -12,6 +12,8 @@ let artistName = false;
 let theme = getCookie("theme");
 let __realdir = null;
 
+let hiddenElements = [];
+
 if (!theme) theme = "light";
 setCookie("theme", theme);
 
@@ -305,14 +307,89 @@ export function addLinkToList(eventElement, clipboardText = null) {
 // TODO: Comment
 export function selectClick(element) {
     let select = element;
+    let body = document.getElementsByTagName("body")[0];
+
     if (!element.classList.contains("select")) {
         select = element.closest(".select");
     }
 
-    if (select.classList.contains("active"))
+    let label = select.previousElementSibling;
+
+    if (select.classList.contains("active")) {
         select.classList.remove("active");
-    else
+
+        if (select.classList.contains("top")) {
+            select.classList.remove("top");
+            label.style.opacity = "1";
+        }
+
+
+
+        for (let element of hiddenElements) {
+            element.style.opacity = "1";
+            element.style.pointerEvents = "";
+        }
+
+        hiddenElements = [];
+    } else {
+        let options = select.querySelectorAll(".option");
+        let option = options[0];
+
+        let computedStyle = window.getComputedStyle(option, null);
+        let optionHeight = getNumber(computedStyle.height) + getNumber(computedStyle.padding) * 2;
+
+        let optionCount = options.length;
+        let optionsHeight = optionHeight * optionCount;
+        optionsHeight = optionsHeight > 100 ? 100 : optionsHeight;
+
+        let clientRectSelect = select.getClientRects()[0];
+        let clientRectBody = body.getClientRects()[0];
+
+        if (clientRectBody.height - clientRectSelect.bottom < optionsHeight) {
+            select.classList.add("top");
+            label.style.opacity = "0";
+        }
+
+        let nextElement = select.parentElement;
+        let height = 0;
+
+        let interval = setInterval(function () {
+            let row = nextElement.closest(".row");
+            if (row) nextElement = row;
+
+            if (select.classList.contains("top")) {
+                nextElement = nextElement.previousElementSibling;
+            } else {
+                nextElement = nextElement.nextElementSibling;
+            }
+
+            if (nextElement) {
+                let rect = nextElement.getBoundingClientRect();
+                let style = getComputedStyle(nextElement);
+
+                height += rect.height;
+
+                if (style.opacity !== "0")
+                    hiddenElements.push(nextElement);
+
+                if (height > 100) {
+                    clearInterval(interval);
+                    for (let element of hiddenElements) {
+                        element.style.opacity = "0";
+                        element.style.pointerEvents = "none";
+                    }
+                }
+            } else {
+                clearInterval(interval);
+                for (let element of hiddenElements) {
+                    element.style.opacity = "0";
+                    element.style.pointerEvents = "none";
+                }
+            }
+        }, 50);
+
         select.classList.add("active");
+    }
 }
 
 // TODO: Comment
@@ -550,6 +627,7 @@ function loadSettings() {
     let save = getCookie("save");
     let closeToTray = getCookie("closeToTray");
     let autostart = getCookie("autostart");
+    let premium = getCookie("premium");
     artistName = getCookie("artistName");
 
     let option;
@@ -604,6 +682,14 @@ function loadSettings() {
     } else {
         artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
+
+    let premiumCheck = document.querySelector("#settings .premium");
+    if(premium) {
+        premiumCheck.querySelector("#premium").classList.add("active");
+        premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+    }
 }
 
 // TODO: Comment
@@ -651,6 +737,10 @@ function setThemeIcon() {
             else icon.classList.add("fa-sun");
         }
     }, 500);
+}
+
+function getNumber(string) {
+    return Number((string).match(/\d+/));
 }
 
 // TODO: Comment

@@ -84,9 +84,11 @@
     </div>
 
     <div id="settings">
-        <h2>{{settings.title}}</h2>
-        <div class="theme-toggler"><i class="fas"></i></div>
-        <div id="settings-close"><i class="fas fa-angle-down"></i></div>
+        <div id="nav">
+            <h2>{{settings.title}}</h2>
+            <div class="theme-toggler"><i class="fas"></i></div>
+            <div id="settings-close"><i class="fas fa-angle-down"></i></div>
+        </div>
 
         <div class="row">
             <div class="save">
@@ -198,6 +200,39 @@
                     <div class="option" data-value="opus">opus</div>
                     <div class="option" data-value="vorbis">vorbis</div>
                     <div class="option" data-value="wav">wav</div>
+                </div>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <h3 style="margin-bottom: -10px">YouTube premium</h3>
+        <div class="row">
+            <div class="premium">
+                <label for="premium">Enable YouTube premium for YouTube Music<br>
+                (you need a premium subscription for YouTube Music)</label>
+                <div class="row">
+                    <div class="checkbox" id="premium">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="browser">
+                <label for="browser">Select your browser where you're logged in</label>
+                <div class="select" id="browser">
+                    <div class="head">
+                        <div class="button">{{settings.button.nothingSelected}}</div>
+                        <i class="fas fa-angle-down"></i>
+                    </div>
+                    <div class="body">
+                        <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                            {{settings.button.nothingSelected}}
+                        </div>
+                        <div class="option" data-value="chrome">Google Chrome</div>
+                        <div class="option" data-value="firefox">Mozilla Firefox</div>
+                        <div class="option" data-value="edge">Microsoft Edge</div>
+                        <div class="option" data-value="opera">Opera</div>
+                    </div>
                 </div>
             </div>
         </div>
