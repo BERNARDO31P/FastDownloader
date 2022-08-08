@@ -386,7 +386,7 @@ export function selectClick(element) {
                     element.style.pointerEvents = "none";
                 }
             }
-        }, 50);
+        });
 
         select.classList.add("active");
     }

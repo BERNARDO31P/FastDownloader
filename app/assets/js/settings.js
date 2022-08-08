@@ -3,7 +3,6 @@ import {showNotification} from "./tools.js";
 
 const {ipcRenderer} = require('electron');
 
-let hiddenElements = [];
 let body = document.getElementsByTagName("body")[0];
 
 setTimeout(function () {
@@ -152,12 +151,6 @@ tools.bindEvent("click", "#settings-close", function () {
 // TODO: Comment
 tools.bindEvent("click", "#settings .select .option:not([aria-disabled='true'])", function () {
     tools.selectOption(this);
-
-    for (let element of hiddenElements) {
-        element.style.opacity = "1";
-        element.style.pointerEvents = "";
-    }
-    hiddenElements = [];
 
     tools.saveSettings();
     tools.selectClick(this);
