@@ -417,6 +417,8 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
         let infoTotal = document.querySelector(".progress-total .info p");
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
+        let premiumCheck = document.querySelector("#settings #premium");
+        let premiumBrowser = document.querySelector("#settings #browser");
 
         let command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f ";
         if (mode === "audio") {
@@ -425,6 +427,11 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
             if (codec === "mp3") command += "--embed-thumbnail ";
         } else {
             command += "bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
+        }
+
+        let browser = premiumBrowser.getAttribute("data-value");
+        if (premiumCheck.classList.contains("active") && browser !== "") {
+            command += "--cookies-from-browser " + browser + " ";
         }
 
         if (artistName) {
@@ -592,6 +599,8 @@ export function saveSettings() {
         let closeToTray = document.querySelector("#settings #closeToTray");
         let autostart = document.querySelector("#settings #autostart");
         let artistName = document.querySelector("#settings #artistName");
+        let premiumCheck = document.querySelector("#settings #premium");
+        let premiumBrowser = document.querySelector("#settings #browser");
 
         setCookie("mode", mode.getAttribute("data-value"));
         setCookie("quality", quality.getAttribute("data-value"));
@@ -600,6 +609,7 @@ export function saveSettings() {
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
         setCookie("artistName", artistName.classList.contains("active"));
+        setCookie("premium", JSON.stringify({"browser": premiumBrowser.getAttribute("data-value"), "check": premiumCheck.classList.contains("active")}));
     }
 }
 
@@ -611,6 +621,7 @@ export function deleteSettings() {
     setCookie("save", false);
     setCookie("closeToTray", false);
     setCookie("autostart", false);
+    setCookie("premium", JSON.stringify({"browser": null, "check": false}));
 }
 
 // TODO: Comment
@@ -627,7 +638,7 @@ function loadSettings() {
     let save = getCookie("save");
     let closeToTray = getCookie("closeToTray");
     let autostart = getCookie("autostart");
-    let premium = getCookie("premium");
+    let premium = JSON.parse(getCookie("premium"));
     artistName = getCookie("artistName");
 
     let option;
@@ -684,9 +695,16 @@ function loadSettings() {
     }
 
     let premiumCheck = document.querySelector("#settings .premium");
-    if(premium) {
+    let premiumBrowser = document.querySelector("#settings .browser");
+
+    if(typeof premium["check"] != 'undefined' && premium["check"]) {
         premiumCheck.querySelector("#premium").classList.add("active");
         premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+
+        if (typeof premium["browser"] != 'undefined' && premium["browser"] != null) {
+            option = premiumBrowser.querySelector("[data-value='" + premium["browser"] + "']");
+            selectOption(option);
+        }
     } else {
         premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }

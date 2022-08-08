@@ -3,6 +3,7 @@ import {showNotification} from "./tools.js";
 
 const {ipcRenderer} = require('electron');
 
+let hiddenElements = [];
 let body = document.getElementsByTagName("body")[0];
 
 setTimeout(function () {
@@ -88,7 +89,26 @@ tools.bindEvent("click", "#settings .closeToTray .checkbox", function (){
     tools.saveSettings();
 });
 
-// TODO: Comment & implement
+// TODO: Comment
+tools.bindEvent("click", "#settings .premium .checkbox", function () {
+    let premium = this.closest(".premium");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        premium.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+
+        showNotification("");
+    } else {
+        this.classList.add("active");
+        premium.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+
+        showNotification("");
+    }
+
+    tools.saveSettings();
+});
+
+// TODO: Comment
 tools.bindEvent("click", "#settings .autostart .checkbox", function () {
     let autostarting = this.closest(".autostart");
 
