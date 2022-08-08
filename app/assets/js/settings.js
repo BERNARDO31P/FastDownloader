@@ -97,12 +97,12 @@ tools.bindEvent("click", "#settings .premium .checkbox", function () {
         this.classList.remove("active");
         premium.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
 
-        showNotification("");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["premiumDisabled"]);
     } else {
         this.classList.add("active");
         premium.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
 
-        showNotification("");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["premiumEnabled"]);
     }
 
     tools.saveSettings();

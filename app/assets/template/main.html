@@ -207,8 +207,8 @@
         <h3 style="margin-bottom: -10px">YouTube premium</h3>
         <div class="row">
             <div class="premium">
-                <label for="premium">Enable YouTube premium for YouTube Music<br>
-                (you need a premium subscription for YouTube Music)</label>
+                <label for="premium">{{settings.label.enablePremium}}<br>
+                {{settings.label.needPremium}}</label>
                 <div class="row">
                     <div class="checkbox" id="premium">
                         <div class="toggle"></div>
@@ -218,7 +218,7 @@
             </div>
             <div class="divider"></div>
             <div class="browser">
-                <label for="browser">Select your browser where you're logged in</label>
+                <label for="browser">{{settings.label.browser}}</label>
                 <div class="select" id="browser">
                     <div class="head">
                         <div class="button">{{settings.button.nothingSelected}}</div>

@@ -430,8 +430,13 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
         }
 
         let browser = premiumBrowser.getAttribute("data-value");
-        if (premiumCheck.classList.contains("active") && browser !== "") {
-            command += "--cookies-from-browser " + browser + " ";
+        if (premiumCheck.classList.contains("active")) {
+            if (browser !== "") {
+                command += "--cookies-from-browser " + browser + " ";
+            } else {
+                showNotification(languageDB[selectedLang]["js"]["noBrowser"]);
+                resolve(false);
+            }
         }
 
         if (artistName) {

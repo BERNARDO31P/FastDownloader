@@ -28,7 +28,10 @@
         "quality": "Qualität",
         "codec": "Codec",
         "language": "Sprache",
-        "artistName": "Künstername im Songtitel speichern"
+        "artistName": "Künstername im Songtitel speichern",
+        "enablePremium": "YouTube Premium für YouTube Music aktivieren",
+        "needPremium": "(Sie benötigen ein YouTube Music Premium Abo)",
+        "browser": "Wählen Sie den Browser aus, in welchem Sie angemeldet sind"
       },
       "button": {
         "nothingSelected": "Nichts ausgewählt"
@@ -67,6 +70,9 @@
       "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists",
       "artistNameEnabled": "Der Künstlername wird jetzt im Songtitel gespeichert",
       "artistNameDisabled": "Der Künstlername wird nicht mehr im Songtitel gespeichert",
+      "premiumEnabled": "Der Premium-Download wurde aktiviert",
+      "premiumDisabled": "Der Premium-Download wurde deaktiviert",
+      "noBrowser": "Sie haben den Premium-Download aktiviert, jedoch keinen Browser ausgewählt",
       "on": "An",
       "off": "Aus"
     }
@@ -100,7 +106,10 @@
         "quality": "Quality",
         "codec": "Codec",
         "language": "Language",
-        "artistName": "Save artist name in song title"
+        "artistName": "Save artist name in song title",
+        "enablePremium": "Enable YouTube premium for YouTube Music",
+        "needPremium": "(you need a premium subscription for YouTube Music)",
+        "browser": "Select your browser where you're logged in"
       },
       "button": {
         "nothingSelected": "Nothing selected"
@@ -139,6 +148,9 @@
       "playlistContext": "There are no options for playlists",
       "artistNameEnabled": "The arist name will now be saved in the song title",
       "artistNameDisabled": "The artist name will not be saved in the song title",
+      "premiumEnabled": "Premium download has been enabled",
+      "premiumDisabled": "Premium download has been disabled",
+      "noBrowser": "You've enabled premium download but didn't select a browser",
       "on": "On",
       "off": "Off"
     }
