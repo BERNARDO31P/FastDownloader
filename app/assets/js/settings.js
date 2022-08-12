@@ -160,10 +160,9 @@ tools.bindEvent("click", "#settings .select .option:not([aria-disabled='true'])"
 tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", async function () {
     let lang = this.getAttribute("data-value");
     tools.setCookie("lang", lang);
-
     tools.getAllData();
-    await tools.loadMenu();
-    tools.loadAllData()
+
+    ipcRenderer.send('restart');
 });
 
 // TODO: Comment

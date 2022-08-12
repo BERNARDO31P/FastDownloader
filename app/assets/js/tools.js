@@ -236,10 +236,8 @@ export function removeOpacityNotification(notification) {
 }
 
 // TODO: Comment
-export function addLinkToList(eventElement, clipboardText = null) {
-    let input = eventElement.closest(".input").querySelector("input");
-
-    if (!input.value && !clipboardText) {
+export function addLinkToList(link = "") {
+    if (!link) {
         showNotification(languageDB[selectedLang]["js"]["noURL"]);
 
         if (document.hidden)
@@ -248,12 +246,11 @@ export function addLinkToList(eventElement, clipboardText = null) {
         return;
     }
 
-    let values;
-    if (clipboardText) values = clipboardText.split(/[\n\s]+/);
-    else values = input.value;
-
+    let values = link.split(/[\n\s]+/);
     let ul = document.querySelector(".listBox ul");
     for (let value of values) {
+        value = value.trim();
+
         let foundYT = value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
 
         // TODO: Complete regex for netflix
@@ -291,8 +288,6 @@ export function addLinkToList(eventElement, clipboardText = null) {
         ul.appendChild(li);
     }
 
-    input.value = "";
-
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
     else ul.style.width = "100%";
 
@@ -302,6 +297,8 @@ export function addLinkToList(eventElement, clipboardText = null) {
 
     if (document.hidden)
         ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
+
+    return true;
 }
 
 // TODO: Comment

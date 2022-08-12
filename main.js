@@ -121,6 +121,11 @@ app.on('activate', function () {
     if (win === null) createWindow();
 });
 
+ipcMain.on('restart', () => {
+    app.relaunch();
+    app.exit();
+});
+
 ipcMain.on('app_version', (event) => {
     event.sender.send('app_version', {version: app.getVersion()});
 });

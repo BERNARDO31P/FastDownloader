@@ -38,7 +38,9 @@ function removeActiveListItems() {
 
 // TODO: Comment
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
-    tools.addLinkToList(this);
+    let input = this.closest(".input").querySelector("input");
+
+    if (tools.addLinkToList(input.value)) input.value = "";
 });
 
 // TODO: Comment
@@ -107,7 +109,7 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", fun
 
     if (!clipboardText) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"]);
-    } else tools.addLinkToList(this, clipboardText);
+    } else tools.addLinkToList(clipboardText);
 });
 
 // TODO: Comment
@@ -124,7 +126,7 @@ tools.bindEvent("click", "#updateNotification .restart-button", function () {
 // TODO: Comment
 tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
     if (e.code === "Enter") {
-        tools.addLinkToList(this);
+        tools.addLinkToList(this.value);
     }
 });
 
@@ -536,7 +538,7 @@ ipcRenderer.on('url', function (event, value) {
     let input = document.querySelector(".input input");
     input.value = value;
 
-    tools.addLinkToList(input);
+    tools.addLinkToList(value);
 });
 
 // TODO: Comment
@@ -606,6 +608,10 @@ window.onload = async function () {
     });
 
     await tools.loadMenu();
+
+    if (tools.getCookie("cache") !== null)
+        tools.loadAllData();
+
 
     const notification = document.getElementById('updateNotification');
     const message = notification.querySelector(".message");
