@@ -423,7 +423,7 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
 
             if (codec === "mp3") command += "--embed-thumbnail ";
         } else {
-            command += "bestvideo+bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
+            command += "bestvideo+bestaudio -S vcodec:h265 --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
         }
 
         let browser = premiumBrowser.getAttribute("data-value");
