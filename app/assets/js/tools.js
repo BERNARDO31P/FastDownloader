@@ -321,7 +321,6 @@ export function selectClick(element) {
         }
 
 
-
         for (let element of hiddenElements) {
             element.style.opacity = "1";
             element.style.pointerEvents = "";
@@ -611,7 +610,10 @@ export function saveSettings() {
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
         setCookie("artistName", artistName.classList.contains("active"));
-        setCookie("premium", JSON.stringify({"browser": premiumBrowser.getAttribute("data-value"), "check": premiumCheck.classList.contains("active")}));
+        setCookie("premium", JSON.stringify({
+            "browser": premiumBrowser.getAttribute("data-value"),
+            "check": premiumCheck.classList.contains("active")
+        }));
     }
 }
 
@@ -699,7 +701,7 @@ function loadSettings() {
     let premiumCheck = document.querySelector("#settings .premium");
     let premiumBrowser = document.querySelector("#settings .browser");
 
-    if(typeof premium["check"] != 'undefined' && premium["check"]) {
+    if (typeof premium != 'undefined' && (premium["check"] ?? false)) {
         premiumCheck.querySelector("#premium").classList.add("active");
         premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
 

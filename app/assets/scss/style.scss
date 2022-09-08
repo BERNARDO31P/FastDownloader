@@ -181,8 +181,6 @@ progress::-webkit-progress-bar {
 }
 
 #settings {
-  padding-bottom: 50px;
-
   #nav {
     margin: 0 !important;
     padding: 0 !important;
@@ -208,6 +206,10 @@ progress::-webkit-progress-bar {
         margin-top: 65px;
       }
     }
+  }
+
+  & > .row:last-of-type {
+    padding-bottom: 50px !important;
   }
 }
 
@@ -308,7 +310,6 @@ progress::-webkit-progress-bar {
   position: absolute;
   left: 0;
   top: 100%;
-  height: 100%;
   z-index: 1;
 
   display: none;
