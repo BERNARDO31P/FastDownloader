@@ -139,7 +139,7 @@ ipcMain.on('restart_app', () => {
 });
 
 ipcMain.on('set_percentage', (event, percentage) => {
-    win.setProgressBar(percentage);
+    win.setProgressBar(percentage, {mode: "normal"});
 });
 
 ipcMain.on("open_file_dialog", () => {
