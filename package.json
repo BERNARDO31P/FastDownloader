@@ -26,12 +26,12 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "MIT",
   "devDependencies": {
-    "electron": "19.0.6",
-    "electron-builder": "23.1.0"
+    "electron": "20.1.4",
+    "electron-builder": "23.5.1"
   },
   "dependencies": {
-    "auto-launch": "5.0.5",
-    "electron-updater": "5.0.6",
+    "easy-auto-launch": "6.0.2",
+    "electron-updater": "5.2.1",
     "number-precision": "1.5.2",
     "ytpl": "2.3.0"
   },

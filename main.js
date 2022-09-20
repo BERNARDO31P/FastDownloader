@@ -12,7 +12,7 @@ const {
 } = require('electron');
 const {autoUpdater} = require('electron-updater');
 const {exec} = require("child_process");
-const AutoLaunch = require('auto-launch');
+const AutoLaunch = require('easy-auto-launch');
 let autoLauncher = null;
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
