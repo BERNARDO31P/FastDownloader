@@ -59,7 +59,7 @@
                     <div class="option" data-value="audio">{{settings.option.audioOnly}}</div>
                 </div>
             </div>
-            <div class="quality nav-select">
+            <div class="quality audioSettings nav-select">
                 <p>{{settings.label.quality}}</p>
                 <div class="select">
                     <div class="option" data-value="best">{{settings.option.best}}</div>
@@ -67,7 +67,17 @@
                     <div class="option" data-value="bad">{{settings.option.bad}}</div>
                 </div>
             </div>
-            <div class="codec nav-select">
+            <div class="codecVideo videoSettings nav-select">
+                <p>{{settings.label.codec}}</p>
+                <div class="select">
+                    <div class="option" data-value="vp9">Google VP9</div>
+                    <div class="option" data-value="av1">AV1 (Alliance for Open Media AV1)</div>
+                    <div class="option" data-value="h264">H.264 / AVC / MPEG-4 AVC</div>
+                    <div class="option" data-value="hevc">H.265 / HEVC (High Efficiency Video Coding)</div>
+                    <div class="option" data-value="vvc">H.266 / VVC (Versatile Video Coding)</div>
+                </div>
+            </div>
+            <div class="codecAudio audioSettings nav-select">
                 <p>{{settings.label.codec}}</p>
                 <div class="select">
                     <div class="option" data-value="aac">aac</div>
@@ -165,7 +175,26 @@
                 </div>
             </div>
         </div>
-        <div class="quality">
+        <div class="codecVideo videoSettings">
+            <label for="codecVideo">{{settings.label.codec}}</label>
+            <div class="select" id="codecVideo">
+                <div class="head">
+                    <div class="button">{{settings.button.nothingSelected}}</div>
+                    <i class="fas fa-angle-down"></i>
+                </div>
+                <div class="body">
+                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                        {{settings.button.nothingSelected}}
+                    </div>
+                    <div class="option" data-value="vp9">Google VP9</div>
+                    <div class="option" data-value="av1">AV1 (Alliance for Open Media AV1)</div>
+                    <div class="option" data-value="h264">H.264 / AVC / MPEG-4 AVC</div>
+                    <div class="option" data-value="hevc">H.265 / HEVC (High Efficiency Video Coding)</div>
+                    <div class="option" data-value="vvc">H.266 / VVC (Versatile Video Coding)</div>
+                </div>
+            </div>
+        </div>
+        <div class="quality audioSettings">
             <label for="quality">{{settings.label.quality}}</label>
             <div class="select" id="quality">
                 <div class="head">
@@ -182,9 +211,9 @@
                 </div>
             </div>
         </div>
-        <div class="codec">
-            <label for="codec">{{settings.label.codec}}</label>
-            <div class="select" id="codec">
+        <div class="codecAudio audioSettings">
+            <label for="codecAudio">{{settings.label.codec}}</label>
+            <div class="select" id="codecAudio">
                 <div class="head">
                     <div class="button">{{settings.button.nothingSelected}}</div>
                     <i class="fas fa-angle-down"></i>
@@ -208,7 +237,7 @@
         <div class="row">
             <div class="premium">
                 <label for="premium">{{settings.label.enablePremium}}<br>
-                {{settings.label.needPremium}}</label>
+                    {{settings.label.needPremium}}</label>
                 <div class="row">
                     <div class="checkbox" id="premium">
                         <div class="toggle"></div>

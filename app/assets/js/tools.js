@@ -341,7 +341,7 @@ export function selectClick(element) {
         let clientRectSelect = select.getClientRects()[0];
         let clientRectBody = body.getClientRects()[0];
 
-        if (clientRectBody.height - clientRectSelect.bottom < optionsHeight) {
+        if ((clientRectBody.height - 20) - clientRectSelect.bottom < optionsHeight) {
             select.classList.add("top");
             label.style.opacity = "0";
         }
@@ -396,6 +396,7 @@ export function hideSelect(element) {
     }
 
     select.classList.remove("active");
+    select.classList.remove("top");
 }
 
 // TODO: Comment
@@ -404,7 +405,7 @@ export function downloadNFURL() {
 }
 
 // TODO: Comment
-export function downloadYTURL(mode, location, url, percentage, codec, quality, playlistCount) {
+export function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality, playlistCount) {
     return new Promise((resolve) => {
         let exe = "";
         if (process.platform === "win32") exe = ".exe";
@@ -418,11 +419,11 @@ export function downloadYTURL(mode, location, url, percentage, codec, quality, p
 
         let command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f ";
         if (mode === "audio") {
-            command += "bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --audio-format " + codec + " --audio-quality " + quality + " ";
+            command += "bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --audio-format " + codecAudio + " --audio-quality " + quality + " ";
 
-            if (codec === "mp3") command += "--embed-thumbnail ";
+            if (["mp3", "aac", "flac"].includes(codec)) command += "--embed-thumbnail ";
         } else {
-            command += "bestvideo+bestaudio -S vcodec:h265 --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
+            command += "bestvideo+bestaudio -S vcodec:" + codecVideo + " --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
         }
 
         let browser = premiumBrowser.getAttribute("data-value");
@@ -572,15 +573,24 @@ export function toggleVisibility() {
     let mode = document.querySelector("#settings .mode .select");
     let value = mode.getAttribute("data-value");
 
-    let quality = document.querySelector("#settings .quality");
-    let codec = document.querySelector("#settings .codec");
+    let audioSettings = document.querySelectorAll("#settings .audioSettings");
+    let videoSettings = document.querySelectorAll("#settings .videoSettings");
 
     if (value === "audio") {
-        quality.style.display = "block";
-        codec.style.display = "block";
+        videoSettings.forEach(function (element) {
+            element.style.display = "";
+        });
+
+        audioSettings.forEach(function (element) {
+            element.style.display = "block";
+        });
     } else {
-        quality.style.display = "";
-        codec.style.display = "";
+        audioSettings.forEach(function (element) {
+            element.style.display = "";
+        });
+        videoSettings.forEach(function (element) {
+            element.style.display = "block";
+        });
     }
 }
 
@@ -596,7 +606,8 @@ export function saveSettings() {
     if (save.classList.contains("active")) {
         let mode = document.querySelector("#settings .mode .select");
         let quality = document.querySelector("#settings .quality .select");
-        let codec = document.querySelector("#settings .codec .select");
+        let codecAudio = document.querySelector("#settings .codecAudio .select");
+        let codecVideo = document.querySelector("#settings .codecVideo .select");
         let closeToTray = document.querySelector("#settings #closeToTray");
         let autostart = document.querySelector("#settings #autostart");
         let artistName = document.querySelector("#settings #artistName");
@@ -605,7 +616,8 @@ export function saveSettings() {
 
         setCookie("mode", mode.getAttribute("data-value"));
         setCookie("quality", quality.getAttribute("data-value"));
-        setCookie("codec", codec.getAttribute("data-value"));
+        setCookie("codecAudio", codecAudio.getAttribute("data-value"));
+        setCookie("codecVideo", codecVideo.getAttribute("data-value"));
         setCookie("save", true);
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
@@ -621,7 +633,8 @@ export function saveSettings() {
 export function deleteSettings() {
     setCookie("mode", "");
     setCookie("quality", "");
-    setCookie("codec", "");
+    setCookie("codecAudio", "");
+    setCookie("codecVideo", "");
     setCookie("save", false);
     setCookie("closeToTray", false);
     setCookie("autostart", false);
@@ -632,12 +645,14 @@ export function deleteSettings() {
 function loadSettings() {
     let mode = document.querySelector("#settings .mode .select");
     let quality = document.querySelector("#settings .quality .select");
-    let codec = document.querySelector("#settings .codec .select");
+    let codecAudio = document.querySelector("#settings .codecAudio .select");
+    let codecVideo = document.querySelector("#settings .codecVideo .select");
     let lang = document.querySelector("#settings .lang .select");
 
     let modeValue = getCookie("mode");
     let qualityValue = getCookie("quality");
-    let codecValue = getCookie("codec");
+    let codecAudioValue = getCookie("codecAudio");
+    let codecVideoValue = getCookie("codecVideo");
     let langValue = getCookie("lang");
     let save = getCookie("save");
     let closeToTray = getCookie("closeToTray");
@@ -656,8 +671,13 @@ function loadSettings() {
         selectOption(option);
     }
 
-    if (codecValue) {
-        option = codec.querySelector("[data-value='" + codecValue + "']");
+    if (codecAudioValue) {
+        option = codecAudio.querySelector("[data-value='" + codecAudioValue + "']");
+        selectOption(option);
+    }
+
+    if (codecVideoValue) {
+        option = codecVideo.querySelector("[data-value='" + codecVideoValue + "']");
         selectOption(option);
     }
 

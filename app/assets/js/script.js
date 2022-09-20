@@ -167,7 +167,8 @@ tools.bindEvent("click", ".theme-toggler", function () {
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
     let listBox = document.getElementsByClassName("listBox")[0];
     let mode = document.querySelector("#settings .mode .select");
-    let codec = document.querySelector("#settings .codec .select");
+    let codecAudio = document.querySelector("#settings .codecAudio .select");
+    let codecVideo = document.querySelector("#settings .codecVideo .select");
     let quality = document.querySelector("#settings .quality .select");
     let location = document.querySelector(".location #location");
 
@@ -190,7 +191,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
         return;
     } else if (mode.getAttribute("data-value") === "audio") {
-        if (!codec.getAttribute("data-value")) {
+        if (!codecAudio.getAttribute("data-value")) {
             showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
             if (document.hidden)
@@ -204,6 +205,15 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
             if (document.hidden)
                 ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
+            return;
+        }
+    } else {
+        if (!codecVideo.getAttribute("data-value")) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
             return;
         }
@@ -254,7 +264,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         if (!url.includes("netflix")) {
             let qualityValue = quality.getAttribute("data-value");
             let modeValue = mode.getAttribute("data-value");
-            let codecValue = codec.getAttribute("data-value");
+            let codecAudioValue = codecAudio.getAttribute("data-value");
+            let codecVideoValue = codecVideo.getAttribute("data-value");
             let locationValue = location.value;
 
             if (typeof specificSettings[i] !== 'undefined') {
@@ -264,8 +275,11 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 if (typeof specificSettings[i]["mode"] !== 'undefined')
                     modeValue = specificSettings[i]["mode"];
 
-                if (typeof specificSettings[i]["codec"] !== 'undefined')
-                    codecValue = specificSettings[i]["codec"];
+                if (typeof specificSettings[i]["codecAudio"] !== 'undefined')
+                    codecAudioValue = specificSettings[i]["codecAudio"];
+
+                if (typeof specificSettings[i]["codecVideo"] !== 'undefined')
+                    codecVideoValue = specificSettings[i]["codecVideo"];
 
                 if (typeof specificSettings[i]["location"] !== 'undefined')
                     locationValue = specificSettings[i]["location"];
@@ -289,7 +303,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 locationValue,
                 url,
                 percentage,
-                codecValue,
+                codecAudioValue,
+                codecVideoValue,
                 qualityInt,
                 tools.playlistCount
             );
@@ -350,12 +365,12 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
 
         tools.removeActives(context.querySelector(".mode"));
         if (modeValue === "audio") {
-            context.querySelector(".codec").style.display = "";
+            context.querySelector(".codecAudio").style.display = "";
             context.querySelector(".quality").style.display = "";
 
             context.querySelector(".mode [data-value='audio']").classList.add("active");
         } else {
-            context.querySelector(".codec").style.display = "none";
+            context.querySelector(".codecAudio").style.display = "none";
             context.querySelector(".quality").style.display = "none";
 
             context.querySelector(".mode [data-value='video']").classList.add("active");
@@ -369,12 +384,12 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
             context.querySelector(".quality [data-value='" + quality.getAttribute("data-value") + "']").classList.add("active");
         }
 
-        tools.removeActives(context.querySelector(".codec"));
+        tools.removeActives(context.querySelector(".codecAudio"));
         if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["codec"] !== "undefined") {
-            context.querySelector(".codec [data-value='" + specificSettings[id]["codec"] + "']").classList.add("active");
+            context.querySelector(".codecAudio [data-value='" + specificSettings[id]["codec"] + "']").classList.add("active");
         } else {
-            let codec = document.querySelector("#settings .codec .select");
-            context.querySelector(".codec [data-value='" + codec.getAttribute("data-value") + "']").classList.add("active");
+            let codec = document.querySelector("#settings .codecAudio .select");
+            context.querySelector(".codecAudio [data-value='" + codec.getAttribute("data-value") + "']").classList.add("active");
         }
 
         contextElement = e.target;
@@ -440,13 +455,23 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
 
     if (navSelect.classList.contains("mode")) {
         let context = document.getElementById("contextMenu");
+        let audioSettings = context.querySelectorAll(".audioSettings");
+        let videoSettings = context.querySelectorAll(".videoSettings");
 
         if (this.getAttribute("data-value") === "audio") {
-            context.querySelector(".codec").style.display = "";
-            context.querySelector(".quality").style.display = "";
+            videoSettings.forEach(function (element) {
+                element.style.display = "none";
+            });
+            audioSettings.forEach(function (element) {
+                element.style.display = "";
+            });
         } else {
-            context.querySelector(".codec").style.display = "none";
-            context.querySelector(".quality").style.display = "none";
+            audioSettings.forEach(function (element) {
+                element.style.display = "none";
+            });
+            videoSettings.forEach(function (element) {
+                element.style.display = "";
+            });
         }
     }
 });
