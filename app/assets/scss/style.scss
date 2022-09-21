@@ -623,12 +623,9 @@ progress::-webkit-progress-bar {
 }
 
 .startAbort {
-  position: absolute;
+  position: static;
 
-  width: 100%;
-  left: 0;
-  bottom: 0;
-
+  margin: 30px 0 0 0;
   padding: 0 0 15px 0;
 
   text-align: center;
