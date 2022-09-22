@@ -421,7 +421,7 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
         if (mode === "audio") {
             command += "bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --audio-format " + codecAudio + " --audio-quality " + quality + " ";
 
-            if (["mp3", "aac", "flac"].includes(codec)) command += "--embed-thumbnail ";
+            if (["mp3", "aac", "flac"].includes(codecAudio)) command += "--embed-thumbnail ";
         } else {
             command += "bestvideo+bestaudio -S vcodec:" + codecVideo + " --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
         }
