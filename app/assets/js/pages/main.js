@@ -424,7 +424,7 @@ tools.bindEvent("mouseover", "#contextMenu .nav-select", function () {
         select.style.left = "-" + (selectBounding.width - 5) + "px"
     }
 
-    this.addEventListener("mouseleave", function mouseleave () {
+    this.addEventListener("mouseleave", function mouseleave() {
         select.classList.remove("show");
 
         this.removeEventListener("mouseleave", mouseleave);
@@ -487,7 +487,7 @@ tools.bindEvent("click", "#contextMenu .copy", function () {
 tools.bindEvent("click", "#contextMenu .location", function () {
     ipcRenderer.send('open_file_dialog');
 
-    ipcRenderer.on("selected_file", function specificLocation (event, path) {
+    ipcRenderer.on("selected_file", function specificLocation(event, path) {
         let actives = document.querySelectorAll(".listBox li.active");
         if (!actives.length) actives[actives.length] = contextElement;
 
@@ -512,7 +512,7 @@ tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])",
     ipcRenderer.send('open_file_dialog');
 
     // TODO: Comment
-    ipcRenderer.on("selected_file", function mainLocation (event, path) {
+    ipcRenderer.on("selected_file", function mainLocation(event, path) {
         let location = document.querySelector(".location #location");
         let locationButton = document.querySelector(".location .location-button");
 
@@ -600,19 +600,20 @@ document.addEventListener("keydown", function (e) {
     }
 
     if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null) {
-        setTimeout(function () {
+        let items = document.querySelectorAll(".listBox li");
+        if (!items.length) return;
+
+        setTimeout(() => {
             document.getSelection().removeAllRanges();
         });
-
-        let items = document.querySelectorAll(".listBox li");
-        let linkCount = document.getElementById("link-count");
 
         for (let item of items) {
             item.classList.add("active");
         }
 
-       linkCount.querySelector("a").textContent = items.length.toString();
-       linkCount.style.opacity = "1";
+        let linkCount = document.getElementById("link-count");
+        linkCount.querySelector("a").textContent = items.length.toString();
+        linkCount.style.opacity = "1";
     }
 
     if (e.code === "KeyC" && e.ctrlKey) {
