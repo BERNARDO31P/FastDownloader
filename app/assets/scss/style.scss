@@ -163,23 +163,6 @@ progress::-webkit-progress-bar {
   background: var(--body-background);
 }
 
-.toggle {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-
-  position: absolute;
-  top: 10px;
-
-  border-radius: 20px;
-  height: 40px;
-  width: 40px;
-}
-
-.theme-toggler {
-  right: 25px;
-}
-
 settings {
   #nav {
     margin: 0 !important;
@@ -188,8 +171,9 @@ settings {
     background-color: var(--body-background);
 
     z-index: 1;
-
     transition: 0.2s;
+
+    height: 65px;
 
     &.shadow {
       box-shadow: -2px -2px 3px var(--shadow-light), 2px 2px 3px var(--shadow-dark);
@@ -271,6 +255,42 @@ settings {
   &.show {
     display: initial;
   }
+}
+
+#info {
+  display: none;
+  position: absolute;
+
+  width: calc(100% - 50px);
+  height: calc(100% - 25px);
+
+  top: calc(50px / 2);
+  left: calc(25px / 2);
+
+  &.show {
+    display: initial;
+  }
+}
+
+.toggle {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  position: absolute;
+  top: 10px;
+
+  border-radius: 20px;
+  height: 40px;
+  width: 40px;
+}
+
+.theme-toggler {
+  right: 25px;
+}
+
+#info-open {
+  left: 15px;
 }
 
 #settings-open, #settings-close {

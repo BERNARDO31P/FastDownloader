@@ -5,17 +5,14 @@ const {ipcRenderer} = require('electron');
 
 let body = document.getElementsByTagName("body")[0];
 
-setTimeout(function () {
-    let settings = document.getElementsByTagName("settings")[0];
-    let nav = settings.querySelector("#nav");
+setTimeout( () => {
+    let nav = document.querySelector("settings #nav");
 
     body.onscroll = function () {
         if (window.scrollY > 10 && !nav.classList.contains("shadow")) {
             nav.classList.add("shadow");
-            nav.classList.add("static");
         } else if (window.scrollY < 10 && nav.classList.contains("shadow")) {
             nav.classList.remove("shadow");
-            nav.classList.remove("static");
         }
     }
 }, 500);
@@ -134,8 +131,11 @@ tools.bindEvent("click", "settings .autostart .checkbox", function () {
 tools.bindEvent("click", "#settings-close", function () {
     let settings = document.getElementsByTagName("settings")[0];
     let body = document.getElementsByTagName("body")[0];
+    let nav = settings.querySelector("#nav");
 
+    nav.classList.remove("static");
     body.style.overflow = "hidden";
+
     settings.animateCallback([
         {top: "0%"},
         {top: "100%"}
@@ -145,6 +145,9 @@ tools.bindEvent("click", "#settings-close", function () {
     }, function () {
         body.style.overflow = "";
         settings.style.display = "";
+
+        let nav = document.querySelector("settings #nav");
+        nav.classList.remove("static");
     });
 });
 
@@ -173,4 +176,19 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
     if (active && select !== active) tools.hideSelect(active);
 
     tools.selectClick(clicked);
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#info-open", function () {
+    let info = document.getElementById("info");
+
+    if (info.innerHTML === "") tools.loadInfo();
+    info.classList.add("show");
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#info-close", function () {
+    let info = document.getElementById("info");
+
+    info.classList.remove("show");
 });

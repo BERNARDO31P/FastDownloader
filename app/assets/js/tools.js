@@ -802,6 +802,7 @@ export function setThemeIcon() {
     }, 500);
 }
 
+// TODO: Comment
 function getNumber(string) {
     return Number((string).match(/\d+/));
 }
@@ -810,4 +811,9 @@ function getNumber(string) {
 export function setTheme(themeSet) {
     theme = themeSet;
     setCookie("theme", themeSet);
+}
+
+// TODO: Comment
+export function loadInfo() {
+
 }

@@ -553,6 +553,9 @@ tools.bindEvent("click", "#settings-open", async function () {
         fill: "forwards"
     }, function () {
         body.style.overflow = "";
+
+        let nav = document.querySelector("settings #nav");
+        nav.classList.add("static");
     });
 });
 
