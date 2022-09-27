@@ -411,8 +411,6 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
         let infoTotal = document.querySelector(".progress-total .info p");
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
-        let premiumCheck = document.querySelector("settings #premium");
-        let premiumBrowser = document.querySelector("settings #browser");
 
         let command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f ";
         if (mode === "audio") {
@@ -423,10 +421,10 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
             command += "bestvideo+bestaudio -S vcodec:" + codecVideo + " --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
         }
 
-        let browser = premiumBrowser.getAttribute("data-value");
-        if (premiumCheck.classList.contains("active")) {
-            if (browser !== "") {
-                command += "--cookies-from-browser " + browser + " ";
+        let premium = JSON.parse(getCookie("premium"));
+        if (premium["check"]) {
+            if (premium["browser"] !== "") {
+                command += "--cookies-from-browser " + premium["browser"] + " ";
             } else {
                 showNotification(languageDB[selectedLang]["js"]["noBrowser"]);
                 resolve(false);

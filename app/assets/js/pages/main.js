@@ -166,13 +166,13 @@ tools.bindEvent("click", ".theme-toggler", function () {
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
     let listBox = document.getElementsByClassName("listBox")[0];
-    let mode = document.querySelector("settings .mode .select");
-    let codecAudio = document.querySelector("settings .codecAudio .select");
-    let codecVideo = document.querySelector("settings .codecVideo .select");
-    let quality = document.querySelector("settings .quality .select");
     let location = document.querySelector(".location #location");
-
     let items = listBox.querySelectorAll("li");
+
+    let mode = tools.getCookie("mode");
+    let codecAudio = tools.getCookie("codecAudio");
+    let codecVideo = tools.getCookie("codecVideo");
+    let quality = tools.getCookie("quality");
 
     if (!items.length) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
@@ -183,15 +183,15 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         return;
     }
 
-    if (!mode.getAttribute("data-value")) {
+    if (!mode) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
         if (document.hidden)
             ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
         return;
-    } else if (mode.getAttribute("data-value") === "audio") {
-        if (!codecAudio.getAttribute("data-value")) {
+    } else if (mode === "audio") {
+        if (!codecAudio) {
             showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
             if (document.hidden)
@@ -200,7 +200,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             return;
         }
 
-        if (!quality.getAttribute("data-value")) {
+        if (!quality) {
             showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
 
             if (document.hidden)
@@ -209,7 +209,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             return;
         }
     } else {
-        if (!codecVideo.getAttribute("data-value")) {
+        if (!codecVideo) {
             showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
             if (document.hidden)
@@ -262,31 +262,25 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         let success = false;
 
         if (!url.includes("netflix")) {
-            let qualityValue = quality.getAttribute("data-value");
-            let modeValue = mode.getAttribute("data-value");
-            let codecAudioValue = codecAudio.getAttribute("data-value");
-            let codecVideoValue = codecVideo.getAttribute("data-value");
-            let locationValue = location.value;
-
             if (typeof specificSettings[i] !== 'undefined') {
                 if (typeof specificSettings[i]["quality"] !== 'undefined')
-                    qualityValue = specificSettings[i]["quality"];
+                    quality = specificSettings[i]["quality"];
 
                 if (typeof specificSettings[i]["mode"] !== 'undefined')
-                    modeValue = specificSettings[i]["mode"];
+                    mode = specificSettings[i]["mode"];
 
                 if (typeof specificSettings[i]["codecAudio"] !== 'undefined')
-                    codecAudioValue = specificSettings[i]["codecAudio"];
+                    codecAudio = specificSettings[i]["codecAudio"];
 
                 if (typeof specificSettings[i]["codecVideo"] !== 'undefined')
-                    codecVideoValue = specificSettings[i]["codecVideo"];
+                    codecVideo = specificSettings[i]["codecVideo"];
 
                 if (typeof specificSettings[i]["location"] !== 'undefined')
-                    locationValue = specificSettings[i]["location"];
+                    location = specificSettings[i]["location"];
             }
 
             let qualityInt = 0;
-            switch (qualityValue) {
+            switch (quality) {
                 case "best":
                     qualityInt = 0;
                     break;
@@ -299,12 +293,12 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             }
 
             success = await tools.downloadYTURL(
-                modeValue,
-                locationValue,
+                mode,
+                location.value,
                 url,
                 percentage,
-                codecAudioValue,
-                codecVideoValue,
+                codecAudio,
+                codecVideo,
                 qualityInt,
                 tools.playlistCount
             );
