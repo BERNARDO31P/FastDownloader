@@ -1,12 +1,12 @@
-import * as tools from "./tools.js";
-import {showNotification} from "./tools.js";
+import * as tools from "../tools.js";
+import {showNotification} from "../tools.js";
 
 const {ipcRenderer} = require('electron');
 
 let body = document.getElementsByTagName("body")[0];
 
 setTimeout(function () {
-    let settings = document.getElementById("settings");
+    let settings = document.getElementsByTagName("settings")[0];
     let nav = settings.querySelector("#nav");
 
     body.onscroll = function () {
@@ -22,7 +22,7 @@ setTimeout(function () {
 
 
 // TODO: Comment
-tools.bindEvent("click", "#settings .artistName .checkbox", function () {
+tools.bindEvent("click", "settings .artistName .checkbox", function () {
     let artistNaming = this.closest(".artistName");
 
     if (this.classList.contains("active")) {
@@ -45,7 +45,7 @@ tools.bindEvent("click", "#settings .artistName .checkbox", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings .save .checkbox", function () {
+tools.bindEvent("click", "settings .save .checkbox", function () {
     let saving = this.closest(".save");
 
     if (this.classList.contains("active")) {
@@ -66,7 +66,7 @@ tools.bindEvent("click", "#settings .save .checkbox", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings .closeToTray .checkbox", function (){
+tools.bindEvent("click", "settings .closeToTray .checkbox", function (){
     let closingToTray = this.closest(".closeToTray");
 
     if (this.classList.contains("active")) {
@@ -89,7 +89,7 @@ tools.bindEvent("click", "#settings .closeToTray .checkbox", function (){
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings .premium .checkbox", function () {
+tools.bindEvent("click", "settings .premium .checkbox", function () {
     let premium = this.closest(".premium");
 
     if (this.classList.contains("active")) {
@@ -108,7 +108,7 @@ tools.bindEvent("click", "#settings .premium .checkbox", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings .autostart .checkbox", function () {
+tools.bindEvent("click", "settings .autostart .checkbox", function () {
     let autostarting = this.closest(".autostart");
 
     if (this.classList.contains("active")) {
@@ -132,7 +132,7 @@ tools.bindEvent("click", "#settings .autostart .checkbox", function () {
 
 // TODO: Comment
 tools.bindEvent("click", "#settings-close", function () {
-    let settings = document.getElementById("settings");
+    let settings = document.getElementsByTagName("settings")[0];
     let body = document.getElementsByTagName("body")[0];
 
     body.style.overflow = "hidden";
@@ -149,7 +149,7 @@ tools.bindEvent("click", "#settings-close", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings .select .option:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", "settings .select .option:not([aria-disabled='true'])", function () {
     tools.selectOption(this);
 
     tools.saveSettings();

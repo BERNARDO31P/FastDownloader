@@ -5,271 +5,96 @@
     <title>Title</title>
 </head>
 <body>
-    <div id="main">
-        <h2>Fast Downloader</h2>
-        <div class="theme-toggler"><i class="fas"></i></div>
-        <div id="settings-open"><i class="fas fa-tools"></i></div>
-        <div class="input">
-            <label for="url">URL</label>
-            <div class="flex">
-                <input type="text" id="url"/>
-                <button class="add-button">{{main.button.add}}</button>
-                <button class="paste-button"><i class="fa-solid fa-paste"></i></button>
-            </div>
-        </div>
-        <div class="listBox">
-            <ul></ul>
-            <button class="delete-button">{{main.button.remove}}</button>
-        </div>
-        <label id="link-count"><a>0</a> {{main.label.selected}}</label>
-        <div class="progress-total">
-            <div class="info">
-                <label>{{main.label.progressTotal}}:</label>
-                <p>0%</p>
-            </div>
-            <progress value="0"></progress>
-        </div>
-        <div class="progress-song">
-            <div class="info">
-                <label>{{main.label.progress}}:</label>
-                <p>0%</p>
-            </div>
-            <progress value="0"></progress>
-        </div>
-        <div class="location">
-            <div class="input">
-                <label for="location">{{main.label.storageLocation}}</label>
-                <div class="flex">
-                    <input type="text" id="location" readonly/>
-                    <button class="search-button">{{main.button.browse}}</button>
-                    <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
-                </div>
-            </div>
-        </div>
-        <div class="startAbort">
-            <button class="start-button">{{main.button.download}}</button>
-            <button class="abort-button" aria-disabled="true">{{main.button.abort}}</button>
-        </div>
-        <div id="contextMenu">
-            <div class="copy">{{main.button.copy}}</div>
-            <div class="mode nav-select">
-                <p>{{settings.label.downloadMode}}</p>
-                <div class="select">
-                    <div class="option" data-value="video">{{settings.option.videoAudio}}</div>
-                    <div class="option" data-value="audio">{{settings.option.audioOnly}}</div>
-                </div>
-            </div>
-            <div class="quality audioSettings nav-select">
-                <p>{{settings.label.quality}}</p>
-                <div class="select">
-                    <div class="option" data-value="best">{{settings.option.best}}</div>
-                    <div class="option" data-value="medium">{{settings.option.medium}}</div>
-                    <div class="option" data-value="bad">{{settings.option.bad}}</div>
-                </div>
-            </div>
-            <div class="codecVideo videoSettings nav-select">
-                <p>{{settings.label.codec}}</p>
-                <div class="select">
-                    <div class="option" data-value="vp9">Google VP9</div>
-                    <div class="option" data-value="av1">AV1 (Alliance for Open Media AV1)</div>
-                    <div class="option" data-value="h264">H.264 / AVC / MPEG-4 AVC</div>
-                    <div class="option" data-value="hevc">H.265 / HEVC (High Efficiency Video Coding)</div>
-                    <div class="option" data-value="vvc">H.266 / VVC (Versatile Video Coding)</div>
-                </div>
-            </div>
-            <div class="codecAudio audioSettings nav-select">
-                <p>{{settings.label.codec}}</p>
-                <div class="select">
-                    <div class="option" data-value="aac">aac</div>
-                    <div class="option" data-value="flac">flac</div>
-                    <div class="option" data-value="mp3">mp3</div>
-                    <div class="option" data-value="m4a">m4a</div>
-                    <div class="option" data-value="opus">opus</div>
-                    <div class="option" data-value="vorbis">vorbis</div>
-                    <div class="option" data-value="wav">wav</div>
-                </div>
-            </div>
-            <div class="location">{{main.label.storageLocation}}</div>
+    <h2>Fast Downloader</h2>
+    <div class="theme-toggler"><i class="fas"></i></div>
+    <div id="settings-open"><i class="fas fa-tools"></i></div>
+    <div class="input">
+        <label for="url">URL</label>
+        <div class="flex">
+            <input type="text" id="url"/>
+            <button class="add-button">{{main.button.add}}</button>
+            <button class="paste-button"><i class="fa-solid fa-paste"></i></button>
         </div>
     </div>
-
-    <div id="settings">
-        <div id="nav">
-            <h2>{{settings.title}}</h2>
-            <div class="theme-toggler"><i class="fas"></i></div>
-            <div id="settings-close"><i class="fas fa-angle-down"></i></div>
+    <div class="listBox">
+        <ul></ul>
+        <button class="delete-button">{{main.button.remove}}</button>
+    </div>
+    <label id="link-count"><a>0</a> {{main.label.selected}}</label>
+    <div class="progress-total">
+        <div class="info">
+            <label>{{main.label.progressTotal}}:</label>
+            <p>0%</p>
         </div>
-
-        <div class="row">
-            <div class="save">
-                <label for="save">{{settings.label.saveSettings}}</label>
-                <div class="row">
-                    <div class="checkbox" id="save">
-                        <div class="toggle"></div>
-                    </div>
-                    <span></span>
-                </div>
-            </div>
-            <div class="divider"></div>
-            <div class="closeToTray">
-                <label for="closeToTray">{{settings.label.closeToTray}}</label>
-                <div class="row">
-                    <div class="checkbox" id="closeToTray">
-                        <div class="toggle"></div>
-                    </div>
-                    <span></span>
-                </div>
-            </div>
-            <div class="divider"></div>
-            <div class="autostart">
-                <label for="autostart">{{settings.label.autostart}}</label>
-                <div class="row">
-                    <div class="checkbox" id="autostart">
-                        <div class="toggle"></div>
-                    </div>
-                    <span></span>
-                </div>
+        <progress value="0"></progress>
+    </div>
+    <div class="progress-song">
+        <div class="info">
+            <label>{{main.label.progress}}:</label>
+            <p>0%</p>
+        </div>
+        <progress value="0"></progress>
+    </div>
+    <div class="location">
+        <div class="input">
+            <label for="location">{{main.label.storageLocation}}</label>
+            <div class="flex">
+                <input type="text" id="location" readonly/>
+                <button class="search-button">{{main.button.browse}}</button>
+                <button class="location-button" aria-disabled="true"><i class="fas fa-folder-open"></i></button>
             </div>
         </div>
-        <div class="row">
-            <div class="artistName">
-                <label for="artistName">{{settings.label.artistName}}</label>
-                <div class="row">
-                    <div class="checkbox" id="artistName">
-                        <div class="toggle"></div>
-                    </div>
-                    <span></span>
-                </div>
+    </div>
+    <div class="startAbort">
+        <button class="start-button">{{main.button.download}}</button>
+        <button class="abort-button" aria-disabled="true">{{main.button.abort}}</button>
+    </div>
+    <div id="contextMenu">
+        <div class="copy">{{main.button.copy}}</div>
+        <div class="mode nav-select">
+            <p>{{settings.label.downloadMode}}</p>
+            <div class="select">
+                <div class="option" data-value="video">{{settings.option.videoAudio}}</div>
+                <div class="option" data-value="audio">{{settings.option.audioOnly}}</div>
             </div>
         </div>
-
-        <div class="lang">
-            <label for="lang">{{settings.label.language}}</label>
-            <div class="select" id="lang">
-                <div class="head">
-                    <div class="button">{{settings.button.nothingSelected}}</div>
-                    <i class="fas fa-angle-down"></i>
-                </div>
-                <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                        {{settings.button.nothingSelected}}
-                    </div>
-                    <div class="option" data-value="de">Deutsch</div>
-                    <div class="option" data-value="en">English</div>
-                </div>
+        <div class="quality audioSettings nav-select">
+            <p>{{settings.label.quality}}</p>
+            <div class="select">
+                <div class="option" data-value="best">{{settings.option.best}}</div>
+                <div class="option" data-value="medium">{{settings.option.medium}}</div>
+                <div class="option" data-value="bad">{{settings.option.bad}}</div>
             </div>
         </div>
-        <div class="mode">
-            <label for="mode">{{settings.label.downloadMode}}</label>
-            <div class="select" id="mode">
-                <div class="head">
-                    <div class="button">{{settings.button.nothingSelected}}</div>
-                    <i class="fas fa-angle-down"></i>
-                </div>
-                <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                        {{settings.button.nothingSelected}}
-                    </div>
-                    <div class="option" data-value="video">{{settings.option.videoAudio}}</div>
-                    <div class="option" data-value="audio">{{settings.option.audioOnly}}</div>
-                </div>
+        <div class="codecVideo videoSettings nav-select">
+            <p>{{settings.label.codec}}</p>
+            <div class="select">
+                <div class="option" data-value="vp9">Google VP9</div>
+                <div class="option" data-value="av1">AV1 (Alliance for Open Media AV1)</div>
+                <div class="option" data-value="h264">H.264 / AVC / MPEG-4 AVC</div>
+                <div class="option" data-value="hevc">H.265 / HEVC (High Efficiency Video Coding)</div>
+                <div class="option" data-value="vvc">H.266 / VVC (Versatile Video Coding)</div>
             </div>
         </div>
-        <div class="codecVideo videoSettings">
-            <label for="codecVideo">{{settings.label.codec}}</label>
-            <div class="select" id="codecVideo">
-                <div class="head">
-                    <div class="button">{{settings.button.nothingSelected}}</div>
-                    <i class="fas fa-angle-down"></i>
-                </div>
-                <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                        {{settings.button.nothingSelected}}
-                    </div>
-                    <div class="option" data-value="vp9">Google VP9</div>
-                    <div class="option" data-value="av1">AV1 (Alliance for Open Media AV1)</div>
-                    <div class="option" data-value="h264">H.264 / AVC / MPEG-4 AVC</div>
-                    <div class="option" data-value="hevc">H.265 / HEVC (High Efficiency Video Coding)</div>
-                    <div class="option" data-value="vvc">H.266 / VVC (Versatile Video Coding)</div>
-                </div>
+        <div class="codecAudio audioSettings nav-select">
+            <p>{{settings.label.codec}}</p>
+            <div class="select">
+                <div class="option" data-value="aac">aac</div>
+                <div class="option" data-value="flac">flac</div>
+                <div class="option" data-value="mp3">mp3</div>
+                <div class="option" data-value="m4a">m4a</div>
+                <div class="option" data-value="opus">opus</div>
+                <div class="option" data-value="vorbis">vorbis</div>
+                <div class="option" data-value="wav">wav</div>
             </div>
         </div>
-        <div class="quality audioSettings">
-            <label for="quality">{{settings.label.quality}}</label>
-            <div class="select" id="quality">
-                <div class="head">
-                    <div class="button">{{settings.button.nothingSelected}}</div>
-                    <i class="fas fa-angle-down"></i>
-                </div>
-                <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                        {{settings.button.nothingSelected}}
-                    </div>
-                    <div class="option" data-value="best">{{settings.option.best}}</div>
-                    <div class="option" data-value="medium">{{settings.option.medium}}</div>
-                    <div class="option" data-value="bad">{{settings.option.bad}}</div>
-                </div>
-            </div>
-        </div>
-        <div class="codecAudio audioSettings">
-            <label for="codecAudio">{{settings.label.codec}}</label>
-            <div class="select" id="codecAudio">
-                <div class="head">
-                    <div class="button">{{settings.button.nothingSelected}}</div>
-                    <i class="fas fa-angle-down"></i>
-                </div>
-                <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                        {{settings.button.nothingSelected}}
-                    </div>
-                    <div class="option" data-value="aac">aac</div>
-                    <div class="option" data-value="flac">flac</div>
-                    <div class="option" data-value="mp3">mp3</div>
-                    <div class="option" data-value="m4a">m4a</div>
-                    <div class="option" data-value="opus">opus</div>
-                    <div class="option" data-value="vorbis">vorbis</div>
-                    <div class="option" data-value="wav">wav</div>
-                </div>
-            </div>
-        </div>
-        <div class="divider"></div>
-        <h3 style="margin-bottom: -10px">YouTube premium</h3>
-        <div class="row">
-            <div class="premium">
-                <label for="premium">{{settings.label.enablePremium}}<br>
-                    {{settings.label.needPremium}}</label>
-                <div class="row">
-                    <div class="checkbox" id="premium">
-                        <div class="toggle"></div>
-                    </div>
-                    <span></span>
-                </div>
-            </div>
-            <div class="divider"></div>
-            <div class="browser">
-                <label for="browser">{{settings.label.browser}}</label>
-                <div class="select" id="browser">
-                    <div class="head">
-                        <div class="button">{{settings.button.nothingSelected}}</div>
-                        <i class="fas fa-angle-down"></i>
-                    </div>
-                    <div class="body">
-                        <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                            {{settings.button.nothingSelected}}
-                        </div>
-                        <div class="option" data-value="chrome">Google Chrome</div>
-                        <div class="option" data-value="firefox">Mozilla Firefox</div>
-                        <div class="option" data-value="edge">Microsoft Edge</div>
-                        <div class="option" data-value="opera">Opera</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="location">{{main.label.storageLocation}}</div>
     </div>
     <div id="updateNotification" class="hidden">
         <p class="message"></p>
         <button class="close-button">{{main.button.close}}</button>
         <button class="restart-button hidden">{{main.button.restart}}</button>
     </div>
+    <script src="assets/js/pages/main.js" rel="script" type="module"></script>
 </body>
 </html>

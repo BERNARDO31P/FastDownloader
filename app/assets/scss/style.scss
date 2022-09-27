@@ -32,7 +32,7 @@
   background: var(--body-background)
 }
 
-body, #settings {
+body, settings {
   position: absolute;
   margin: 0;
   padding: 0 15px 0 15px;
@@ -180,7 +180,7 @@ progress::-webkit-progress-bar {
   right: 25px;
 }
 
-#settings {
+settings {
   #nav {
     margin: 0 !important;
     padding: 0 !important;
@@ -306,7 +306,7 @@ progress::-webkit-progress-bar {
   }
 }
 
-#settings {
+settings {
   position: absolute;
   left: 0;
   top: 100%;

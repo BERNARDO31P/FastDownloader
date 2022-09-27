@@ -66,7 +66,6 @@ function createWindow() {
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
-        win.webContents.send("lang");
         ipcMain.on("lang", function (event, selectedLang) {
             lang = selectedLang;
 

@@ -7,3 +7,6 @@ build.json
 node_modules/
 dist/
 app/assets/scss/.sass-cache
+
+# Idea Files
+.idea/

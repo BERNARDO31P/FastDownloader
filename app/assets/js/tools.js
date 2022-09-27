@@ -414,8 +414,8 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
         let infoTotal = document.querySelector(".progress-total .info p");
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
-        let premiumCheck = document.querySelector("#settings #premium");
-        let premiumBrowser = document.querySelector("#settings #browser");
+        let premiumCheck = document.querySelector("settings #premium");
+        let premiumBrowser = document.querySelector("settings #browser");
 
         let command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f ";
         if (mode === "audio") {
@@ -570,11 +570,11 @@ export function selectOption(option) {
 
 // TODO: Comment
 export function toggleVisibility() {
-    let mode = document.querySelector("#settings .mode .select");
+    let mode = document.querySelector("settings .mode .select");
     let value = mode.getAttribute("data-value");
 
-    let audioSettings = document.querySelectorAll("#settings .audioSettings");
-    let videoSettings = document.querySelectorAll("#settings .videoSettings");
+    let audioSettings = document.querySelectorAll("settings .audioSettings");
+    let videoSettings = document.querySelectorAll("settings .videoSettings");
 
     if (value === "audio") {
         videoSettings.forEach(function (element) {
@@ -601,18 +601,18 @@ export function abortDownload() {
 
 // TODO: Comment
 export function saveSettings() {
-    let save = document.querySelector("#settings #save");
+    let save = document.querySelector("settings #save");
 
     if (save.classList.contains("active")) {
-        let mode = document.querySelector("#settings .mode .select");
-        let quality = document.querySelector("#settings .quality .select");
-        let codecAudio = document.querySelector("#settings .codecAudio .select");
-        let codecVideo = document.querySelector("#settings .codecVideo .select");
-        let closeToTray = document.querySelector("#settings #closeToTray");
-        let autostart = document.querySelector("#settings #autostart");
-        let artistName = document.querySelector("#settings #artistName");
-        let premiumCheck = document.querySelector("#settings #premium");
-        let premiumBrowser = document.querySelector("#settings #browser");
+        let mode = document.querySelector("settings .mode .select");
+        let quality = document.querySelector("settings .quality .select");
+        let codecAudio = document.querySelector("settings .codecAudio .select");
+        let codecVideo = document.querySelector("settings .codecVideo .select");
+        let closeToTray = document.querySelector("settings #closeToTray");
+        let autostart = document.querySelector("settings #autostart");
+        let artistName = document.querySelector("settings #artistName");
+        let premiumCheck = document.querySelector("settings #premium");
+        let premiumBrowser = document.querySelector("settings #browser");
 
         setCookie("mode", mode.getAttribute("data-value"));
         setCookie("quality", quality.getAttribute("data-value"));
@@ -642,12 +642,12 @@ export function deleteSettings() {
 }
 
 // TODO: Comment
-function loadSettings() {
-    let mode = document.querySelector("#settings .mode .select");
-    let quality = document.querySelector("#settings .quality .select");
-    let codecAudio = document.querySelector("#settings .codecAudio .select");
-    let codecVideo = document.querySelector("#settings .codecVideo .select");
-    let lang = document.querySelector("#settings .lang .select");
+export function loadSettings() {
+    let mode = document.querySelector("settings .mode .select");
+    let quality = document.querySelector("settings .quality .select");
+    let codecAudio = document.querySelector("settings .codecAudio .select");
+    let codecVideo = document.querySelector("settings .codecVideo .select");
+    let lang = document.querySelector("settings .lang .select");
 
     let modeValue = getCookie("mode");
     let qualityValue = getCookie("quality");
@@ -686,7 +686,7 @@ function loadSettings() {
         selectOption(option);
     }
 
-    let saving = document.querySelector("#settings .save");
+    let saving = document.querySelector("settings .save");
     if (save) {
         saving.querySelector("#save").classList.add("active");
         saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
@@ -694,7 +694,7 @@ function loadSettings() {
         saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
-    let closingToTray = document.querySelector("#settings .closeToTray");
+    let closingToTray = document.querySelector("settings .closeToTray");
     if (closeToTray) {
         closingToTray.querySelector("#closeToTray").classList.add("active");
         closingToTray.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
@@ -702,7 +702,7 @@ function loadSettings() {
         closingToTray.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
-    let autostarting = document.querySelector("#settings .autostart");
+    let autostarting = document.querySelector("settings .autostart");
     if (autostart) {
         autostarting.querySelector("#autostart").classList.add("active");
         autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
@@ -710,7 +710,7 @@ function loadSettings() {
         autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
-    let artistNaming = document.querySelector("#settings .artistName");
+    let artistNaming = document.querySelector("settings .artistName");
     if (artistName) {
         artistNaming.querySelector("#artistName").classList.add("active");
         artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
@@ -718,8 +718,8 @@ function loadSettings() {
         artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
-    let premiumCheck = document.querySelector("#settings .premium");
-    let premiumBrowser = document.querySelector("#settings .browser");
+    let premiumCheck = document.querySelector("settings .premium");
+    let premiumBrowser = document.querySelector("settings .browser");
 
     if (typeof premium != 'undefined' && (premium["check"] ?? false)) {
         premiumCheck.querySelector("#premium").classList.add("active");
@@ -735,7 +735,7 @@ function loadSettings() {
 }
 
 // TODO: Comment
-export async function loadMenu() {
+export async function initalize() {
     if (!Object.keys(languageDB).length) {
         await fetch("assets/db/language.json").then(response => {
             return response.json();
@@ -757,21 +757,42 @@ export async function loadMenu() {
     }
     selectedLang = lang;
 
-    await fetch("assets/template/main.html").then(response => {
+    let main = document.getElementsByTagName("main")[0];
+    await loadPage("assets/template/main.html", main, () => {
+        setThemeIcon();
+    });
+
+    //loadSettings();
+}
+
+// TODO: Comment
+export async function loadPage(pageURL, element, callback = () => {}) {
+    await fetch(pageURL).then(response => {
         return response.text();
     }).then(htmlData => {
-        let main = document.getElementsByTagName("main")[0];
+        console.log(element);
         let template = new DOMParser().parseFromString(htmlData, 'text/html').body;
 
-        main.innerHTML = mustache.render(template.innerHTML, languageDB[selectedLang]);
+        let scripts = template.getElementsByTagName("script");
+        scripts = Object.assign([], scripts);
 
-        loadSettings();
-        setThemeIcon();
+        for (let script of scripts) {
+            let scriptTag = document.createElement("script");
+            scriptTag.type = "module";
+            scriptTag.src = script.src;
+
+            element.appendChild(scriptTag);
+
+            script.parentElement.removeChild(script);
+        }
+
+        element.innerHTML += mustache.render(template.innerHTML, languageDB[selectedLang]);
+        callback();
     });
 }
 
 // TODO: Comment
-function setThemeIcon() {
+export function setThemeIcon() {
     setTimeout(function () {
         let icons = document.querySelectorAll(".theme-toggler svg");
         for (let icon of icons) {
