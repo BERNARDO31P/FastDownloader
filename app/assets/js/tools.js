@@ -825,10 +825,6 @@ export async function loadInfo() {
             let infos = tag.body.split("\r\n");
             infos = infos.filter(n => n);
 
-            infos = infos.map(element => {
-                return element.trim();
-            });
-
             let infoBox = document.createElement("div");
             for (let info of infos) {
                 let infoText = document.createElement("p");

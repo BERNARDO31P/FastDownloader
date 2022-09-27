@@ -281,6 +281,10 @@ settings {
 
   box-shadow: 1px 1px 1px var(--shadow-dark), -1px -1px 1px var(--shadow-light);
 
+  #dynamic {
+    white-space: pre-wrap;
+  }
+
   &.show {
     display: initial;
 
