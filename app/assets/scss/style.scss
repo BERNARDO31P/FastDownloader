@@ -258,17 +258,35 @@ settings {
 }
 
 #info {
+  background-color: var(--body-background);
+
+  z-index: 2;
+  overflow: auto;
+
   display: none;
-  position: absolute;
+  position: fixed;
 
-  width: calc(100% - 50px);
-  height: calc(100% - 25px);
+  width: 500px;
+  height: 450px;
 
-  top: calc(50px / 2);
-  left: calc(25px / 2);
+  left: 0;
+  right: 0;
+
+  margin: 5% auto;
+  padding: 0 20px;
+
+  border-top: 20px solid var(--body-background);
+  border-bottom: 20px solid var(--body-background);
+  border-radius: 5px;
+
+  box-shadow: 1px 1px 1px var(--shadow-dark), -1px -1px 1px var(--shadow-light);
 
   &.show {
     display: initial;
+
+    & ~ settings {
+      filter: blur(2px);
+    }
   }
 }
 
@@ -287,6 +305,13 @@ settings {
 
 .theme-toggler {
   right: 25px;
+}
+
+#info-close {
+  position: absolute;
+
+  right: 10px;
+  top: 0;
 }
 
 #info-open {

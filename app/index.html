@@ -2,7 +2,7 @@
 <html lang="de" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self'"/>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self' https://*.github.com/"/>
     <title>Fast Downloader</title>
 
     <link href="assets/css/style.min.css" rel="stylesheet" type="text/css"/>
@@ -10,6 +10,14 @@
     <script src="assets/js/lib/fontawesome.min.js" rel="script" defer></script>
 </head>
 <body>
+    <div id="info">
+        <div id="info-close" class="toggle"><i class="fas fa-times"></i></div>
+        <div id="static">
+            <p>Developed with love by Bernardo de Oliveira</p>
+            <p>© 2022 BERNARDO.FM - All rights reserved</p>
+        </div>
+        <div id="dynamic"></div>
+    </div>
     <main></main>
     <settings></settings>
     <script src="assets/js/lib/mustache.min.js" rel="script" type="module"></script>

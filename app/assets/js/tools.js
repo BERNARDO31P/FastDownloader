@@ -36,8 +36,6 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
 // TODO: Comment
 export function setArtistName(value) {
     artistName = value;
-
-    console.log(artistName);
 }
 
 /*
@@ -145,7 +143,6 @@ export function loadAllData() {
     document.getElementById("location").value = data["location"];
 
     let listBox = document.querySelector(".listBox ul");
-    console.log(listBox);
     for (let listItem of data["listItems"]) {
         let li = document.createElement("li");
         li.textContent = listItem;
@@ -770,7 +767,6 @@ export async function loadPage(pageURL, element, callback = () => {}) {
     await fetch(pageURL).then(response => {
         return response.text();
     }).then(htmlData => {
-        console.log(element);
         let template = new DOMParser().parseFromString(htmlData, 'text/html').body;
 
         let scripts = template.getElementsByTagName("script");
@@ -814,6 +810,34 @@ export function setTheme(themeSet) {
 }
 
 // TODO: Comment
-export function loadInfo() {
+export async function loadInfo() {
+    let dynamic = document.querySelector("#info #dynamic");
 
+    await fetch("https://api.github.com/repos/BERNARDO31P/FastDownloader/releases?per_page=10").then(response => {
+        return response.json();
+    }).then(htmlData => {
+        for (let tag of htmlData) {
+            let version = document.createElement("h3");
+            version.textContent = tag.tag_name;
+
+            dynamic.appendChild(version);
+
+            let infos = tag.body.split("\r\n");
+            infos = infos.filter(n => n);
+
+            infos = infos.map(element => {
+                return element.trim();
+            });
+
+            let infoBox = document.createElement("div");
+            for (let info of infos) {
+                let infoText = document.createElement("p");
+                infoText.textContent = info;
+
+                infoBox.appendChild(infoText);
+            }
+
+            dynamic.appendChild(infoBox);
+        }
+    });
 }

@@ -179,10 +179,13 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#info-open", function () {
+tools.bindEvent("click", "#info-open", async function () {
     let info = document.getElementById("info");
+    let dynamic = info.querySelector("#dynamic");
 
-    if (info.innerHTML === "") tools.loadInfo();
+    if (dynamic.innerHTML === "") await tools.loadInfo();
+
+    body.style.overflow = "hidden";
     info.classList.add("show");
 });
 
@@ -191,4 +194,5 @@ tools.bindEvent("click", "#info-close", function () {
     let info = document.getElementById("info");
 
     info.classList.remove("show");
+    body.style.overflow = "";
 });
