@@ -105,7 +105,7 @@ input {
   }
 }
 
-button, .theme-toggler, #settings-open, #settings-close {
+button, .toggle {
   user-select: none;
   cursor: pointer;
 
@@ -163,7 +163,7 @@ progress::-webkit-progress-bar {
   background: var(--body-background);
 }
 
-.theme-toggler, #settings-open, #settings-close {
+.toggle {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -314,7 +314,7 @@ settings {
 
   display: none;
 
-  & > div:not(.theme-toggler):not(#settings-close) {
+  & > div:not(.toggle) {
     margin: 15px 0 0 0;
   }
 
