@@ -164,6 +164,21 @@ progress::-webkit-progress-bar {
 }
 
 settings {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 1;
+
+  display: none;
+
+  & > div:not(.toggle) {
+    margin: 15px 0 0 0;
+  }
+
+  .audioSettings, .videoSettings {
+    display: none;
+  }
+
   #nav {
     margin: 0 !important;
     padding: 0 !important;
@@ -195,6 +210,11 @@ settings {
   & > .row:last-of-type {
     padding-bottom: 50px !important;
   }
+}
+
+#link-count {
+  font-size: 13px;
+  opacity: 0;
 }
 
 #contextMenu {
@@ -257,60 +277,6 @@ settings {
   }
 }
 
-#info {
-  background-color: var(--body-background);
-
-  z-index: 2;
-  overflow: auto;
-
-  display: none;
-  position: fixed;
-
-  width: 500px;
-  height: 450px;
-
-  left: 0;
-  right: 0;
-
-  margin: 5% auto;
-  padding: 0 20px;
-
-  border-top: 20px solid var(--body-background);
-  border-bottom: 20px solid var(--body-background);
-  border-radius: 5px;
-
-  box-shadow: 1px 1px 1px var(--shadow-dark), -1px -1px 1px var(--shadow-light);
-
-  #dynamic {
-    white-space: pre-wrap;
-  }
-
-  &.show {
-    display: initial;
-
-    & ~ settings {
-      filter: blur(2px);
-    }
-  }
-}
-
-.toggle {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-
-  position: absolute;
-  top: 10px;
-
-  border-radius: 20px;
-  height: 40px;
-  width: 40px;
-}
-
-.theme-toggler {
-  right: 25px;
-}
-
 #info-close {
   position: absolute;
 
@@ -355,26 +321,63 @@ settings {
   }
 }
 
-settings {
-  position: absolute;
-  left: 0;
-  top: 100%;
-  z-index: 1;
+#info {
+  background-color: var(--body-background);
+
+  z-index: 2;
+  overflow: auto;
 
   display: none;
+  position: fixed;
 
-  & > div:not(.toggle) {
-    margin: 15px 0 0 0;
+  width: 500px;
+  height: 450px;
+
+  left: 0;
+  right: 0;
+
+  margin: 5% auto;
+  padding: 0 20px;
+
+  border-top: 20px solid var(--body-background);
+  border-bottom: 20px solid var(--body-background);
+  border-radius: 5px;
+
+  box-shadow: 1px 1px 1px var(--shadow-dark), -1px -1px 1px var(--shadow-light);
+
+  #dynamic {
+    white-space: pre-wrap;
   }
 
-  .audioSettings, .videoSettings {
-    display: none;
+  &.show {
+    display: initial;
+
+    & ~ settings {
+      filter: blur(2px);
+    }
   }
 }
 
-#link-count {
-  font-size: 13px;
-  opacity: 0;
+.text-button {
+  padding: 5px 10px;
+  margin: 10px 0 5px 0;
+}
+
+.toggle {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  position: absolute;
+  top: 10px;
+
+  border-radius: 20px;
+  height: 40px;
+  width: 40px;
+}
+
+.theme-toggler {
+  right: 25px;
 }
 
 .divider {

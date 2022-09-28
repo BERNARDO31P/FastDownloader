@@ -551,7 +551,7 @@ export async function getChildProcessRecursive(ppid) {
 // TODO: Comment
 export function selectOption(option) {
     let select = option.closest(".select");
-    let button = select.querySelector(".button");
+    let button = select.querySelector("div");
 
     let selected = select.querySelector("[aria-selected='true']");
     selected.ariaSelected = "false";
@@ -807,6 +807,7 @@ export function setTheme(themeSet) {
     setCookie("theme", themeSet);
 }
 
+// TODO: Comment
 function addLeadingZero(string, size) {
     let count = Number(size) - string.toString().length;
 

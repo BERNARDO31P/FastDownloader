@@ -1,4 +1,4 @@
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, shell} = require('electron');
 import * as tools from "./tools.js";
 
 // TODO: Comment
@@ -41,3 +41,8 @@ window.onload = async function () {
 
     ipcRenderer.send("lang", tools.selectedLang ?? tools.getCookie("lang") ?? "en");
 }
+
+// TODO: Comment
+tools.bindEvent("click", "button[data-href]", function () {
+    shell.openExternal(this.getAttribute("data-href"));
+})
