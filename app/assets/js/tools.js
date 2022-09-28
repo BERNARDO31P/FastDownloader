@@ -807,6 +807,15 @@ export function setTheme(themeSet) {
     setCookie("theme", themeSet);
 }
 
+function addLeadingZero(string, size) {
+    let count = Number(size) - string.toString().length;
+
+    for (let i = 0; i < count; i++)
+        string = "0" + string;
+
+    return string;
+}
+
 // TODO: Comment
 export async function loadInfo() {
     let dynamic = document.querySelector("#info #dynamic");
@@ -815,10 +824,15 @@ export async function loadInfo() {
         return response.json();
     }).then(htmlData => {
         for (let tag of htmlData) {
-            let version = document.createElement("h3");
-            version.textContent = tag.tag_name;
+            let date = new Date(tag.published_at);
+            let day = addLeadingZero(date.getUTCDate(), 2);
+            let month = addLeadingZero(date.getUTCMonth() + 1, 2);
+            let year = addLeadingZero(date.getUTCFullYear(), 4);
 
-            dynamic.appendChild(version);
+            let title = document.createElement("h3");
+            title.textContent = tag.tag_name + " - " + day + "." + month + "." + year;
+
+            dynamic.appendChild(title);
 
             let infos = tag.body.split("\r\n");
             infos = infos.filter(n => n);
