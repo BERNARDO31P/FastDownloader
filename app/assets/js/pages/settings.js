@@ -128,7 +128,7 @@ tools.bindEvent("click", "settings .autostart .checkbox", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings-close", function () {
+tools.bindEvent("click", "#settings-close:not([aria-disabled='true'])", function () {
     let settings = document.getElementsByTagName("settings")[0];
     let body = document.getElementsByTagName("body")[0];
     let nav = settings.querySelector("#nav");

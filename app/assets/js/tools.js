@@ -10,14 +10,14 @@ const execSync = promisify(require('child_process').exec);
 
 let artistName = false;
 let theme = getCookie("theme");
-let __realdir = null;
+let __realDir = null;
 
 let hiddenElements = [];
 
 if (!theme) theme = "light";
 setCookie("theme", theme);
 
-export let childProcess = null, downloadAborted = false, playlistCount = 1;
+export let childProcess = null, downloadAborted = false;
 
 export let languageDB = {};
 export let selectedLang = null;
@@ -71,7 +71,7 @@ export function setRealDir(dirname) {
         if (!dirname.includes("\\resources")) dirname = dirname + "\\resources";
     }
 
-    __realdir = dirname;
+    __realDir = dirname;
 }
 
 /*
@@ -402,23 +402,23 @@ export function downloadNFURL() {
 }
 
 // TODO: Comment
-export function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality, playlistCount) {
+export function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
     return new Promise((resolve) => {
-        let exe = "";
-        if (process.platform === "win32") exe = ".exe";
+        let fileEnding = "";
+        if (process.platform === "win32") fileEnding = ".exe";
 
         let progressTotal = document.querySelector(".progress-total progress");
         let infoTotal = document.querySelector(".progress-total .info p");
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
 
-        let command = "\"" + __realdir + "/yt-dlp" + exe + "\" -f ";
+        let command = "\"" + __realDir + "/yt-dlp" + fileEnding + "\" -f ";
         if (mode === "audio") {
-            command += "bestaudio --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --extract-audio --audio-format " + codecAudio + " --audio-quality " + quality + " ";
+            command += "bestaudio --ffmpeg-location \"" + __realDir + "/ffmpeg" + fileEnding + "\" --extract-audio --audio-format " + codecAudio + " --audio-quality " + quality + " ";
 
             if (["mp3", "aac", "flac"].includes(codecAudio)) command += "--embed-thumbnail ";
         } else {
-            command += "bestvideo+bestaudio -S vcodec:" + codecVideo + " --yes-playlist --playlist-start " + playlistCount + " --ffmpeg-location \"" + __realdir + "/ffmpeg" + exe + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
+            command += "bestvideo+bestaudio -S vcodec:" + codecVideo + " --ffmpeg-location \"" + __realDir + "/ffmpeg" + fileEnding + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
         }
 
         let premium = JSON.parse(getCookie("premium"));
@@ -450,14 +450,15 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
 
         childProcess.on('close', function () {
             let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
+            let percentageDecimal = percentageTotal / 100;
 
-            progressTotal.value = percentageTotal / 100;
+            progressTotal.value = percentageDecimal;
             infoTotal.textContent = percentageTotal + "%";
 
             progressSong.value = 1;
             infoSong.textContent = "100%";
 
-            ipcRenderer.send('set_percentage', percentageTotal);
+            ipcRenderer.send('set_percentage', percentageDecimal);
 
             if (!downloadAborted) {
                 resolve(true);
@@ -471,7 +472,10 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
 
 // TODO: Comment
 export async function getPlaylistUrls(url) {
-    let playlist = await ytpl(url);
+    let playlist = await ytpl(url, {
+        limit: Infinity,
+        pages: Infinity
+    });
 
     let items = [];
 
@@ -485,7 +489,7 @@ export async function getPlaylistUrls(url) {
 export function setDisabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
     let location = document.querySelector(".location #location");
-    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button)");
+    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler)");
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
 
@@ -504,7 +508,7 @@ export function setDisabled() {
 export function setEnabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
     let location = document.querySelector(".location #location");
-    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button)");
+    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler)");
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
 

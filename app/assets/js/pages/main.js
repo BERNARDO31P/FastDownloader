@@ -259,64 +259,62 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
     let aborted = false;
     let i = 0;
     for (let url of allUrls) {
-        let success = false;
+        let individualLocation = location.value;
+        let individualQuality = quality;
+        let individualMode = mode;
+        let individualCodecAudio = codecAudio;
+        let individualCodecVideo = codecVideo;
 
         if (!url.includes("netflix")) {
             if (typeof specificSettings[i] !== 'undefined') {
                 if (typeof specificSettings[i]["quality"] !== 'undefined')
-                    quality = specificSettings[i]["quality"];
+                    individualQuality = specificSettings[i]["quality"];
 
                 if (typeof specificSettings[i]["mode"] !== 'undefined')
-                    mode = specificSettings[i]["mode"];
+                    individualMode = specificSettings[i]["mode"];
 
                 if (typeof specificSettings[i]["codecAudio"] !== 'undefined')
-                    codecAudio = specificSettings[i]["codecAudio"];
+                    individualCodecAudio = specificSettings[i]["codecAudio"];
 
                 if (typeof specificSettings[i]["codecVideo"] !== 'undefined')
-                    codecVideo = specificSettings[i]["codecVideo"];
+                    individualCodecVideo = specificSettings[i]["codecVideo"];
 
                 if (typeof specificSettings[i]["location"] !== 'undefined')
-                    location = specificSettings[i]["location"];
+                    individualLocation = specificSettings[i]["location"];
             }
 
             let qualityInt = 0;
-            switch (quality) {
-                case "best":
-                    qualityInt = 0;
+            switch (individualQuality) {
+                case "best": qualityInt = 0;
                     break;
-                case "medium":
-                    qualityInt = 5;
+                case "medium": qualityInt = 5;
                     break;
-                case "bad":
-                    qualityInt = 9;
+                case "bad": qualityInt = 9;
                     break;
             }
 
-            success = await tools.downloadYTURL(
-                mode,
-                location.value,
+            aborted = !await tools.downloadYTURL(
+                individualMode,
+                individualLocation,
                 url,
                 percentage,
-                codecAudio,
-                codecVideo,
-                qualityInt,
-                tools.playlistCount
+                individualCodecAudio,
+                individualCodecVideo,
+                qualityInt
             );
         } else {
-            success = await tools.downloadNFURL(
+            aborted = await tools.downloadNFURL(
             );
         }
-
-        if (!success) {
-            aborted = true;
-            break;
-        }
+        if (aborted) break;
 
         i++;
     }
 
-    progressTotal.value = 1;
     infoTotal.textContent = "100%";
+    progressTotal.value = 1;
+    ipcRenderer.send('set_percentage', 1);
+
     tools.setEnabled();
 
     if (!aborted) {
@@ -525,7 +523,7 @@ tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings-open", async function () {
+tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async function () {
     let settings = document.getElementsByTagName("settings")[0];
 
     if (settings.innerHTML === "") {
