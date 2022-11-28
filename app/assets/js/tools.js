@@ -261,14 +261,14 @@ function escapeRegExp(text) {
 }
 
 // TODO: Comment
-export async function addLinkToList(link = "") {
+export function addLinkToList(link = "") {
     if (!link) {
         showNotification(languageDB[selectedLang]["js"]["noURL"]);
 
         if (document.hidden)
             ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
 
-        return;
+        return false;
     }
 
     let values = link.split(/[\n\s]+/);
@@ -289,7 +289,7 @@ export async function addLinkToList(link = "") {
             if (document.hidden)
                 ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
 
-            return;
+            return false;
         }
 
         let elements = ul.querySelectorAll("li");
@@ -300,7 +300,7 @@ export async function addLinkToList(link = "") {
                 if (document.hidden)
                     ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
 
-                return;
+                return false;
             }
         }
 

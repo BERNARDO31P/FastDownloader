@@ -571,7 +571,8 @@ ipcRenderer.on('url', function (event, value) {
     let input = document.querySelector(".input input");
     input.value = value;
 
-    tools.addLinkToList(value);
+    if (tools.addLinkToList(value))
+        input.value = "";
 });
 
 // TODO: Comment
