@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.3.11",
+  "version": "0.4.0-beta1",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
@@ -33,7 +33,9 @@
     "easy-auto-launch": "^6.0.2",
     "electron-updater": "^5.3.0",
     "number-precision": "^1.6.0",
-    "ytpl": "^2.3.0"
+    "ytpl": "^2.3.0",
+    "node-youtube-music": "^0.8.3",
+    "youtube-sr": "^4.3.4"
   },
   "build": {
     "productName": "Fast Downloader",

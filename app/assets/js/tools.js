@@ -2,7 +2,9 @@ import mustache from "./lib/mustache.min.js";
 
 const NP = require('number-precision');
 const {promisify} = require('util');
+const yt = require("youtube-sr").default;
 const ytpl = require('ytpl');
+const ytmusic = require('node-youtube-music');
 const {ipcRenderer, clipboard} = require('electron');
 
 const {exec} = require('child_process');
@@ -23,6 +25,15 @@ export let languageDB = {};
 export let selectedLang = null;
 
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
+
+let keywords = [
+    "\\[.*\\]",
+    "- official",
+    "video",
+    "music video",
+];
+let ytfilter = new RegExp(keywords.join("|"), 'gi');
+
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -101,7 +112,7 @@ export function getCookie(name) {
  *
  * Erstellt einen Cookie und setzt die Werte
  */
-export function setCookie(name, value, expiresAt = "") {
+export function setCookie(name, value) {
     localStorage.setItem(name, value);
 }
 
@@ -233,7 +244,24 @@ export function removeOpacityNotification(notification) {
 }
 
 // TODO: Comment
-export function addLinkToList(link = "") {
+function async(func) {
+    setTimeout(func, 0);
+}
+
+// TODO: Comment
+function match(string, regex) {
+    let found = string.match(regex);
+
+    return (found) ? found[0] : null;
+}
+
+// TODO: Comment
+function escapeRegExp(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+// TODO: Comment
+export async function addLinkToList(link = "") {
     if (!link) {
         showNotification(languageDB[selectedLang]["js"]["noURL"]);
 
@@ -248,12 +276,14 @@ export function addLinkToList(link = "") {
     for (let value of values) {
         value = value.trim();
 
-        let foundYT = value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
+        let url = [];
+
+        url["yt"] = match(value, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
 
         // TODO: Complete regex for netflix
-        let foundNF = value.match("http(?:s?):\\/\\/(?:www\\.)?netflix.com");
+        url["nf"] = match(value, "http(?:s?):\\/\\/(?:www\\.)?netflix.com");
 
-        if (!foundYT && !foundNF) {
+        if (!url["yt"] && !url["nf"]) {
             showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
 
             if (document.hidden)
@@ -264,7 +294,7 @@ export function addLinkToList(link = "") {
 
         let elements = ul.querySelectorAll("li");
         for (let element of elements) {
-            if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
+            if (element.textContent === url[0]) {
                 showNotification(languageDB[selectedLang]["js"]["urlInList"]);
 
                 if (document.hidden)
@@ -275,14 +305,17 @@ export function addLinkToList(link = "") {
         }
 
         let li = document.createElement("li");
+        li.textContent = url["yt"] ?? url["nf"];
 
-        let elementCount = ul.querySelectorAll("li").length;
-        li.setAttribute("data-id", elementCount.toString());
-
-        if (foundYT) li.textContent = foundYT[0];
-        else li.textContent = foundNF[0];
+        let nextID = ul.querySelectorAll("li").length;
+        li.setAttribute("data-id", nextID.toString());
 
         ul.appendChild(li);
+
+        async(async () => {
+            if (url["yt"])
+                li.textContent = await checkPremiumAndConvert(url["yt"], getCookie("mode"));
+        });
     }
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
@@ -296,6 +329,17 @@ export function addLinkToList(link = "") {
         ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
 
     return true;
+}
+
+export async function checkPremiumAndConvert(url, mode) {
+    let premium = JSON.parse(getCookie("premium"));
+    if (mode === "audio" && premium.check)
+        if (!url.includes("music")) {
+            let musicUrl = await getYoutubeMusic(url);
+            if (musicUrl) url = musicUrl;
+        }
+
+    return url;
 }
 
 // TODO: Comment
@@ -483,6 +527,56 @@ export async function getPlaylistUrls(url) {
         items.push(item["shortUrl"]);
 
     return items;
+}
+
+// TODO: Comment
+async function getYoutubeMusic(url) {
+    return await yt.getVideo(url).then(async (result) => {
+        let fullTitle, artist, title = result.title;
+
+        title = title.replace(ytfilter, "");
+
+        if (!title.includes("-")) {
+            artist = result.channel.name;
+            artist = artist.replace(/ - topic/gi, "");
+
+            fullTitle = artist + " - " + title;
+        } else fullTitle = title;
+
+
+        let music = {};
+        let results = await ytmusic.searchMusics(fullTitle);
+        if (results) music = results[0];
+
+        let found = true;
+        if (Object.keys(music).length) {
+            if (match(title, "/remix/gi")) {
+                if (!match(music.title, "/remix/gi")) {
+                    let duration = result.duration / 1000;
+
+                    if (music.duration.totalSeconds !== duration)
+                        found = false;
+                }
+            }
+        }
+
+        music.title = escapeRegExp(music.title);
+
+        if (!title.match(new RegExp(music.title, "gi")))
+            found = false;
+
+        let artists = music.artists.pop().name;
+        for (let artist of music.artists)
+            artists += "|" + artist.name;
+
+        if (!fullTitle.match(new RegExp(artists, "gi")))
+            found = false;
+
+        if (found) return "https://music.youtube.com/watch?v=" + music.youtubeId;
+        else return null;
+    }).catch((e) => {
+        console.log(e)
+    });
 }
 
 // TODO: Comment
@@ -765,7 +859,8 @@ export async function initalize() {
 }
 
 // TODO: Comment
-export async function loadPage(pageURL, element, callback = () => {}) {
+export async function loadPage(pageURL, element, callback = () => {
+}) {
     await fetch(pageURL).then(response => {
         return response.text();
     }).then(htmlData => {

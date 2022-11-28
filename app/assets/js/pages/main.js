@@ -293,6 +293,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                     break;
             }
 
+            url = await tools.checkPremiumAndConvert(url);
+
             aborted = !await tools.downloadYTURL(
                 individualMode,
                 individualLocation,
