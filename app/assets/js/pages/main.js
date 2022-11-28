@@ -350,22 +350,25 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
 
     if (!e.target.textContent.includes("playlist?list=")) {
         let context = document.getElementById("contextMenu");
-        let mode = document.querySelector("settings .mode .select");
+        let mode = tools.getCookie("mode");
         let id = this.getAttribute("data-id");
 
-        let modeValue = mode.getAttribute("data-value");
         if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["mode"] !== 'undefined')
-            modeValue = specificSettings[id]["mode"];
+            mode = specificSettings[id]["mode"];
 
         tools.removeActives(context.querySelector(".mode"));
-        if (modeValue === "audio") {
+        if (mode === "audio") {
             context.querySelector(".codecAudio").style.display = "";
             context.querySelector(".quality").style.display = "";
+
+            context.querySelector(".codecVideo").style.display = "none";
 
             context.querySelector(".mode [data-value='audio']").classList.add("active");
         } else {
             context.querySelector(".codecAudio").style.display = "none";
             context.querySelector(".quality").style.display = "none";
+
+            context.querySelector(".codecVideo").style.display = "";
 
             context.querySelector(".mode [data-value='video']").classList.add("active");
         }
@@ -374,16 +377,16 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
         if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["quality"] !== "undefined") {
             context.querySelector(".quality [data-value='" + specificSettings[id]["quality"] + "']").classList.add("active");
         } else {
-            let quality = document.querySelector("settings .quality .select");
-            context.querySelector(".quality [data-value='" + quality.getAttribute("data-value") + "']").classList.add("active");
+            let quality = tools.getCookie("quality");
+            context.querySelector(".quality [data-value='" + quality+ "']").classList.add("active");
         }
 
         tools.removeActives(context.querySelector(".codecAudio"));
         if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["codec"] !== "undefined") {
             context.querySelector(".codecAudio [data-value='" + specificSettings[id]["codec"] + "']").classList.add("active");
         } else {
-            let codec = document.querySelector("settings .codecAudio .select");
-            context.querySelector(".codecAudio [data-value='" + codec.getAttribute("data-value") + "']").classList.add("active");
+            let codec = tools.getCookie("codecAudio");
+            context.querySelector(".codecAudio [data-value='" + codec + "']").classList.add("active");
         }
 
         contextElement = e.target;
