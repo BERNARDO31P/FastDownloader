@@ -5,6 +5,8 @@ const {clipboard, ipcRenderer, shell} = require('electron');
 
 let lastClicked = null, contextElement = null;
 let specificSettings = {}
+let aborted = false;
+
 
 // TODO: Comment
 document.onclick = function (e) {
@@ -165,159 +167,183 @@ tools.bindEvent("click", ".theme-toggler", function () {
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
-    let listBox = document.getElementsByClassName("listBox")[0];
-    let location = document.querySelector(".location #location");
-    let items = listBox.querySelectorAll("li");
+    aborted = false;
 
-    let mode = tools.getCookie("mode");
-    let codecAudio = tools.getCookie("codecAudio");
-    let codecVideo = tools.getCookie("codecVideo");
-    let quality = tools.getCookie("quality");
+    download: {
+        let listBox = document.getElementsByClassName("listBox")[0];
+        let location = document.querySelector(".location #location");
+        let items = listBox.querySelectorAll("li");
 
-    if (!items.length) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
+        let mode = tools.getCookie("mode");
+        let codecAudio = tools.getCookie("codecAudio");
+        let codecVideo = tools.getCookie("codecVideo");
+        let quality = tools.getCookie("quality");
 
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
-
-        return;
-    }
-
-    if (!mode) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
-
-        return;
-    } else if (mode === "audio") {
-        if (!codecAudio) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+        if (!items.length) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
             return;
         }
 
-        if (!quality) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
+        if (!mode) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
             return;
-        }
-    } else {
-        if (!codecVideo) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+        } else if (mode === "audio") {
+            if (!codecAudio) {
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
-            if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
-            return;
-        }
-    }
-
-    if (!location.value) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
-
-        return;
-    }
-
-    tools.setDisabled();
-    ipcRenderer.send('set_percentage', 0);
-    ipcRenderer.send('add_abort');
-
-    let progressTotal = document.querySelector(".progress-total progress");
-    let infoTotal = document.querySelector(".progress-total .info p");
-    let progressSong = document.querySelector(".progress-song progress");
-    let infoSong = document.querySelector(".progress-song .info p");
-
-    progressTotal.value = 0;
-    progressSong.value = 0;
-    infoTotal.textContent = "0%";
-    infoSong.textContent = "0%";
-
-    let count = 0;
-    let allUrls = [];
-    for (let item of items) {
-        if (item.textContent.includes("playlist?list=")) {
-            let urls = await tools.getPlaylistUrls(item.textContent);
-            count += urls.length;
-            allUrls = [...allUrls, ...urls];
-        } else {
-            count++;
-            allUrls.push(item.textContent);
-        }
-    }
-
-    let percentage = Math.floor(100 / count * 100) / 100;
-    let aborted = false;
-    let i = 0;
-    for (let url of allUrls) {
-        let individualLocation = location.value;
-        let individualQuality = quality;
-        let individualMode = mode;
-        let individualCodecAudio = codecAudio;
-        let individualCodecVideo = codecVideo;
-
-        if (!url.includes("netflix")) {
-            if (typeof specificSettings[i] !== 'undefined') {
-                if (typeof specificSettings[i]["quality"] !== 'undefined')
-                    individualQuality = specificSettings[i]["quality"];
-
-                if (typeof specificSettings[i]["mode"] !== 'undefined')
-                    individualMode = specificSettings[i]["mode"];
-
-                if (typeof specificSettings[i]["codecAudio"] !== 'undefined')
-                    individualCodecAudio = specificSettings[i]["codecAudio"];
-
-                if (typeof specificSettings[i]["codecVideo"] !== 'undefined')
-                    individualCodecVideo = specificSettings[i]["codecVideo"];
-
-                if (typeof specificSettings[i]["location"] !== 'undefined')
-                    individualLocation = specificSettings[i]["location"];
+                return;
             }
 
-            let qualityInt = 0;
-            switch (individualQuality) {
-                case "best": qualityInt = 0;
-                    break;
-                case "medium": qualityInt = 5;
-                    break;
-                case "bad": qualityInt = 9;
-                    break;
+            if (!quality) {
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
+                return;
+            }
+        } else {
+            if (!codecVideo) {
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
+                return;
+            }
+        }
+
+        if (!location.value) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+
+            return;
+        }
+
+        tools.setDisabled();
+        ipcRenderer.send('set_percentage', 0);
+        ipcRenderer.send('add_abort');
+
+        let progressTotal = document.querySelector(".progress-total progress");
+        let infoTotal = document.querySelector(".progress-total .info p");
+        let progressSong = document.querySelector(".progress-song progress");
+        let infoSong = document.querySelector(".progress-song .info p");
+
+        progressTotal.value = 0;
+        progressSong.value = 0;
+        infoTotal.textContent = "0%";
+        infoSong.textContent = "0%";
+
+        let count = 0;
+        let allUrls = [];
+        for (let item of items) {
+            if (item.textContent.includes("playlist?list=")) {
+                let urls = await tools.getPlaylistUrls(item.textContent);
+                count += urls.length;
+                allUrls = [...allUrls, ...urls];
+            } else {
+                count++;
+                allUrls.push(item.textContent);
             }
 
-            url = await tools.checkPremiumAndConvert(url);
-
-            aborted = !await tools.downloadYTURL(
-                individualMode,
-                individualLocation,
-                url,
-                percentage,
-                individualCodecAudio,
-                individualCodecVideo,
-                qualityInt
-            );
-        } else {
-            aborted = await tools.downloadNFURL(
-            );
+            if (aborted) break download;
         }
-        if (aborted) break;
 
-        i++;
+        let data = [];
+        let i = 0;
+        for (let url of allUrls) {
+            let individualLocation = location.value;
+            let individualQuality = quality;
+            let individualMode = mode;
+            let individualCodecAudio = codecAudio;
+            let individualCodecVideo = codecVideo;
+            let item = {};
+
+            if (!url.includes("netflix")) {
+                if (typeof specificSettings[i] !== 'undefined') {
+                    if (typeof specificSettings[i]["quality"] !== 'undefined')
+                        individualQuality = specificSettings[i]["quality"];
+
+                    if (typeof specificSettings[i]["mode"] !== 'undefined')
+                        individualMode = specificSettings[i]["mode"];
+
+                    if (typeof specificSettings[i]["codecAudio"] !== 'undefined')
+                        individualCodecAudio = specificSettings[i]["codecAudio"];
+
+                    if (typeof specificSettings[i]["codecVideo"] !== 'undefined')
+                        individualCodecVideo = specificSettings[i]["codecVideo"];
+
+                    if (typeof specificSettings[i]["location"] !== 'undefined')
+                        individualLocation = specificSettings[i]["location"];
+                }
+
+                let qualityInt = 0;
+                switch (individualQuality) {
+                    case "best":
+                        qualityInt = 0;
+                        break;
+                    case "medium":
+                        qualityInt = 5;
+                        break;
+                    case "bad":
+                        qualityInt = 9;
+                        break;
+                }
+
+                item = {
+                    "url": await tools.checkPremiumAndConvert(url, individualMode),
+                    "quality": qualityInt,
+                    "mode": individualMode,
+                    "codecAudio": individualCodecAudio,
+                    "codecVideo": individualCodecVideo,
+                    "location": individualLocation
+                }
+            } else item.url = url;
+
+            data.push(item);
+            i++;
+
+            if (aborted) break download;
+        }
+
+        let percentage = Math.floor(100 / count * 100) / 100;
+        for (let item of data) {
+            if (!item.url.includes("netflix")) {
+                aborted = !await tools.downloadYTURL(
+                    item.mode,
+                    item.location,
+                    item.url,
+                    percentage,
+                    item.codecAudio,
+                    item.codecVideo,
+                    item.quality
+                );
+            } else {
+                aborted = await tools.downloadNFURL(
+                );
+            }
+            if (aborted) break;
+        }
+
+        infoTotal.textContent = "100%";
+        progressTotal.value = 1;
+        ipcRenderer.send('set_percentage', 1);
+
+        tools.setEnabled();
     }
-
-    infoTotal.textContent = "100%";
-    progressTotal.value = 1;
-    ipcRenderer.send('set_percentage', 1);
-
-    tools.setEnabled();
 
     if (!aborted) {
         ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
@@ -334,13 +360,18 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
     tools.abortDownload();
-    tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
-        pids = pids.reverse();
-        for (let pid of pids) {
-            ipcRenderer.send("kill_pid", Number(pid));
-        }
-        ipcRenderer.send("kill_pid", tools.childProcess.pid);
-    });
+    aborted = true;
+
+    if (tools.childProcess) {
+        tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
+            pids = pids.reverse();
+            for (let pid of pids) {
+                ipcRenderer.send("kill_pid", Number(pid));
+            }
+            ipcRenderer.send("kill_pid", tools.childProcess.pid);
+        });
+    }
+
     tools.setEnabled();
 });
 

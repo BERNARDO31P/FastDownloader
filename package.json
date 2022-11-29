@@ -35,7 +35,8 @@
     "number-precision": "^1.6.0",
     "ytpl": "^2.3.0",
     "node-youtube-music": "^0.8.3",
-    "youtube-sr": "^4.3.4"
+    "youtube-sr": "^4.3.4",
+    "fastest-levenshtein": "^1.0.16"
   },
   "build": {
     "productName": "Fast Downloader",

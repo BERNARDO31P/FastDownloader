@@ -6,6 +6,7 @@ const yt = require("youtube-sr").default;
 const ytpl = require('ytpl');
 const ytmusic = require('node-youtube-music');
 const {ipcRenderer, clipboard} = require('electron');
+const {distance} = require('fastest-levenshtein');
 
 const {exec} = require('child_process');
 const execSync = promisify(require('child_process').exec);
@@ -14,23 +15,32 @@ let artistName = false;
 let theme = getCookie("theme");
 let __realDir = null;
 
-let hiddenElements = [];
+let hiddenElements = [], urlList = [];
 
 if (!theme) theme = "light";
 setCookie("theme", theme);
 
-export let childProcess = null, downloadAborted = false;
+document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
+export let childProcess = null, downloadAborted = false;
 export let languageDB = {};
 export let selectedLang = null;
 
-document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 let keywords = [
     "\\[.*\\]",
+    "\\{.*\\}",
     "- official",
     "video",
     "music video",
+    "original mix",
+    "\\(",
+    "\\)",
+    "tdt #001",
+    "free unreleased wav download",
+    "free download",
+    "download",
+    "unreleased"
 ];
 let ytfilter = new RegExp(keywords.join("|"), 'gi');
 
@@ -250,9 +260,23 @@ function async(func) {
 
 // TODO: Comment
 function match(string, regex) {
-    let found = string.match(regex);
+    let regExp = new RegExp(regex, "gi");
+    let found = string.match(regExp);
 
     return (found) ? found[0] : null;
+}
+
+// TODO: Comment
+const matchCount = (string, regex) => {
+    let regExp = new RegExp(regex, "gi");
+
+    return string?.match(regExp)?.length ?? 0;
+};
+
+function contains(string, regex) {
+    let regExp = new RegExp(regex, "gi");
+
+    return !!string.match(regExp);
 }
 
 // TODO: Comment
@@ -292,30 +316,34 @@ export function addLinkToList(link = "") {
             return false;
         }
 
-        let elements = ul.querySelectorAll("li");
-        for (let element of elements) {
-            if (element.textContent === url[0]) {
-                showNotification(languageDB[selectedLang]["js"]["urlInList"]);
+        if (urlList.indexOf(url["yt"]) !== -1 || urlList.indexOf(url["nf"]) !== -1) {
+            showNotification(languageDB[selectedLang]["js"]["urlInList"]);
 
-                if (document.hidden)
-                    ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+            if (document.hidden)
+                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
 
-                return false;
-            }
+            return false;
         }
 
         let li = document.createElement("li");
-        li.textContent = url["yt"] ?? url["nf"];
+        let link = url["yt"] ?? url["nf"];
+
+        li.textContent = link;
+        urlList.push(link);
 
         let nextID = ul.querySelectorAll("li").length;
         li.setAttribute("data-id", nextID.toString());
 
         ul.appendChild(li);
 
-        async(async () => {
-            if (url["yt"])
-                li.textContent = await checkPremiumAndConvert(url["yt"], getCookie("mode"));
-        });
+        if (url["yt"]) {
+            async(async () => {
+                let link = await checkPremiumAndConvert(url["yt"], getCookie("mode"));
+
+                li.textContent = link;
+                urlList.push(link);
+            });
+        }
     }
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
@@ -334,7 +362,7 @@ export function addLinkToList(link = "") {
 export async function checkPremiumAndConvert(url, mode) {
     let premium = JSON.parse(getCookie("premium"));
     if (mode === "audio" && premium.check)
-        if (!url.includes("music")) {
+        if (!url.includes("music") && !url.includes("playlist")) {
             let musicUrl = await getYoutubeMusic(url);
             if (musicUrl) url = musicUrl;
         }
@@ -530,53 +558,120 @@ export async function getPlaylistUrls(url) {
 }
 
 // TODO: Comment
+function subtractSmallerNumber(num1, num2) {
+    if(num1 < num2) return num2 - num1;
+    else return num1 - num2;
+}
+
+// TODO: Comment
+function getBiggerLength(string1, string2) {
+    return (string1.length > string2.length) ? string1.length : string2.length;
+}
+
+// TODO: Comment
+function getSortedLength(string1, string2) {
+    return (string1.length > string2.length) ? [string1, string2] : [string2, string1];
+}
+
+// TODO: Comment
 async function getYoutubeMusic(url) {
     return await yt.getVideo(url).then(async (result) => {
-        let fullTitle, artist, title = result.title;
+        let ytFullTitle, ytArtist, ytTitle = result.title;
+        let delimiter = " - | – ";
+        const deviation = 65;
 
-        title = title.replace(ytfilter, "");
+        ytTitle = ytTitle.replace(ytfilter, "");
 
-        if (!title.includes("-")) {
-            artist = result.channel.name;
-            artist = artist.replace(/ - topic/gi, "");
+        if (!contains(ytTitle, delimiter)) {
+            ytArtist = result.channel.name;
+            ytArtist = ytArtist.replace(/ - topic/gi, "");
 
-            fullTitle = artist + " - " + title;
-        } else fullTitle = title;
+            ytFullTitle = ytArtist + " - " + ytTitle;
+        } else {
+            ytFullTitle = ytTitle;
+            ytTitle = ytTitle.split(delimiter)[1];
+        }
 
 
         let music = {};
-        let results = await ytmusic.searchMusics(fullTitle);
+        let results = await ytmusic.searchMusics(ytFullTitle);
         if (results) music = results[0];
 
-        let found = true;
-        if (Object.keys(music).length) {
-            if (match(title, "/remix/gi")) {
-                if (!match(music.title, "/remix/gi")) {
-                    let duration = result.duration / 1000;
+        let artists = null, found = true;
+        find: {
+            if (Object.keys(music).length) {
+                music.title = music.title.replace(ytfilter, "");
 
-                    if (music.duration.totalSeconds !== duration)
+                if (contains(ytTitle, "(remix)")) {
+                    if (!contains(music.title, "(remix)")) {
+                        let duration = result.duration / 1000;
+
+                        if (subtractSmallerNumber(music.duration.totalSeconds, duration) >= 3) {
+                            found = false;
+                            break find;
+                        }
+
+                        music.title = music.title += " remix";
+                    }
+                }
+
+                if (contains(music.title, delimiter)) {
+                    let temp = music.title.split(delimiter);
+
+                    music.artists[0].name = temp[0];
+                    music.title = temp[1];
+                }
+
+                let sorted = getSortedLength(ytTitle, music.title);
+                let regexEscaped = escapeRegExp(sorted[1]);
+
+                let split = regexEscaped.split("\\ ");
+                let join = split.join("|");
+
+                let count = matchCount(sorted[0], join);
+                if (!contains(sorted[0], join) || 100 / split.length * count < deviation ) {
+                    let length = getBiggerLength(ytTitle, music.title);
+
+                    if (100 / length * (length - distance(ytTitle, music.title)) < deviation) {
                         found = false;
+                        break find;
+                    }
+                }
+
+                artists = music.artists.pop().name;
+                for (let artist of music.artists)
+                    artists += "," + artist.name;
+
+                artists = artists.replace(/\(.*\)/gi, "");
+
+                let foundArtists = 0;
+                for (let artist of artists.split(",")) {
+                    artist = artist.name;
+
+                    if (contains(ytFullTitle, artist) ||
+                        contains(ytFullTitle, "(various artists)"))
+                        foundArtists++;
+                }
+
+                let probability = 100 / music.artists.length * foundArtists;
+                if (probability < deviation) {
+                    if (music.artists.length > 2 && probability < 50) {
+                        let length = getBiggerLength(ytArtist, artists);
+
+                        if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
+                            found = false;
+                            break find;
+                        }
+                    }
                 }
             }
         }
 
-        music.title = escapeRegExp(music.title);
+        if (found) {
+            return "https://music.youtube.com/watch?v=" + music.youtubeId;
+        } else return null;
 
-        if (!title.match(new RegExp(music.title, "gi")))
-            found = false;
-
-        let artists = music.artists.pop().name;
-        for (let artist of music.artists)
-            artists += "|" + artist.name;
-
-        if (!fullTitle.match(new RegExp(artists, "gi")))
-            found = false;
-
-        if (found) return "https://music.youtube.com/watch?v=" + music.youtubeId;
-        else return null;
-    }).catch((e) => {
-        console.log(e)
-    });
+    }).catch(() => null);
 }
 
 // TODO: Comment
