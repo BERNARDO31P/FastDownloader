@@ -26,8 +26,11 @@ function removeActiveListItems() {
     if (actives) {
         for (let active of actives) {
             let id = active.getAttribute("data-id");
-
             delete specificSettings[id];
+
+            let index = tools.urlList.indexOf(active.textContent);
+            delete tools.urlList[index];
+
             active.remove();
         }
     }

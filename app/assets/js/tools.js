@@ -15,7 +15,8 @@ let artistName = false;
 let theme = getCookie("theme");
 let __realDir = null;
 
-let hiddenElements = [], urlList = [];
+let hiddenElements = []
+export let urlList = [];
 
 if (!theme) theme = "light";
 setCookie("theme", theme);
@@ -322,19 +323,13 @@ export function addLinkToList(link = "") {
         }
 
         if (urlList.indexOf(url["yt"]) !== -1 || urlList.indexOf(url["nf"]) !== -1) {
-            showNotification(languageDB[selectedLang]["js"]["urlInList"]);
-
-            if (document.hidden)
-                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+            alreadyInList();
 
             return false;
         }
 
         let li = document.createElement("li");
-        let link = url["yt"] ?? url["nf"];
-
-        li.textContent = link;
-        urlList.push(link);
+        li.textContent = url["yt"] ?? url["nf"];
 
         let nextID = ul.querySelectorAll("li").length;
         li.setAttribute("data-id", nextID.toString());
@@ -344,6 +339,13 @@ export function addLinkToList(link = "") {
         if (url["yt"]) {
             async(async () => {
                 let link = await checkPremiumAndConvert(url["yt"], getCookie("mode"));
+
+                if (urlList.indexOf(link) !== -1) {
+                    alreadyInList();
+                    li.remove();
+
+                    return;
+                }
 
                 li.textContent = link;
                 urlList.push(link);
@@ -362,6 +364,13 @@ export function addLinkToList(link = "") {
         ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
 
     return true;
+}
+
+function alreadyInList() {
+    showNotification(languageDB[selectedLang]["js"]["urlInList"]);
+
+    if (document.hidden)
+        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
 }
 
 export async function checkPremiumAndConvert(url, mode) {
