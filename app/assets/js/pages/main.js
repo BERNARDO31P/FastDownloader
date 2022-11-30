@@ -6,6 +6,7 @@ const {clipboard, ipcRenderer, shell} = require('electron');
 let lastClicked = null, contextElement = null;
 let specificSettings = {}
 let aborted = false;
+let downloading = false;
 
 
 // TODO: Comment
@@ -323,6 +324,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         }
 
         let percentage = Math.floor(100 / count * 100) / 100;
+        downloading = true;
+
         for (let item of data) {
             if (!item.url.includes("netflix")) {
                 aborted = !await tools.downloadYTURL(
@@ -347,6 +350,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
         tools.setEnabled();
     }
+
+    downloading = false;
 
     if (!aborted) {
         ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
@@ -630,11 +635,11 @@ ipcRenderer.on('translate', function (event, array) {
 
 // TODO: Comment
 document.addEventListener("keydown", function (e) {
-    if (e.code === "Delete") {
+    if (e.code === "Delete" && !downloading) {
         removeActiveListItems();
     }
 
-    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null) {
+    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null && !downloading) {
         let items = document.querySelectorAll(".listBox li");
         if (!items.length) return;
 
