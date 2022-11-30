@@ -32,8 +32,9 @@ let keywords = [
     "\\[.*\\]",
     "\\{.*\\}",
     "- official",
+    "official",
     "video",
-    "music video",
+    "musi(c|k)(\\s+)?video",
     "original mix",
     "\\(",
     "\\)",
@@ -43,10 +44,16 @@ let keywords = [
     "download",
     "unreleased",
     "ᴴᴰ",
+    "hd",
     "(\\d+) bpm",
     "(\\d+)bpm",
     "\\/\\/(?<=\\/\\/).*",
-    "radio edit"
+    "radio edit",
+    "lyrics",
+    "visuals",
+    "\"",
+    "'",
+    "\\(prod\\.(.+)?\\)"
 ];
 let ytfilter = new RegExp(keywords.join("|"), 'gi');
 
@@ -606,7 +613,7 @@ async function getYoutubeMusic(url) {
             ytFullTitle = ytArtist + " - " + ytTitle;
         } else {
             ytFullTitle = ytTitle;
-            ytTitle = ytTitle.split(delimiter)[1];
+            ytTitle = ytTitle.split(delimiter)[1].replace(channelName, "");
         }
 
         let music = {};
