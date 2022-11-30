@@ -576,6 +576,11 @@ function getSortedLength(string1, string2) {
 // TODO: Comment
 async function getYoutubeMusic(url) {
     return await yt.getVideo(url).then(async (result) => {
+        let channelName = result.channel.name;
+
+        if (contains(channelName, "(various artists)") || contains(channelName, "- topic"))
+            return "https://music.youtube.com/watch?v=" + result.id;
+
         let ytFullTitle, ytArtist, ytTitle = result.title;
         let delimiter = " - | – ";
         const deviation = 65;
@@ -583,31 +588,52 @@ async function getYoutubeMusic(url) {
         ytTitle = ytTitle.replace(ytfilter, "");
 
         if (!contains(ytTitle, delimiter)) {
-            ytArtist = result.channel.name;
-            ytArtist = ytArtist.replace(/ - topic/gi, "");
-
+            ytArtist = channelName;
             ytFullTitle = ytArtist + " - " + ytTitle;
         } else {
             ytFullTitle = ytTitle;
             ytTitle = ytTitle.split(delimiter)[1];
         }
 
-
         let music = {};
         let results = await ytmusic.searchMusics(ytFullTitle);
         if (results) music = results[0];
 
-        let artists = null, found = true;
+        let artists = null, found = false;
         find: {
             if (Object.keys(music).length) {
                 music.title = music.title.replace(ytfilter, "");
+
+                artists = music.artists.pop().name;
+                for (let artist of music.artists)
+                    artists += "," + artist.name;
+
+                artists = artists.replace(/\(.*\)/gi, "");
+
+                let foundArtists = 0;
+                for (let artist of artists.split(",")) {
+                    artist = artist.name;
+
+                    if (contains(ytFullTitle, artist))
+                        foundArtists++;
+                }
+
+                let probability = 100 / music.artists.length * foundArtists;
+                if (probability < deviation) {
+                    if (music.artists.length > 2 && probability < 50) {
+                        let length = getBiggerLength(ytArtist, artists);
+
+                        if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
+                            break find;
+                        }
+                    }
+                }
 
                 if (contains(ytTitle, "(remix)")) {
                     if (!contains(music.title, "(remix)")) {
                         let duration = result.duration / 1000;
 
                         if (subtractSmallerNumber(music.duration.totalSeconds, duration) >= 3) {
-                            found = false;
                             break find;
                         }
 
@@ -633,37 +659,11 @@ async function getYoutubeMusic(url) {
                     let length = getBiggerLength(ytTitle, music.title);
 
                     if (100 / length * (length - distance(ytTitle, music.title)) < deviation) {
-                        found = false;
                         break find;
                     }
                 }
 
-                artists = music.artists.pop().name;
-                for (let artist of music.artists)
-                    artists += "," + artist.name;
-
-                artists = artists.replace(/\(.*\)/gi, "");
-
-                let foundArtists = 0;
-                for (let artist of artists.split(",")) {
-                    artist = artist.name;
-
-                    if (contains(ytFullTitle, artist) ||
-                        contains(ytFullTitle, "(various artists)"))
-                        foundArtists++;
-                }
-
-                let probability = 100 / music.artists.length * foundArtists;
-                if (probability < deviation) {
-                    if (music.artists.length > 2 && probability < 50) {
-                        let length = getBiggerLength(ytArtist, artists);
-
-                        if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
-                            found = false;
-                            break find;
-                        }
-                    }
-                }
+                found = true;
             }
         }
 
