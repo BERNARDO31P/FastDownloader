@@ -40,7 +40,12 @@ let keywords = [
     "free unreleased wav download",
     "free download",
     "download",
-    "unreleased"
+    "unreleased",
+    "ᴴᴰ",
+    "(\\d+) bpm",
+    "(\\d+)bpm",
+    "\\/\\/(?<=\\/\\/).*",
+    "radio edit"
 ];
 let ytfilter = new RegExp(keywords.join("|"), 'gi');
 
@@ -578,14 +583,14 @@ async function getYoutubeMusic(url) {
     return await yt.getVideo(url).then(async (result) => {
         let channelName = result.channel.name;
 
-        if (contains(channelName, "(various artists)") || contains(channelName, "- topic"))
+        if (contains(channelName, "(various artists)") || contains(channelName, "(- topic)"))
             return "https://music.youtube.com/watch?v=" + result.id;
 
         let ytFullTitle, ytArtist, ytTitle = result.title;
-        let delimiter = " - | – ";
+        let delimiter = new RegExp(" - | – ", "gi");
         const deviation = 65;
 
-        ytTitle = ytTitle.replace(ytfilter, "");
+        ytTitle = ytTitle.replace(ytfilter, "").trim();
 
         if (!contains(ytTitle, delimiter)) {
             ytArtist = channelName;
@@ -600,20 +605,26 @@ async function getYoutubeMusic(url) {
         if (results) music = results[0];
 
         let artists = null, found = false;
+        let reason = null;
         find: {
             if (Object.keys(music).length) {
-                music.title = music.title.replace(ytfilter, "");
+                music.title = music.title.replace(ytfilter, "").trim();
 
+                let duration = result.duration / 1000;
                 if (contains(ytTitle, "(remix)")) {
                     if (!contains(music.title, "(remix)")) {
-                        let duration = result.duration / 1000;
-
-                        if (subtractSmallerNumber(music.duration.totalSeconds, duration) >= 3) {
+                        if (subtractSmallerNumber(music.duration.totalSeconds, duration) > 2) {
+                            reason = "remix";
                             break find;
                         }
 
                         music.title = music.title += " remix";
                     }
+                }
+
+                if (subtractSmallerNumber(music.duration.totalSeconds, duration) > 6) {
+                    reason = "time";
+                    break find;
                 }
 
                 if (contains(music.title, delimiter)) {
@@ -634,6 +645,7 @@ async function getYoutubeMusic(url) {
                     let length = getBiggerLength(ytTitle, music.title);
 
                     if (100 / length * (length - distance(ytTitle, music.title)) < deviation) {
+                        reason = "title";
                         break find;
                     }
                 }
@@ -658,6 +670,7 @@ async function getYoutubeMusic(url) {
                         let length = getBiggerLength(ytArtist, artists);
 
                         if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
+                            reason = "artists";
                             break find;
                         }
                     }
@@ -667,11 +680,15 @@ async function getYoutubeMusic(url) {
             }
         }
 
-        if (found) {
-            return "https://music.youtube.com/watch?v=" + music.youtubeId;
-        } else return null;
-
-    }).catch(() => null);
+        if (found) return "https://music.youtube.com/watch?v=" + music.youtubeId;
+        else {
+            console.log(ytTitle + " -> " + music.title);
+            console.log(reason);
+            return null;
+        }
+    }).catch((e) => {
+        console.log(e);
+    });
 }
 
 // TODO: Comment
