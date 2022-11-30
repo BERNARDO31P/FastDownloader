@@ -604,31 +604,6 @@ async function getYoutubeMusic(url) {
             if (Object.keys(music).length) {
                 music.title = music.title.replace(ytfilter, "");
 
-                artists = music.artists.pop().name;
-                for (let artist of music.artists)
-                    artists += "," + artist.name;
-
-                artists = artists.replace(/\(.*\)/gi, "");
-
-                let foundArtists = 0;
-                for (let artist of artists.split(",")) {
-                    artist = artist.name;
-
-                    if (contains(ytFullTitle, artist))
-                        foundArtists++;
-                }
-
-                let probability = 100 / music.artists.length * foundArtists;
-                if (probability < deviation) {
-                    if (music.artists.length > 2 && probability < 50) {
-                        let length = getBiggerLength(ytArtist, artists);
-
-                        if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
-                            break find;
-                        }
-                    }
-                }
-
                 if (contains(ytTitle, "(remix)")) {
                     if (!contains(music.title, "(remix)")) {
                         let duration = result.duration / 1000;
@@ -660,6 +635,31 @@ async function getYoutubeMusic(url) {
 
                     if (100 / length * (length - distance(ytTitle, music.title)) < deviation) {
                         break find;
+                    }
+                }
+
+                artists = music.artists.pop().name;
+                for (let artist of music.artists)
+                    artists += "," + artist.name;
+
+                artists = artists.replace(/\(.*\)/gi, "");
+
+                let foundArtists = 0;
+                for (let artist of artists.split(",")) {
+                    artist = artist.name;
+
+                    if (contains(ytFullTitle, artist))
+                        foundArtists++;
+                }
+
+                let probability = 100 / music.artists.length * foundArtists;
+                if (probability < deviation) {
+                    if (music.artists.length > 2 && probability < 50) {
+                        let length = getBiggerLength(ytArtist, artists);
+
+                        if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
+                            break find;
+                        }
                     }
                 }
 
