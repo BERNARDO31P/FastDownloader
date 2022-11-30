@@ -583,7 +583,7 @@ async function getYoutubeMusic(url) {
     return await yt.getVideo(url).then(async (result) => {
         let channelName = result.channel.name;
 
-        if (contains(channelName, "(various artists)") || contains(channelName, "(- topic)"))
+        if (contains(channelName, "(various artists)|(- topic)"))
             return "https://music.youtube.com/watch?v=" + result.id;
 
         let ytFullTitle, ytArtist, ytTitle = result.title;
@@ -605,7 +605,6 @@ async function getYoutubeMusic(url) {
         if (results) music = results[0];
 
         let artists = null, found = false;
-        let reason = null;
         find: {
             if (Object.keys(music).length) {
                 music.title = music.title.replace(ytfilter, "").trim();
@@ -614,7 +613,6 @@ async function getYoutubeMusic(url) {
                 if (contains(ytTitle, "(remix)")) {
                     if (!contains(music.title, "(remix)")) {
                         if (subtractSmallerNumber(music.duration.totalSeconds, duration) > 2) {
-                            reason = "remix";
                             break find;
                         }
 
@@ -623,7 +621,6 @@ async function getYoutubeMusic(url) {
                 }
 
                 if (subtractSmallerNumber(music.duration.totalSeconds, duration) > 6) {
-                    reason = "time";
                     break find;
                 }
 
@@ -645,7 +642,6 @@ async function getYoutubeMusic(url) {
                     let length = getBiggerLength(ytTitle, music.title);
 
                     if (100 / length * (length - distance(ytTitle, music.title)) < deviation) {
-                        reason = "title";
                         break find;
                     }
                 }
@@ -670,7 +666,6 @@ async function getYoutubeMusic(url) {
                         let length = getBiggerLength(ytArtist, artists);
 
                         if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
-                            reason = "artists";
                             break find;
                         }
                     }
@@ -681,14 +676,8 @@ async function getYoutubeMusic(url) {
         }
 
         if (found) return "https://music.youtube.com/watch?v=" + music.youtubeId;
-        else {
-            console.log(ytTitle + " -> " + music.title);
-            console.log(reason);
-            return null;
-        }
-    }).catch((e) => {
-        console.log(e);
-    });
+        else return null;
+    }).catch(() => null);
 }
 
 // TODO: Comment
