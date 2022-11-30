@@ -2,11 +2,8 @@ import mustache from "./lib/mustache.min.js";
 
 const NP = require('number-precision');
 const {promisify} = require('util');
-const yt = require("youtube-sr").default;
 const ytpl = require('ytpl');
-const ytmusic = require('node-youtube-music');
 const {ipcRenderer, clipboard} = require('electron');
-const {distance} = require('fastest-levenshtein');
 
 const {exec} = require('child_process');
 const execSync = promisify(require('child_process').exec);
@@ -17,6 +14,7 @@ let __realDir = null;
 
 let hiddenElements = []
 export let urlList = [];
+export let specificSettings = {}
 
 if (!theme) theme = "light";
 setCookie("theme", theme);
@@ -26,36 +24,6 @@ document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 export let childProcess = null, downloadAborted = false;
 export let languageDB = {};
 export let selectedLang = null;
-
-
-let keywords = [
-    "\\[.*\\]",
-    "\\{.*\\}",
-    "- official",
-    "official",
-    "video",
-    "musi(c|k)(\\s+)?video",
-    "original mix",
-    "\\(",
-    "\\)",
-    "tdt #001",
-    "free unreleased wav download",
-    "free download",
-    "download",
-    "unreleased",
-    "ᴴᴰ",
-    "hd",
-    "(\\d+) bpm",
-    "(\\d+)bpm",
-    "\\/\\/(?<=\\/\\/).*",
-    "radio edit",
-    "lyrics",
-    "visuals",
-    "\"",
-    "'",
-    "\\(prod\\.(.+)?\\)"
-];
-let ytfilter = new RegExp(keywords.join("|"), 'gi');
 
 
 // TODO: Comment
@@ -267,128 +235,11 @@ export function removeOpacityNotification(notification) {
 }
 
 // TODO: Comment
-function async(func) {
-    setTimeout(func, 0);
-}
-
-// TODO: Comment
-function match(string, regex) {
+export function match(string, regex) {
     let regExp = new RegExp(regex, "gi");
     let found = string.match(regExp);
 
     return (found) ? found[0] : null;
-}
-
-// TODO: Comment
-const matchCount = (string, regex) => {
-    let regExp = new RegExp(regex, "gi");
-
-    return string?.match(regExp)?.length ?? 0;
-};
-
-function contains(string, regex) {
-    let regExp = new RegExp(regex, "gi");
-
-    return !!string.match(regExp);
-}
-
-// TODO: Comment
-function escapeRegExp(text) {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-}
-
-// TODO: Comment
-export function addLinkToList(link = "") {
-    if (!link) {
-        showNotification(languageDB[selectedLang]["js"]["noURL"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
-
-        return false;
-    }
-
-    let values = link.split(/[\n\s]+/);
-    let ul = document.querySelector(".listBox ul");
-    for (let value of values) {
-        value = value.trim();
-
-        let url = [];
-
-        url["yt"] = match(value, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
-
-        // TODO: Complete regex for netflix
-        url["nf"] = match(value, "http(?:s?):\\/\\/(?:www\\.)?netflix.com");
-
-        if (!url["yt"] && !url["nf"]) {
-            showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
-
-            if (document.hidden)
-                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
-
-            return false;
-        }
-
-        if (urlList.indexOf(url["yt"]) !== -1 || urlList.indexOf(url["nf"]) !== -1) {
-            alreadyInList();
-
-            return false;
-        }
-
-        let li = document.createElement("li");
-        li.textContent = url["yt"] ?? url["nf"];
-
-        let nextID = ul.querySelectorAll("li").length;
-        li.setAttribute("data-id", nextID.toString());
-
-        ul.appendChild(li);
-
-        if (url["yt"]) {
-            async(async () => {
-                let link = await checkPremiumAndConvert(url["yt"], getCookie("mode"));
-
-                if (urlList.indexOf(link) !== -1) {
-                    alreadyInList();
-                    li.remove();
-
-                    return;
-                }
-
-                li.textContent = link;
-                urlList.push(link);
-            });
-        }
-    }
-
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
-
-    ul.scrollTop = ul.scrollHeight;
-
-    showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
-
-    if (document.hidden)
-        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
-
-    return true;
-}
-
-function alreadyInList() {
-    showNotification(languageDB[selectedLang]["js"]["urlInList"]);
-
-    if (document.hidden)
-        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
-}
-
-export async function checkPremiumAndConvert(url, mode) {
-    let premium = JSON.parse(getCookie("premium"));
-    if (mode === "audio" && premium.check)
-        if (!url.includes("music") && !url.includes("playlist")) {
-            let musicUrl = await getYoutubeMusic(url);
-            if (musicUrl) url = musicUrl;
-        }
-
-    return url;
 }
 
 // TODO: Comment
@@ -576,124 +427,6 @@ export async function getPlaylistUrls(url) {
         items.push(item["shortUrl"]);
 
     return items;
-}
-
-// TODO: Comment
-function subtractSmallerNumber(num1, num2) {
-    if(num1 < num2) return num2 - num1;
-    else return num1 - num2;
-}
-
-// TODO: Comment
-function getBiggerLength(string1, string2) {
-    return (string1.length > string2.length) ? string1.length : string2.length;
-}
-
-// TODO: Comment
-function getSortedLength(string1, string2) {
-    return (string1.length > string2.length) ? [string1, string2] : [string2, string1];
-}
-
-// TODO: Comment
-async function getYoutubeMusic(url) {
-    return await yt.getVideo(url).then(async (result) => {
-        let channelName = result.channel.name;
-
-        if (contains(channelName, "(various artists)|(- topic)"))
-            return "https://music.youtube.com/watch?v=" + result.id;
-
-        let ytFullTitle, ytArtist, ytTitle = result.title;
-        let delimiter = new RegExp(" - | – ", "gi");
-        const deviation = 65;
-
-        ytTitle = ytTitle.replace(ytfilter, "").trim();
-
-        if (!contains(ytTitle, delimiter)) {
-            ytArtist = channelName;
-            ytFullTitle = ytArtist + " - " + ytTitle;
-        } else {
-            ytFullTitle = ytTitle;
-            ytTitle = ytTitle.split(delimiter)[1].replace(channelName, "");
-        }
-
-        let music = {};
-        let results = await ytmusic.searchMusics(ytFullTitle);
-        if (results) music = results[0];
-
-        let artists = null, found = false;
-        find: {
-            if (Object.keys(music).length) {
-                music.title = music.title.replace(ytfilter, "").trim();
-
-                let duration = result.duration / 1000;
-                if (contains(ytTitle, "(remix)")) {
-                    if (!contains(music.title, "(remix)")) {
-                        if (subtractSmallerNumber(music.duration.totalSeconds, duration) > 2) {
-                            break find;
-                        }
-
-                        music.title = music.title += " remix";
-                    }
-                }
-
-                if (subtractSmallerNumber(music.duration.totalSeconds, duration) > 6) {
-                    break find;
-                }
-
-                if (contains(music.title, delimiter)) {
-                    let temp = music.title.split(delimiter);
-
-                    music.artists[0].name = temp[0];
-                    music.title = temp[1];
-                }
-
-                let sorted = getSortedLength(ytTitle, music.title);
-                let regexEscaped = escapeRegExp(sorted[1]);
-
-                let split = regexEscaped.split("\\ ");
-                let join = split.join("|");
-
-                let count = matchCount(sorted[0], join);
-                if (!contains(sorted[0], join) || 100 / split.length * count < deviation ) {
-                    let length = getBiggerLength(ytTitle, music.title);
-
-                    if (100 / length * (length - distance(ytTitle, music.title)) < deviation) {
-                        break find;
-                    }
-                }
-
-                artists = music.artists.pop().name;
-                for (let artist of music.artists)
-                    artists += "," + artist.name;
-
-                artists = artists.replace(/\(.*\)/gi, "");
-
-                let foundArtists = 0;
-                for (let artist of artists.split(",")) {
-                    artist = artist.name;
-
-                    if (contains(ytFullTitle, artist))
-                        foundArtists++;
-                }
-
-                let probability = 100 / music.artists.length * foundArtists;
-                if (probability < deviation) {
-                    if (music.artists.length > 2 && probability < 50) {
-                        let length = getBiggerLength(ytArtist, artists);
-
-                        if (100 / length * (length - distance(ytArtist, artists)) < deviation) {
-                            break find;
-                        }
-                    }
-                }
-
-                found = true;
-            }
-        }
-
-        if (found) return "https://music.youtube.com/watch?v=" + music.youtubeId;
-        else return null;
-    }).catch(() => null);
 }
 
 // TODO: Comment
