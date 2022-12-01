@@ -34,19 +34,14 @@ let ytfilter = new RegExp(keywords.join("|"), 'gi');
 let globalSettings = {};
 let globalMode, globalCodecAudio, globalCodecVideo, globalQuality, globalPremium;
 
-// TODO: Comment
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 addEventListener('message', (event) => {
     const msg = event.data;
+
     switch (msg.type) {
         case "checkPremiumAndAdd":
             checkPremiumAndConvert(msg.url).then((url) => {
-                getUrlData(url, msg.location, msg.i).then((data) => {
-                    postMessage({type: "checkPremiumAndAdd", data: data});
-                });
+                let data = getUrlData(url, msg.location, msg.id);
+                postMessage({type: "checkPremiumAndAdd", data: data});
             });
             break;
         case "checkPremium":
@@ -63,6 +58,11 @@ addEventListener('message', (event) => {
             break;
     }
 });
+
+// TODO: Comment
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 // TODO: Comment
 function loadData(mode, codecAudio, codecVideo, quality, settings, premium) {
@@ -107,8 +107,7 @@ function escapeRegExp(text) {
 
 // TODO: Comment
 function subtractSmallerNumber(num1, num2) {
-    if (num1 < num2) return num2 - num1;
-    else return num1 - num2;
+    return (num1 < num2) ? num2 - num1 : num1 - num2;
 }
 
 // TODO: Comment
@@ -235,7 +234,7 @@ async function getYoutubeMusic(url) {
 }
 
 // TODO: Comment
-async function getUrlData(url, location, i) {
+function getUrlData(url, location, id) {
     let individualLocation = location;
     let individualQuality = globalQuality;
     let individualMode = globalMode;
@@ -244,21 +243,21 @@ async function getUrlData(url, location, i) {
     let item = {};
 
     if (!url.includes("netflix")) {
-        if (typeof globalSettings[i] !== 'undefined') {
-            if (typeof globalSettings[i]["quality"] !== 'undefined')
-                individualQuality = globalSettings[i]["quality"];
+        if (typeof globalSettings[id] !== 'undefined') {
+            if (typeof globalSettings[id]["quality"] !== 'undefined')
+                individualQuality = globalSettings[id]["quality"];
 
-            if (typeof globalSettings[i]["mode"] !== 'undefined')
-                individualMode = globalSettings[i]["mode"];
+            if (typeof globalSettings[id]["mode"] !== 'undefined')
+                individualMode = globalSettings[id]["mode"];
 
-            if (typeof globalSettings[i]["codecAudio"] !== 'undefined')
-                individualCodecAudio = globalSettings[i]["codecAudio"];
+            if (typeof globalSettings[id]["codecAudio"] !== 'undefined')
+                individualCodecAudio = globalSettings[id]["codecAudio"];
 
-            if (typeof globalSettings[i]["codecVideo"] !== 'undefined')
-                individualCodecVideo = globalSettings[i]["codecVideo"];
+            if (typeof globalSettings[id]["codecVideo"] !== 'undefined')
+                individualCodecVideo = globalSettings[id]["codecVideo"];
 
-            if (typeof globalSettings[i]["location"] !== 'undefined')
-                individualLocation = globalSettings[i]["location"];
+            if (typeof globalSettings[id]["location"] !== 'undefined')
+                individualLocation = globalSettings[id]["location"];
         }
 
         let qualityInt = 0;

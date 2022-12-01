@@ -26,14 +26,10 @@ tools.bindEvent("click", "settings .artistName .checkbox", function () {
         this.classList.remove("active");
         artistNaming.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
 
-        tools.setArtistName(false);
-
         showNotification(tools.languageDB[tools.selectedLang]["js"]["artistNameDisabled"]);
     } else {
         this.classList.add("active");
         artistNaming.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
-
-        tools.setArtistName(true);
 
         showNotification(tools.languageDB[tools.selectedLang]["js"]["artistNameEnabled"]);
     }

@@ -16,11 +16,9 @@ window.onload = async function () {
         tools.setRealDir(dirname);
     });
 
-    await tools.initalize();
+    await tools.initialize();
 
-    if (tools.getCookie("cache") !== null)
-        tools.loadAllData();
-
+    if (tools.getCookie("cache") !== null) tools.loadAllData();
 
     const notification = document.getElementById('updateNotification');
     const message = notification.querySelector(".message");

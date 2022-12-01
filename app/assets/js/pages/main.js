@@ -1,15 +1,9 @@
 import * as tools from "../tools.js";
 import {showNotification} from "../tools.js";
-
-let worker = new Worker("assets/js/lib/worker.js");
-let workers = 0;
-
 const {clipboard, ipcRenderer, shell} = require('electron');
 
-let lastClicked = null, contextElement = null;
-let aborted = false;
-let downloading = false;
-let urls = [];
+let lastClicked = null,
+    contextElement = null;
 
 // TODO: Comment
 document.onclick = function (e) {
@@ -23,196 +17,18 @@ document.onclick = function (e) {
 }
 
 // TODO: Comment
-worker.addEventListener("message", (event) => {
-    const msg = event.data;
-    switch (msg.type) {
-        case "checkPremiumAndAdd":
-            urls.push(msg.data);
-            workers--;
-
-            if (!workers) download(urls).then(() => {
-                let progressTotal = document.querySelector(".progress-total progress");
-                let infoTotal = document.querySelector(".progress-total .info p");
-
-                infoTotal.textContent = "100%";
-                progressTotal.value = 1;
-                ipcRenderer.send('set_percentage', 1);
-
-                tools.setEnabled();
-
-                downloading = false;
-
-                if (!aborted) {
-                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
-                } else {
-                    showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
-
-                    if (document.hidden)
-                        ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
-                }
-
-                ipcRenderer.send('remove_abort');
-            });
-            break;
-        case "checkPremium":
-            let li = document.querySelector("ul li[data-url='" + msg.old + "']");
-
-            if (tools.urlList.indexOf(msg.url) !== -1) {
-                alreadyInList();
-                li.remove();
-
-                return;
-            }
-
-            li.textContent = msg.url;
-            tools.urlList.push(msg.url);
-
-            break;
-    }
-});
-
-// TODO: Comment
-function alreadyInList() {
-    showNotification(tools.languageDB[tools.selectedLang]["js"]["urlInList"]);
-
-    if (document.hidden)
-        ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["urlInList"]);
-}
-
-// TODO: Comment
-async function download(data) {
-    console.log(data);
-
-    let percentage = Math.floor(100 / data.length * 100) / 100;
-    downloading = true;
-
-    for (let item of data) {
-        if (!item.url.includes("netflix")) {
-            aborted = !await tools.downloadYTURL(
-                item.mode,
-                item.location,
-                item.url,
-                percentage,
-                item.codecAudio,
-                item.codecVideo,
-                item.quality
-            );
-        } else {
-            aborted = await tools.downloadNFURL(
-            );
-        }
-        if (aborted) break;
-    }
-}
-
-function addLinkToList(link = "") {
-    if (!link) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["noURL"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURL"]);
-
-        return false;
-    }
-
-    let values = link.split(/[\n\s]+/);
-    let ul = document.querySelector(".listBox ul");
-    for (let value of values) {
-        value = value.trim();
-
-        let url = [];
-
-        url["yt"] = tools.match(value, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
-
-        // TODO: Complete regex for netflix
-        url["nf"] = tools.match(value, "http(?:s?):\\/\\/(?:www\\.)?netflix.com");
-
-        if (!url["yt"] && !url["nf"]) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["noValidURL"]);
-
-            if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noValidURL"]);
-
-            return false;
-        }
-
-        if (tools.urlList.indexOf(url["yt"]) !== -1 || tools.urlList.indexOf(url["nf"]) !== -1) {
-            alreadyInList();
-
-            return false;
-        }
-
-        let finalUrl = url["yt"] ?? url["nf"];
-
-        let li = document.createElement("li");
-        li.textContent = finalUrl
-
-        let nextID = ul.querySelectorAll("li").length;
-        li.setAttribute("data-id", nextID.toString());
-        li.setAttribute("data-url", finalUrl)
-
-        ul.appendChild(li);
-
-        if (url["yt"]) {
-            worker.postMessage({
-                type: "loadPremiumAndMode",
-                premium: tools.getCookie("premium"),
-                mode: tools.getCookie("mode")
-            });
-            worker.postMessage({type: "checkPremium", url: url["yt"]});
-        }
-    }
-
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
-
-    ul.scrollTop = ul.scrollHeight;
-
-    showNotification(tools.languageDB[tools.selectedLang]["js"]["urlAdded"]);
-
-    if (document.hidden)
-        ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["urlAdded"]);
-
-    return true;
-}
-
-// TODO: Comment
-function removeActiveListItems() {
-    let ul = document.querySelector(".listBox ul");
-    let actives = ul.querySelectorAll("li.active");
-    if (actives) {
-        for (let active of actives) {
-            let id = active.getAttribute("data-id");
-            delete tools.specificSettings[id];
-
-            let index = tools.urlList.indexOf(active.textContent);
-            delete tools.urlList[index];
-
-            active.remove();
-        }
-    }
-
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
-
-    tools.updateSelected();
-}
-
-// TODO: Comment
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
     let input = this.closest(".input").querySelector("input");
 
-    if (addLinkToList(input.value)) input.value = "";
+    if (tools.addUrlToList(input.value)) input.value = "";
 });
 
 // TODO: Comment
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
     if (e.target === this) {
-        let actives = document.querySelectorAll(".listBox li.active");
+        let listBox = document.querySelectorAll(".listBox");
 
-        for (let active of actives)
-            active.classList.remove("active");
-
+        tools.removeActives(listBox);
         tools.updateSelected();
     }
 });
@@ -222,11 +38,7 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
     let listBox = this.closest(".listBox");
     let actives = listBox.querySelectorAll("li.active");
 
-    if (!e.ctrlKey && !e.shiftKey) {
-        for (let active of actives) {
-            if (active !== this) active.classList.remove("active");
-        }
-    }
+    if (!e.ctrlKey && !e.shiftKey) tools.removeActives(listBox);
 
     if (e.shiftKey && actives.length) {
         document.getSelection().removeAllRanges();
@@ -253,8 +65,9 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
             }
         }
     } else {
-        if (this.classList.contains("active")) this.classList.remove("active");
-        else this.classList.add("active");
+        (this.classList.contains("active"))
+            ? this.classList.remove("active")
+            : this.classList.add("active");
     }
 
     tools.updateSelected();
@@ -262,7 +75,7 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
 
 // TODO: Comment
 tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", function () {
-    removeActiveListItems();
+    tools.removeActiveListItems();
 });
 
 // TODO: Comment
@@ -271,7 +84,7 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", fun
 
     if (!clipboardText) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"]);
-    } else addLinkToList(clipboardText);
+    } else tools.addUrlToList(clipboardText);
 });
 
 // TODO: Comment
@@ -287,9 +100,7 @@ tools.bindEvent("click", "#updateNotification .restart-button", function () {
 
 // TODO: Comment
 tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
-    if (e.code === "Enter") {
-        addLinkToList(this.value);
-    }
+    if (e.code === "Enter") tools.addUrlToList(this.value);
 });
 
 /*
@@ -327,7 +138,7 @@ tools.bindEvent("click", ".theme-toggler", function () {
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
-    aborted = false;
+    tools.aborted = false;
 
     download: {
         let listBox = document.getElementsByClassName("listBox")[0];
@@ -407,7 +218,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         infoTotal.textContent = "0%";
         infoSong.textContent = "0%";
 
-        worker.postMessage({
+        tools.worker.postMessage({
             type: "loadData",
             mode: mode,
             codecAudio: codecAudio,
@@ -429,31 +240,28 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 allUrls.push(item.textContent);
             }
 
-            if (aborted) break download;
+            if (tools.aborted) break download;
         }
 
-        let i = 0;
         for (let url of allUrls) {
-            worker.postMessage({
+            tools.worker.postMessage({
                 type: "checkPremiumAndAdd",
                 url: url,
                 location: location.value,
                 count: count,
-                i: i
+                id: tools.workers
             });
 
-            workers++;
+            tools.workers++;
 
-            if (aborted) break download;
-            i++;
+            if (tools.aborted) break download;
         }
     }
 });
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
-    tools.abortDownload();
-    aborted = true;
+    tools.aborted = true;
 
     if (tools.childProcess) {
         tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
@@ -695,8 +503,7 @@ ipcRenderer.on('url', function (event, value) {
     let input = document.querySelector(".input input");
     input.value = value;
 
-    if (addLinkToList(value))
-        input.value = "";
+    if (tools.addUrlToList(value)) input.value = "";
 });
 
 // TODO: Comment
@@ -720,11 +527,10 @@ ipcRenderer.on('translate', function (event, array) {
 
 // TODO: Comment
 document.addEventListener("keydown", function (e) {
-    if (e.code === "Delete" && !downloading) {
-        removeActiveListItems();
-    }
+    if (e.code === "Delete" && !tools.downloading)
+        tools.removeActiveListItems();
 
-    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null && !downloading) {
+    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null && !tools.downloading) {
         let items = document.querySelectorAll(".listBox li");
         if (!items.length) return;
 
@@ -741,7 +547,5 @@ document.addEventListener("keydown", function (e) {
         linkCount.style.opacity = "1";
     }
 
-    if (e.code === "KeyC" && e.ctrlKey) {
-        tools.activeToClipboard();
-    }
+    if (e.code === "KeyC" && e.ctrlKey) tools.activeToClipboard();
 });
