@@ -151,6 +151,14 @@ export function setCookie(name, value) {
     localStorage.setItem(name, value);
 }
 
+export function setAborted(bool) {
+    aborted = bool;
+}
+
+export function setWorkerCount(count) {
+    workers = count;
+}
+
 // TODO: Comment
 export function removeActives(element) {
     let actives = element.querySelectorAll(".active");

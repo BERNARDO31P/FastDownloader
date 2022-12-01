@@ -138,7 +138,7 @@ tools.bindEvent("click", ".theme-toggler", function () {
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
-    tools.aborted = false;
+    tools.setAborted(false);
 
     download: {
         let listBox = document.getElementsByClassName("listBox")[0];
@@ -252,7 +252,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 id: tools.workers
             });
 
-            tools.workers++;
+            tools.setWorkerCount(tools.workers + 1);
 
             if (tools.aborted) break download;
         }
@@ -261,7 +261,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
-    tools.aborted = true;
+    tools.setAborted(true);
 
     if (tools.childProcess) {
         tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
