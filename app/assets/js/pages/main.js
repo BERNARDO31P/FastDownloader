@@ -243,16 +243,16 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             if (tools.aborted) break download;
         }
 
-        for (let url of allUrls) {
+        tools.setWorkerCount(allUrls.length);
+
+        for (let i = 0; i < allUrls.length; i++) {
             tools.worker.postMessage({
                 type: "checkPremiumAndAdd",
-                url: url,
+                url: allUrls[i],
                 location: location.value,
                 count: count,
-                id: tools.workers
+                id: i
             });
-
-            tools.setWorkerCount(tools.workers + 1);
 
             if (tools.aborted) break download;
         }
