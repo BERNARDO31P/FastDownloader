@@ -77,6 +77,7 @@ worker.addEventListener("message", (event) => {
                 setEnabled();
 
                 downloading = false;
+                processedUrls = [];
 
                 if (!aborted) {
                     ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
