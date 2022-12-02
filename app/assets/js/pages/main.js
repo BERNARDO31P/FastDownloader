@@ -26,7 +26,7 @@ tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", funct
 // TODO: Comment
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
     if (e.target === this) {
-        let listBox = document.querySelectorAll(".listBox");
+        let listBox = document.querySelector(".listBox");
 
         tools.removeActives(listBox);
         tools.updateSelected();

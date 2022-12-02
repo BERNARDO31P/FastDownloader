@@ -230,6 +230,8 @@ function alreadyInList() {
 
 // TODO: Comment
 async function download(data) {
+    console.log(data);
+
     let percentage = Math.floor(100 / data.length * 100) / 100;
     downloading = true;
 
@@ -837,7 +839,7 @@ export function loadSettings() {
     let premiumCheck = document.querySelector("settings .premium");
     let premiumBrowser = document.querySelector("settings .browser");
 
-    if (typeof premium != 'undefined' && (premium["check"] ?? false)) {
+    if (premium && typeof premium != "undefined" && (premium["check"] ?? false)) {
         premiumCheck.querySelector("#premium").classList.add("active");
         premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
 

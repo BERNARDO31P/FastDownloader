@@ -77,7 +77,7 @@ function loadData(mode, codecAudio, codecVideo, quality, settings, premium) {
 // TODO: Comment
 async function checkPremiumAndConvert(url) {
     let premium = JSON.parse(globalPremium);
-    if (globalMode === "audio" && premium.check)
+    if (globalMode === "audio" && premium && premium.check)
         if (!url.includes("music") && !url.includes("playlist")) {
             let musicUrl = await getYoutubeMusic(url);
             if (musicUrl) url = musicUrl;
