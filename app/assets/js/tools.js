@@ -4,25 +4,27 @@ const NP = require('number-precision');
 const {promisify} = require('util');
 const ytpl = require('ytpl');
 const {ipcRenderer, clipboard} = require('electron');
-
 const {exec} = require('child_process');
 const execSync = promisify(require('child_process').exec);
 
-let artistName = false;
 let theme = getCookie("theme");
-let __realDir = null;
-
-let hiddenElements = [];
 
 if (!theme) theme = "light";
 setCookie("theme", theme);
 
-export let childProcess = null, downloadAborted = false;
-
-export let languageDB = {};
-export let selectedLang = null;
-
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
+
+let __realDir = null;
+let hiddenElements = [], urlList = [], processedUrls = [];
+
+export let specificSettings = {};
+
+export let worker = new Worker("assets/js/lib/worker.js");
+export let workers = 0;
+
+export let downloading = false, aborted = false;
+export let childProcess = null, selectedLang = null;
+export let languageDB = {};
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -31,11 +33,6 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
     animation.onfinish = function () {
         callback();
     }
-}
-
-// TODO: Comment
-export function setArtistName(value) {
-    artistName = value;
 }
 
 /*
@@ -48,7 +45,7 @@ export function setArtistName(value) {
  *
  * Ist das Äquivalent zu .on(eventNames, selector, handler) in jQuery
  */
-export const bindEvent = (eventNames, selectors, handler) => {
+export function bindEvent (eventNames, selectors, handler) {
     eventNames.split(', ').forEach((eventName) => {
         document.addEventListener(eventName, function (event) {
             selectors.split(', ').forEach((selector) => {
@@ -59,7 +56,57 @@ export const bindEvent = (eventNames, selectors, handler) => {
             });
         }, false);
     });
-};
+}
+
+// TODO: Comment
+worker.addEventListener("message", (event) => {
+    const msg = event.data;
+    switch (msg.type) {
+        case "checkPremiumAndAdd":
+            processedUrls.push(msg.data);
+            workers--;
+
+            if (!workers) download(processedUrls).then(() => {
+                let progressTotal = document.querySelector(".progress-total progress");
+                let infoTotal = document.querySelector(".progress-total .info p");
+
+                infoTotal.textContent = "100%";
+                progressTotal.value = 1;
+                ipcRenderer.send('set_percentage', 1);
+
+                setEnabled();
+
+                downloading = false;
+                processedUrls = [];
+
+                if (!aborted) {
+                    ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
+                } else {
+                    showNotification(languageDB[selectedLang]["js"]["downloadAborted"]);
+
+                    if (document.hidden)
+                        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["downloadAborted"]);
+                }
+
+                ipcRenderer.send('remove_abort');
+            });
+            break;
+        case "checkPremium":
+            let li = document.querySelector("ul li[data-url='" + msg.old + "']");
+
+            if (urlList.indexOf(msg.url) !== -1) {
+                alreadyInList();
+                li.remove();
+
+                return;
+            }
+
+            li.textContent = msg.url;
+            urlList.push(msg.url);
+
+            break;
+    }
+});
 
 // TODO: Comment
 export function setRealDir(dirname) {
@@ -101,8 +148,16 @@ export function getCookie(name) {
  *
  * Erstellt einen Cookie und setzt die Werte
  */
-export function setCookie(name, value, expiresAt = "") {
+export function setCookie(name, value) {
     localStorage.setItem(name, value);
+}
+
+export function setAborted(bool) {
+    aborted = bool;
+}
+
+export function setWorkerCount(count) {
+    workers = count;
 }
 
 // TODO: Comment
@@ -166,6 +221,133 @@ export function getAllData() {
     setCookie("cache", JSON.stringify(data));
 }
 
+// TODO: Comment
+function alreadyInList() {
+    showNotification(languageDB[selectedLang]["js"]["urlInList"]);
+
+    if (document.hidden)
+        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+}
+
+// TODO: Comment
+async function download(data) {
+    console.log(data);
+
+    let percentage = Math.floor(100 / data.length * 100) / 100;
+    downloading = true;
+
+    for (let item of data) {
+        if (!item.url.includes("netflix")) {
+            aborted = !await downloadYTURL(
+                item.mode,
+                item.location,
+                item.url,
+                percentage,
+                item.codecAudio,
+                item.codecVideo,
+                item.quality
+            );
+        } else {
+            aborted = await downloadNFURL(
+            );
+        }
+        if (aborted) break;
+    }
+}
+
+export function addUrlToList(url = "") {
+    if (!url) {
+        showNotification(languageDB[selectedLang]["js"]["noURL"]);
+
+        if (document.hidden)
+            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
+
+        return false;
+    }
+
+    let values = url.split(/[\n\s]+/);
+    let ul = document.querySelector(".listBox ul");
+    for (let value of values) {
+        value = value.trim();
+
+        let url = [];
+
+        url["yt"] = match(value, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
+
+        // TODO: Complete regex for netflix
+        url["nf"] = match(value, "http(?:s?):\\/\\/(?:www\\.)?netflix.com");
+
+        if (!url["yt"] && !url["nf"]) {
+            showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
+
+            return false;
+        }
+
+        if (urlList.indexOf(url["yt"]) !== -1 || urlList.indexOf(url["nf"]) !== -1) {
+            alreadyInList();
+
+            return false;
+        }
+
+        let finalUrl = url["yt"] ?? url["nf"];
+
+        let li = document.createElement("li");
+        li.textContent = finalUrl
+
+        let nextID = ul.querySelectorAll("li").length;
+        li.setAttribute("data-id", nextID.toString());
+        li.setAttribute("data-url", finalUrl)
+
+        ul.appendChild(li);
+
+        if (url["yt"]) {
+            worker.postMessage({
+                type: "loadPremiumAndMode",
+                premium: getCookie("premium"),
+                mode: getCookie("mode")
+            });
+            worker.postMessage({type: "checkPremium", url: url["yt"]});
+        }
+    }
+
+    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
+    else ul.style.width = "100%";
+
+    ul.scrollTop = ul.scrollHeight;
+
+    showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
+
+    if (document.hidden)
+        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
+
+    return true;
+}
+
+// TODO: Comment
+export function removeActiveListItems() {
+    let ul = document.querySelector(".listBox ul");
+    let actives = ul.querySelectorAll("li.active");
+    if (actives) {
+        for (let active of actives) {
+            let id = active.getAttribute("data-id");
+            delete specificSettings[id];
+
+            let index = urlList.indexOf(active.textContent);
+            delete urlList[index];
+
+            active.remove();
+        }
+    }
+
+    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
+    else ul.style.width = "100%";
+
+    updateSelected();
+}
+
 /*
  * Funktion: showNotification()
  * Autor: Bernardo de Oliveira
@@ -224,7 +406,7 @@ export function showNotification(message, time = 3000) {
  * Entfernt die Sichtbarkeit von einer Benachrichtigung
  * Entfernt die Benachrichtigung nach Schluss
  */
-export function removeOpacityNotification(notification) {
+function removeOpacityNotification(notification) {
     notification.animateCallback([{opacity: 1}, {opacity: 0}], {
         duration: 100, fill: "forwards"
     }, function () {
@@ -233,69 +415,11 @@ export function removeOpacityNotification(notification) {
 }
 
 // TODO: Comment
-export function addLinkToList(link = "") {
-    if (!link) {
-        showNotification(languageDB[selectedLang]["js"]["noURL"]);
+function match(string, regex) {
+    let regExp = new RegExp(regex, "gi");
+    let found = string.match(regExp);
 
-        if (document.hidden)
-            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
-
-        return;
-    }
-
-    let values = link.split(/[\n\s]+/);
-    let ul = document.querySelector(".listBox ul");
-    for (let value of values) {
-        value = value.trim();
-
-        let foundYT = value.match("http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
-
-        // TODO: Complete regex for netflix
-        let foundNF = value.match("http(?:s?):\\/\\/(?:www\\.)?netflix.com");
-
-        if (!foundYT && !foundNF) {
-            showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
-
-            if (document.hidden)
-                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
-
-            return;
-        }
-
-        let elements = ul.querySelectorAll("li");
-        for (let element of elements) {
-            if ((foundYT && element.textContent === foundYT[0]) || (foundNF && element.textContent === foundNF[0])) {
-                showNotification(languageDB[selectedLang]["js"]["urlInList"]);
-
-                if (document.hidden)
-                    ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
-
-                return;
-            }
-        }
-
-        let li = document.createElement("li");
-
-        let elementCount = ul.querySelectorAll("li").length;
-        li.setAttribute("data-id", elementCount.toString());
-
-        if (foundYT) li.textContent = foundYT[0];
-        else li.textContent = foundNF[0];
-
-        ul.appendChild(li);
-    }
-
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
-
-    ul.scrollTop = ul.scrollHeight;
-
-    showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
-
-    if (document.hidden)
-        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
-
-    return true;
+    return (found) ? found[0] : null;
 }
 
 // TODO: Comment
@@ -402,7 +526,7 @@ export function downloadNFURL() {
 }
 
 // TODO: Comment
-export function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
+function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
     return new Promise((resolve) => {
         let fileEnding = "";
         if (process.platform === "win32") fileEnding = ".exe";
@@ -431,7 +555,7 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
             }
         }
 
-        if (artistName) {
+        if (getCookie("artistName")) {
             command += "--add-metadata -o \"" + location + "/%(creator)s - %(title)s.%(ext)s\" " + url;
         } else {
             command += "--add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
@@ -460,11 +584,11 @@ export function downloadYTURL(mode, location, url, percentage, codecAudio, codec
 
             ipcRenderer.send('set_percentage', percentageDecimal);
 
-            if (!downloadAborted) {
+            if (!aborted) {
                 resolve(true);
             } else {
                 resolve(false);
-                downloadAborted = false;
+                aborted = false;
             }
         });
     });
@@ -568,7 +692,7 @@ export function selectOption(option) {
 }
 
 // TODO: Comment
-export function toggleVisibility() {
+function toggleVisibility() {
     let mode = document.querySelector("settings .mode .select");
     let value = mode.getAttribute("data-value");
 
@@ -591,11 +715,6 @@ export function toggleVisibility() {
             element.style.display = "block";
         });
     }
-}
-
-// TODO: Comment
-export function abortDownload() {
-    downloadAborted = true;
 }
 
 // TODO: Comment
@@ -638,6 +757,7 @@ export function deleteSettings() {
     setCookie("closeToTray", false);
     setCookie("autostart", false);
     setCookie("premium", JSON.stringify({"browser": null, "check": false}));
+    setCookie("artistName", false);
 }
 
 // TODO: Comment
@@ -657,7 +777,7 @@ export function loadSettings() {
     let closeToTray = getCookie("closeToTray");
     let autostart = getCookie("autostart");
     let premium = JSON.parse(getCookie("premium"));
-    artistName = getCookie("artistName");
+    let artistName = getCookie("artistName");
 
     let option;
     if (modeValue) {
@@ -720,7 +840,7 @@ export function loadSettings() {
     let premiumCheck = document.querySelector("settings .premium");
     let premiumBrowser = document.querySelector("settings .browser");
 
-    if (typeof premium != 'undefined' && (premium["check"] ?? false)) {
+    if (premium && typeof premium != "undefined" && (premium["check"] ?? false)) {
         premiumCheck.querySelector("#premium").classList.add("active");
         premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
 
@@ -734,7 +854,7 @@ export function loadSettings() {
 }
 
 // TODO: Comment
-export async function initalize() {
+export async function initialize() {
     if (!Object.keys(languageDB).length) {
         await fetch("assets/db/language.json").then(response => {
             return response.json();
@@ -765,7 +885,8 @@ export async function initalize() {
 }
 
 // TODO: Comment
-export async function loadPage(pageURL, element, callback = () => {}) {
+export async function loadPage(pageURL, element, callback = () => {
+}) {
     await fetch(pageURL).then(response => {
         return response.text();
     }).then(htmlData => {

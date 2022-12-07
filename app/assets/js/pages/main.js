@@ -1,10 +1,9 @@
 import * as tools from "../tools.js";
 import {showNotification} from "../tools.js";
-
 const {clipboard, ipcRenderer, shell} = require('electron');
 
-let lastClicked = null, contextElement = null;
-let specificSettings = {}
+let lastClicked = null,
+    contextElement = null;
 
 // TODO: Comment
 document.onclick = function (e) {
@@ -18,39 +17,18 @@ document.onclick = function (e) {
 }
 
 // TODO: Comment
-function removeActiveListItems() {
-    let ul = document.querySelector(".listBox ul");
-    let actives = ul.querySelectorAll("li.active");
-    if (actives) {
-        for (let active of actives) {
-            let id = active.getAttribute("data-id");
-
-            delete specificSettings[id];
-            active.remove();
-        }
-    }
-
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
-
-    tools.updateSelected();
-}
-
-// TODO: Comment
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
     let input = this.closest(".input").querySelector("input");
 
-    if (tools.addLinkToList(input.value)) input.value = "";
+    if (tools.addUrlToList(input.value)) input.value = "";
 });
 
 // TODO: Comment
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
     if (e.target === this) {
-        let actives = document.querySelectorAll(".listBox li.active");
+        let listBox = document.querySelector(".listBox");
 
-        for (let active of actives)
-            active.classList.remove("active");
-
+        tools.removeActives(listBox);
         tools.updateSelected();
     }
 });
@@ -60,11 +38,7 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
     let listBox = this.closest(".listBox");
     let actives = listBox.querySelectorAll("li.active");
 
-    if (!e.ctrlKey && !e.shiftKey) {
-        for (let active of actives) {
-            if (active !== this) active.classList.remove("active");
-        }
-    }
+    if (!e.ctrlKey && !e.shiftKey) tools.removeActives(listBox);
 
     if (e.shiftKey && actives.length) {
         document.getSelection().removeAllRanges();
@@ -91,8 +65,9 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
             }
         }
     } else {
-        if (this.classList.contains("active")) this.classList.remove("active");
-        else this.classList.add("active");
+        (this.classList.contains("active"))
+            ? this.classList.remove("active")
+            : this.classList.add("active");
     }
 
     tools.updateSelected();
@@ -100,7 +75,7 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
 
 // TODO: Comment
 tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", function () {
-    removeActiveListItems();
+    tools.removeActiveListItems();
 });
 
 // TODO: Comment
@@ -109,7 +84,7 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", fun
 
     if (!clipboardText) {
         showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"]);
-    } else tools.addLinkToList(clipboardText);
+    } else tools.addUrlToList(clipboardText);
 });
 
 // TODO: Comment
@@ -125,9 +100,7 @@ tools.bindEvent("click", "#updateNotification .restart-button", function () {
 
 // TODO: Comment
 tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
-    if (e.code === "Enter") {
-        tools.addLinkToList(this.value);
-    }
+    if (e.code === "Enter") tools.addUrlToList(this.value);
 });
 
 /*
@@ -165,180 +138,141 @@ tools.bindEvent("click", ".theme-toggler", function () {
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
-    let listBox = document.getElementsByClassName("listBox")[0];
-    let location = document.querySelector(".location #location");
-    let items = listBox.querySelectorAll("li");
+    tools.setAborted(false);
 
-    let mode = tools.getCookie("mode");
-    let codecAudio = tools.getCookie("codecAudio");
-    let codecVideo = tools.getCookie("codecVideo");
-    let quality = tools.getCookie("quality");
+    download: {
+        let listBox = document.getElementsByClassName("listBox")[0];
+        let location = document.querySelector(".location #location");
+        let items = listBox.querySelectorAll("li");
 
-    if (!items.length) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
+        let mode = tools.getCookie("mode");
+        let codecAudio = tools.getCookie("codecAudio");
+        let codecVideo = tools.getCookie("codecVideo");
+        let quality = tools.getCookie("quality");
 
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
-
-        return;
-    }
-
-    if (!mode) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
-
-        return;
-    } else if (mode === "audio") {
-        if (!codecAudio) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+        if (!items.length) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
             return;
         }
 
-        if (!quality) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
+        if (!mode) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
             return;
-        }
-    } else {
-        if (!codecVideo) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+        } else if (mode === "audio") {
+            if (!codecAudio) {
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
-            if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
-            return;
-        }
-    }
-
-    if (!location.value) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
-
-        return;
-    }
-
-    tools.setDisabled();
-    ipcRenderer.send('set_percentage', 0);
-    ipcRenderer.send('add_abort');
-
-    let progressTotal = document.querySelector(".progress-total progress");
-    let infoTotal = document.querySelector(".progress-total .info p");
-    let progressSong = document.querySelector(".progress-song progress");
-    let infoSong = document.querySelector(".progress-song .info p");
-
-    progressTotal.value = 0;
-    progressSong.value = 0;
-    infoTotal.textContent = "0%";
-    infoSong.textContent = "0%";
-
-    let count = 0;
-    let allUrls = [];
-    for (let item of items) {
-        if (item.textContent.includes("playlist?list=")) {
-            let urls = await tools.getPlaylistUrls(item.textContent);
-            count += urls.length;
-            allUrls = [...allUrls, ...urls];
-        } else {
-            count++;
-            allUrls.push(item.textContent);
-        }
-    }
-
-    let percentage = Math.floor(100 / count * 100) / 100;
-    let aborted = false;
-    let i = 0;
-    for (let url of allUrls) {
-        let individualLocation = location.value;
-        let individualQuality = quality;
-        let individualMode = mode;
-        let individualCodecAudio = codecAudio;
-        let individualCodecVideo = codecVideo;
-
-        if (!url.includes("netflix")) {
-            if (typeof specificSettings[i] !== 'undefined') {
-                if (typeof specificSettings[i]["quality"] !== 'undefined')
-                    individualQuality = specificSettings[i]["quality"];
-
-                if (typeof specificSettings[i]["mode"] !== 'undefined')
-                    individualMode = specificSettings[i]["mode"];
-
-                if (typeof specificSettings[i]["codecAudio"] !== 'undefined')
-                    individualCodecAudio = specificSettings[i]["codecAudio"];
-
-                if (typeof specificSettings[i]["codecVideo"] !== 'undefined')
-                    individualCodecVideo = specificSettings[i]["codecVideo"];
-
-                if (typeof specificSettings[i]["location"] !== 'undefined')
-                    individualLocation = specificSettings[i]["location"];
+                return;
             }
 
-            let qualityInt = 0;
-            switch (individualQuality) {
-                case "best": qualityInt = 0;
-                    break;
-                case "medium": qualityInt = 5;
-                    break;
-                case "bad": qualityInt = 9;
-                    break;
+            if (!quality) {
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+
+                return;
+            }
+        } else {
+            if (!codecVideo) {
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
+                if (document.hidden)
+                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+
+                return;
+            }
+        }
+
+        if (!location.value) {
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+
+            if (document.hidden)
+                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+
+            return;
+        }
+
+        tools.setDisabled();
+        ipcRenderer.send('set_percentage', 0);
+        ipcRenderer.send('add_abort');
+
+        let progressTotal = document.querySelector(".progress-total progress");
+        let infoTotal = document.querySelector(".progress-total .info p");
+        let progressSong = document.querySelector(".progress-song progress");
+        let infoSong = document.querySelector(".progress-song .info p");
+
+        progressTotal.value = 0;
+        progressSong.value = 0;
+        infoTotal.textContent = "0%";
+        infoSong.textContent = "0%";
+
+        tools.worker.postMessage({
+            type: "loadData",
+            mode: mode,
+            codecAudio: codecAudio,
+            codecVideo: codecVideo,
+            quality: quality,
+            settings: tools.specificSettings,
+            premium: tools.getCookie("premium")
+        });
+
+        let count = 0;
+        let allUrls = [];
+        for (let item of items) {
+            if (item.textContent.includes("playlist?list=")) {
+                let urls = await tools.getPlaylistUrls(item.textContent);
+                count += urls.length;
+                allUrls = [...allUrls, ...urls];
+            } else {
+                count++;
+                allUrls.push(item.textContent);
             }
 
-            aborted = !await tools.downloadYTURL(
-                individualMode,
-                individualLocation,
-                url,
-                percentage,
-                individualCodecAudio,
-                individualCodecVideo,
-                qualityInt
-            );
-        } else {
-            aborted = await tools.downloadNFURL(
-            );
+            if (tools.aborted) break download;
         }
-        if (aborted) break;
 
-        i++;
+        tools.setWorkerCount(allUrls.length);
+
+        for (let i = 0; i < allUrls.length; i++) {
+            tools.worker.postMessage({
+                type: "checkPremiumAndAdd",
+                url: allUrls[i],
+                location: location.value,
+                count: count,
+                id: i
+            });
+
+            if (tools.aborted) break download;
+        }
     }
-
-    infoTotal.textContent = "100%";
-    progressTotal.value = 1;
-    ipcRenderer.send('set_percentage', 1);
-
-    tools.setEnabled();
-
-    if (!aborted) {
-        ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["success"], tools.languageDB[tools.selectedLang]["js"]["songsDownloaded"]);
-    } else {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
-
-        if (document.hidden)
-            ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadAborted"]);
-    }
-
-    ipcRenderer.send('remove_abort');
 });
 
 // TODO: Comment
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
-    tools.abortDownload();
-    tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
-        pids = pids.reverse();
-        for (let pid of pids) {
-            ipcRenderer.send("kill_pid", Number(pid));
-        }
-        ipcRenderer.send("kill_pid", tools.childProcess.pid);
-    });
+    tools.setAborted(true);
+
+    if (tools.childProcess) {
+        tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
+            pids = pids.reverse();
+            for (let pid of pids) {
+                ipcRenderer.send("kill_pid", Number(pid));
+            }
+            ipcRenderer.send("kill_pid", tools.childProcess.pid);
+        });
+    }
+
     tools.setEnabled();
 });
 
@@ -348,40 +282,43 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
 
     if (!e.target.textContent.includes("playlist?list=")) {
         let context = document.getElementById("contextMenu");
-        let mode = document.querySelector("settings .mode .select");
+        let mode = tools.getCookie("mode");
         let id = this.getAttribute("data-id");
 
-        let modeValue = mode.getAttribute("data-value");
-        if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["mode"] !== 'undefined')
-            modeValue = specificSettings[id]["mode"];
+        if (typeof tools.specificSettings[id] !== 'undefined' && typeof tools.specificSettings[id]["mode"] !== 'undefined')
+            mode = tools.specificSettings[id]["mode"];
 
         tools.removeActives(context.querySelector(".mode"));
-        if (modeValue === "audio") {
+        if (mode === "audio") {
             context.querySelector(".codecAudio").style.display = "";
             context.querySelector(".quality").style.display = "";
+
+            context.querySelector(".codecVideo").style.display = "none";
 
             context.querySelector(".mode [data-value='audio']").classList.add("active");
         } else {
             context.querySelector(".codecAudio").style.display = "none";
             context.querySelector(".quality").style.display = "none";
 
+            context.querySelector(".codecVideo").style.display = "";
+
             context.querySelector(".mode [data-value='video']").classList.add("active");
         }
 
         tools.removeActives(context.querySelector(".quality"));
-        if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["quality"] !== "undefined") {
-            context.querySelector(".quality [data-value='" + specificSettings[id]["quality"] + "']").classList.add("active");
+        if (typeof tools.specificSettings[id] !== 'undefined' && typeof tools.specificSettings[id]["quality"] !== "undefined") {
+            context.querySelector(".quality [data-value='" + tools.specificSettings[id]["quality"] + "']").classList.add("active");
         } else {
-            let quality = document.querySelector("settings .quality .select");
-            context.querySelector(".quality [data-value='" + quality.getAttribute("data-value") + "']").classList.add("active");
+            let quality = tools.getCookie("quality");
+            context.querySelector(".quality [data-value='" + quality + "']").classList.add("active");
         }
 
         tools.removeActives(context.querySelector(".codecAudio"));
-        if (typeof specificSettings[id] !== 'undefined' && typeof specificSettings[id]["codec"] !== "undefined") {
-            context.querySelector(".codecAudio [data-value='" + specificSettings[id]["codec"] + "']").classList.add("active");
+        if (typeof tools.specificSettings[id] !== 'undefined' && typeof tools.specificSettings[id]["codec"] !== "undefined") {
+            context.querySelector(".codecAudio [data-value='" + tools.specificSettings[id]["codec"] + "']").classList.add("active");
         } else {
-            let codec = document.querySelector("settings .codecAudio .select");
-            context.querySelector(".codecAudio [data-value='" + codec.getAttribute("data-value") + "']").classList.add("active");
+            let codec = tools.getCookie("codecAudio");
+            context.querySelector(".codecAudio [data-value='" + codec + "']").classList.add("active");
         }
 
         contextElement = e.target;
@@ -432,10 +369,10 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
     for (let active of actives) {
         let id = active.getAttribute("data-id");
 
-        if (typeof specificSettings[id] === 'undefined')
-            specificSettings[id] = {};
+        if (typeof tools.specificSettings[id] === 'undefined')
+            tools.specificSettings[id] = {};
 
-        specificSettings[id][className] = this.getAttribute("data-value");
+        tools.specificSettings[id][className] = this.getAttribute("data-value");
     }
 
     let activeOptions = navSelect.querySelectorAll(".active");
@@ -486,10 +423,10 @@ tools.bindEvent("click", "#contextMenu .location", function () {
         for (let active of actives) {
             let id = active.getAttribute("data-id");
 
-            if (typeof specificSettings[id] !== "object")
-                specificSettings[id] = {};
+            if (typeof tools.specificSettings[id] !== "object")
+                tools.specificSettings[id] = {};
 
-            specificSettings[id]["location"] = path;
+            tools.specificSettings[id]["location"] = path;
         }
 
         showNotification("Specific location has been set.");
@@ -566,7 +503,7 @@ ipcRenderer.on('url', function (event, value) {
     let input = document.querySelector(".input input");
     input.value = value;
 
-    tools.addLinkToList(value);
+    if (tools.addUrlToList(value)) input.value = "";
 });
 
 // TODO: Comment
@@ -590,11 +527,10 @@ ipcRenderer.on('translate', function (event, array) {
 
 // TODO: Comment
 document.addEventListener("keydown", function (e) {
-    if (e.code === "Delete") {
-        removeActiveListItems();
-    }
+    if (e.code === "Delete" && !tools.downloading)
+        tools.removeActiveListItems();
 
-    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null) {
+    if (e.code === "KeyA" && e.ctrlKey && lastClicked.closest(".listBox") !== null && !tools.downloading) {
         let items = document.querySelectorAll(".listBox li");
         if (!items.length) return;
 
@@ -611,7 +547,5 @@ document.addEventListener("keydown", function (e) {
         linkCount.style.opacity = "1";
     }
 
-    if (e.code === "KeyC" && e.ctrlKey) {
-        tools.activeToClipboard();
-    }
+    if (e.code === "KeyC" && e.ctrlKey) tools.activeToClipboard();
 });
