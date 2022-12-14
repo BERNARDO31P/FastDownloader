@@ -231,8 +231,6 @@ function alreadyInList() {
 
 // TODO: Comment
 async function download(data) {
-    console.log(data);
-
     let percentage = Math.floor(100 / data.length * 100) / 100;
     downloading = true;
 
