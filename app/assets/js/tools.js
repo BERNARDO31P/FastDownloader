@@ -81,14 +81,14 @@ worker.addEventListener("message", (event) => {
 
                 if (!aborted) {
                     ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
+
+                    if (getCookie("clearList")) clearList();
                 } else {
                     showNotification(languageDB[selectedLang]["js"]["downloadAborted"]);
 
                     if (document.hidden)
                         ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["downloadAborted"]);
                 }
-
-                if (getCookie("clearList")) clearList()
 
                 ipcRenderer.send('remove_abort');
             });

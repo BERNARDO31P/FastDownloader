@@ -13,12 +13,13 @@ Main features:
 - Download multiple songs and playlists at once
 - YouTube Premium integration
   - You need a YouTube Premium subscription
-  - Automatic conversion of urls from YouTube to YouTube Music
+  - Automatic conversion of URLs from YouTube to YouTube Music
 - Highly customizable but still slim and clean
 - Tray icon with the most needed functionality
-  - Insert urls without entering the application
+  - Insert URLs without entering the application
   - Start a download
   - Change the download location
+  - Clear URL list
 - Autostart
 - Auto update
 
@@ -52,10 +53,13 @@ Main features:
   - No in app login needed
   - YouTube Premium subscription needed
   - Allows you to get the best available quality
-  - YouTube Music urls only
+  - YouTube Music URLs only
 - Browser selection
   - Allows the Fast Downloader to use your YouTube Premium cookie
   - Don't worry, every application on your system has the permission to read browser cookies
+- Clear list
+  - Functionality to clear the URL list after a download
+  - Only if download wasn't aborted
 
 ## Screenshots
 **Main window - light theme**
@@ -75,6 +79,10 @@ Main features:
 - [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
 - [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> 1.0.16
+
+## Binaries
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 2022.11.11
+- [ffmpeg](https://ffmpeg.org) -> 2022-11-21
 
 ## License
 Copyright © 2022 Bernardo de Oliveira
