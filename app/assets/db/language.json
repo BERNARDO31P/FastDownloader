@@ -29,6 +29,7 @@
         "codec": "Codec",
         "language": "Sprache",
         "artistName": "Künstername im Songtitel speichern",
+        "clearList": "URL Liste nach einem Download leeren",
         "enablePremium": "YouTube Premium für YouTube Music aktivieren",
         "needPremium": "(Sie benötigen ein YouTube Music Premium Abo)",
         "browser": "Wählen Sie den Browser aus, in welchem Sie angemeldet sind"
@@ -70,6 +71,8 @@
       "playlistContext": "Keine Einstellungsmöglichkeiten für Playlists",
       "artistNameEnabled": "Der Künstlername wird jetzt im Songtitel gespeichert",
       "artistNameDisabled": "Der Künstlername wird nicht mehr im Songtitel gespeichert",
+      "clearListEnabled": "Die URL Liste wird nach einem Download geleert",
+      "clearListDisabled": "Die URL Liste wird nicht mehr nach einem Download geleert",
       "premiumEnabled": "Der Premium-Download wurde aktiviert",
       "premiumDisabled": "Der Premium-Download wurde deaktiviert",
       "noBrowser": "Sie haben den Premium-Download aktiviert, jedoch keinen Browser ausgewählt",
@@ -107,6 +110,7 @@
         "codec": "Codec",
         "language": "Language",
         "artistName": "Save artist name in song title",
+        "clearList": "Clear URL list after download",
         "enablePremium": "Enable YouTube premium for YouTube Music",
         "needPremium": "(you need a premium subscription for YouTube Music)",
         "browser": "Select your browser where you're logged in"
@@ -148,6 +152,8 @@
       "playlistContext": "There are no options for playlists",
       "artistNameEnabled": "The arist name will now be saved in the song title",
       "artistNameDisabled": "The artist name will not be saved in the song title",
+      "clearListEnabled": "The URL list will now be cleared after a download",
+      "clearListDisabled": "The URL list will not be cleared after a download",
       "premiumEnabled": "Premium download has been enabled",
       "premiumDisabled": "Premium download has been disabled",
       "noBrowser": "You've enabled premium download but didn't select a browser",

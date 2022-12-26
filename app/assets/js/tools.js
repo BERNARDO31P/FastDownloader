@@ -45,7 +45,7 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
  *
  * Ist das Äquivalent zu .on(eventNames, selector, handler) in jQuery
  */
-export function bindEvent (eventNames, selectors, handler) {
+export function bindEvent(eventNames, selectors, handler) {
     eventNames.split(', ').forEach((eventName) => {
         document.addEventListener(eventName, function (event) {
             selectors.split(', ').forEach((selector) => {
@@ -87,6 +87,8 @@ worker.addEventListener("message", (event) => {
                     if (document.hidden)
                         ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["downloadAborted"]);
                 }
+
+                if (getCookie("clearList")) clearList()
 
                 ipcRenderer.send('remove_abort');
             });
@@ -158,6 +160,11 @@ export function setAborted(bool) {
 
 export function setWorkerCount(count) {
     workers = count;
+}
+
+export function clearList() {
+    let ul = document.querySelector(".listBox ul")
+    ul.innerHTML = "";
 }
 
 // TODO: Comment
@@ -727,6 +734,7 @@ export function saveSettings() {
         let closeToTray = document.querySelector("settings #closeToTray");
         let autostart = document.querySelector("settings #autostart");
         let artistName = document.querySelector("settings #artistName");
+        let clearList = document.querySelector("settings #clearList");
         let premiumCheck = document.querySelector("settings #premium");
         let premiumBrowser = document.querySelector("settings #browser");
 
@@ -738,6 +746,7 @@ export function saveSettings() {
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
         setCookie("artistName", artistName.classList.contains("active"));
+        setCookie("clearList", clearList.classList.contains("active"));
         setCookie("premium", JSON.stringify({
             "browser": premiumBrowser.getAttribute("data-value"),
             "check": premiumCheck.classList.contains("active")
@@ -756,6 +765,7 @@ export function deleteSettings() {
     setCookie("autostart", false);
     setCookie("premium", JSON.stringify({"browser": null, "check": false}));
     setCookie("artistName", false);
+    setCookie("clearList", false);
 }
 
 // TODO: Comment
@@ -776,6 +786,7 @@ export function loadSettings() {
     let autostart = getCookie("autostart");
     let premium = JSON.parse(getCookie("premium"));
     let artistName = getCookie("artistName");
+    let clearList = getCookie("clearList");
 
     let option;
     if (modeValue) {
@@ -833,6 +844,14 @@ export function loadSettings() {
         artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
     } else {
         artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+    }
+
+    let clearListing = document.querySelector("settings .clearList");
+    if (clearList) {
+        clearListing.querySelector("#clearList").classList.add("active");
+        clearListing.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        clearListing.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
     let premiumCheck = document.querySelector("settings .premium");

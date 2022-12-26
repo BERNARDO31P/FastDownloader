@@ -82,6 +82,25 @@ tools.bindEvent("click", "settings .closeToTray .checkbox", function (){
 });
 
 // TODO: Comment
+tools.bindEvent("click", "settings .clearList .checkbox", function () {
+    let clearList = this.closest(".clearList");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        clearList.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["clearListDisabled"]);
+    } else {
+        this.classList.add("active");
+        clearList.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["clearListEnabled"]);
+    }
+
+    tools.saveSettings();
+})
+
+// TODO: Comment
 tools.bindEvent("click", "settings .premium .checkbox", function () {
     let premium = this.closest(".premium");
 

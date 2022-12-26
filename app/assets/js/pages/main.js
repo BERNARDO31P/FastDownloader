@@ -17,6 +17,22 @@ document.onclick = function (e) {
 }
 
 // TODO: Comment
+function searchButton () {
+    ipcRenderer.send('open_file_dialog');
+
+    // TODO: Comment
+    ipcRenderer.on("selected_file", function mainLocation(event, path) {
+        let location = document.querySelector(".location #location");
+        let locationButton = document.querySelector(".location .location-button");
+
+        location.value = path;
+        locationButton.ariaDisabled = "false";
+
+        this.off("selected_file", mainLocation);
+    });
+}
+
+// TODO: Comment
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
     let input = this.closest(".input").querySelector("input");
 
@@ -437,20 +453,7 @@ tools.bindEvent("click", "#contextMenu .location", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", function () {
-    ipcRenderer.send('open_file_dialog');
-
-    // TODO: Comment
-    ipcRenderer.on("selected_file", function mainLocation(event, path) {
-        let location = document.querySelector(".location #location");
-        let locationButton = document.querySelector(".location .location-button");
-
-        location.value = path;
-        locationButton.ariaDisabled = "false";
-
-        this.off("selected_file", mainLocation);
-    });
-});
+tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", searchButton);
 
 // TODO: Comment
 tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])", function () {
@@ -491,6 +494,16 @@ tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async fun
 // TODO: Comment
 ipcRenderer.on('download', function () {
     document.querySelector(".startAbort .start-button").click();
+});
+
+// TODO: Comment
+ipcRenderer.on('clear', function () {
+    tools.clearList();
+});
+
+// TODO: Comment
+ipcRenderer.on('location', function () {
+    searchButton();
 });
 
 // TODO: Comment

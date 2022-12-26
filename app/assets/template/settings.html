@@ -13,44 +13,55 @@
     </div>
 
     <div class="row">
-        <div class="save">
-            <label for="save">{{settings.label.saveSettings}}</label>
-            <div class="row">
-                <div class="checkbox" id="save">
-                    <div class="toggle"></div>
+        <div class="column">
+            <div class="save">
+                <label for="save">{{settings.label.saveSettings}}</label>
+                <div class="row">
+                    <div class="checkbox" id="save">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
                 </div>
-                <span></span>
+            </div>
+            <div class="artistName">
+                <label for="artistName">{{settings.label.artistName}}</label>
+                <div class="row">
+                    <div class="checkbox" id="artistName">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
+                </div>
             </div>
         </div>
-        <div class="divider"></div>
-        <div class="closeToTray">
-            <label for="closeToTray">{{settings.label.closeToTray}}</label>
-            <div class="row">
-                <div class="checkbox" id="closeToTray">
-                    <div class="toggle"></div>
+        <div class="column">
+            <div class="closeToTray">
+                <label for="closeToTray">{{settings.label.closeToTray}}</label>
+                <div class="row">
+                    <div class="checkbox" id="closeToTray">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
                 </div>
-                <span></span>
+            </div>
+            <div class="clearList">
+                <label for="clearList">{{settings.label.clearList}}</label>
+                <div class="row">
+                    <div class="checkbox" id="clearList">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
+                </div>
             </div>
         </div>
-        <div class="divider"></div>
-        <div class="autostart">
-            <label for="autostart">{{settings.label.autostart}}</label>
-            <div class="row">
-                <div class="checkbox" id="autostart">
-                    <div class="toggle"></div>
+        <div class="column">
+            <div class="autostart">
+                <label for="autostart">{{settings.label.autostart}}</label>
+                <div class="row">
+                    <div class="checkbox" id="autostart">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
                 </div>
-                <span></span>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="artistName">
-            <label for="artistName">{{settings.label.artistName}}</label>
-            <div class="row">
-                <div class="checkbox" id="artistName">
-                    <div class="toggle"></div>
-                </div>
-                <span></span>
             </div>
         </div>
     </div>
@@ -145,34 +156,37 @@
         </div>
     </div>
     <div class="divider"></div>
-    <h3 style="margin-bottom: -10px">YouTube premium</h3>
+    <h3 style="margin-bottom: -20px">YouTube premium</h3>
     <div class="row">
-        <div class="premium">
-            <label for="premium">{{settings.label.enablePremium}}<br>
-                {{settings.label.needPremium}}</label>
-            <div class="row">
-                <div class="checkbox" id="premium">
-                    <div class="toggle"></div>
+        <div class="column">
+            <div class="premium">
+                <label for="premium">{{settings.label.enablePremium}}<br>
+                    {{settings.label.needPremium}}</label>
+                <div class="row">
+                    <div class="checkbox" id="premium">
+                        <div class="toggle"></div>
+                    </div>
+                    <span></span>
                 </div>
-                <span></span>
             </div>
         </div>
-        <div class="divider"></div>
-        <div class="browser">
-            <label for="browser">{{settings.label.browser}}</label>
-            <div class="select" id="browser">
-                <div class="head">
-                    <div class="button">{{settings.button.nothingSelected}}</div>
-                    <i class="fas fa-angle-down"></i>
-                </div>
-                <div class="body">
-                    <div class="option" data-value="" aria-disabled="true" aria-selected="true">
-                        {{settings.button.nothingSelected}}
+        <div class="column">
+            <div class="browser">
+                <label for="browser">{{settings.label.browser}}</label>
+                <div class="select" id="browser">
+                    <div class="head">
+                        <div class="button">{{settings.button.nothingSelected}}</div>
+                        <i class="fas fa-angle-down"></i>
                     </div>
-                    <div class="option" data-value="chrome">Google Chrome</div>
-                    <div class="option" data-value="firefox">Mozilla Firefox</div>
-                    <div class="option" data-value="edge">Microsoft Edge</div>
-                    <div class="option" data-value="opera">Opera</div>
+                    <div class="body">
+                        <div class="option" data-value="" aria-disabled="true" aria-selected="true">
+                            {{settings.button.nothingSelected}}
+                        </div>
+                        <div class="option" data-value="chrome">Google Chrome</div>
+                        <div class="option" data-value="firefox">Mozilla Firefox</div>
+                        <div class="option" data-value="edge">Microsoft Edge</div>
+                        <div class="option" data-value="opera">Opera</div>
+                    </div>
                 </div>
             </div>
         </div>

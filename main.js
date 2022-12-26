@@ -24,7 +24,9 @@ const languageDB = {
         "download": "Herunterladen",
         "close": "Schliessen",
         "maximize": "Maximieren",
-        "abort": "Abbrechen"
+        "abort": "Abbrechen",
+        "location": "Speicherort",
+        "clear": "Liste leeren"
     },
     "en": {
         "hide": "Hide",
@@ -32,7 +34,9 @@ const languageDB = {
         "download": "Download",
         "close": "Close",
         "maximize": "Maximize",
-        "abort": "Abort"
+        "abort": "Abort",
+        "location": "Saving location",
+        "clear": "Clear list"
     }
 }
 
@@ -73,6 +77,8 @@ function createWindow() {
                 {id: "hide", label: languageDB[lang]["hide"], type: "normal", click: hide},
                 {id: "addUrl", label: languageDB[lang]["addUrl"], type: "normal", click: addURL},
                 {id: "download", label: languageDB[lang]["download"], type: "normal", click: download},
+                {id: "location", label: languageDB[lang]["location"], type: "normal", click: location},
+                {id: "clear", label: languageDB[lang]["clear"], type: "normal", click: clear},
                 {id: "close", label: languageDB[lang]["close"], type: "normal", click: exit}
             ]);
 
@@ -261,6 +267,14 @@ function download() {
 
 function abort() {
     win.webContents.send("abort");
+}
+
+function clear() {
+    win.webContents.send("clear");
+}
+
+function location() {
+    win.webContents.send("location");
 }
 
 function addURL() {
