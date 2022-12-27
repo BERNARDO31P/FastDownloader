@@ -201,7 +201,7 @@ settings {
       top: 0;
       width: 100%;
 
-      &+.row {
+      & + .row {
         margin-top: 65px;
       }
     }
@@ -585,14 +585,6 @@ settings {
   display: flex;
   justify-content: space-between;
 
-  div:not(:only-of-type):not(:first-of-type) {
-    margin: 0 10px;
-  }
-
-  div:not(:only-of-type):first-of-type {
-    margin: 0 10px 0 0;
-  }
-
   span {
     margin: 0 0 0 10px;
 
@@ -601,6 +593,21 @@ settings {
 
   .row {
     justify-content: flex-start;
+  }
+
+  .column:first-of-type {
+    border-left: unset;
+  }
+
+  .column {
+    border-left: 1px solid black;
+    width: 100%;
+
+    & > * {
+      width: 90%;
+      margin: 15px auto;
+      position: relative;
+    }
   }
 }
 

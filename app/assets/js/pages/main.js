@@ -1,6 +1,6 @@
 import * as tools from "../tools.js";
 import {showNotification} from "../tools.js";
-const {clipboard, ipcRenderer, shell} = require('electron');
+const {clipboard, ipcRenderer, shell} = require("electron");
 
 let lastClicked = null,
     contextElement = null;
@@ -14,6 +14,22 @@ document.onclick = function (e) {
         context.classList.remove("show");
         contextElement = null;
     }
+}
+
+// TODO: Comment
+function searchButton () {
+    ipcRenderer.send("open_file_dialog");
+
+    // TODO: Comment
+    ipcRenderer.on("selected_file", function mainLocation(event, path) {
+        let location = document.querySelector(".location #location");
+        let locationButton = document.querySelector(".location .location-button");
+
+        location.value = path;
+        locationButton.ariaDisabled = "false";
+
+        this.off("selected_file", mainLocation);
+    });
 }
 
 // TODO: Comment
@@ -90,12 +106,12 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", fun
 // TODO: Comment
 tools.bindEvent("click", "#updateNotification .close-button", function () {
     let notification = document.getElementById("updateNotification");
-    notification.classList.add('hidden');
+    notification.classList.add("hidden");
 });
 
 // TODO: Comment
 tools.bindEvent("click", "#updateNotification .restart-button", function () {
-    ipcRenderer.send('restart_app');
+    ipcRenderer.send("restart_app");
 });
 
 // TODO: Comment
@@ -154,7 +170,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
+                ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
 
             return;
         }
@@ -163,7 +179,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
+                ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
 
             return;
         } else if (mode === "audio") {
@@ -171,7 +187,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
                 if (document.hidden)
-                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+                    ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
                 return;
             }
@@ -180,7 +196,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
 
                 if (document.hidden)
-                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
+                    ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
 
                 return;
             }
@@ -189,7 +205,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
                 showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
                 if (document.hidden)
-                    ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
+                    ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
 
                 return;
             }
@@ -199,14 +215,14 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
+                ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
 
             return;
         }
 
         tools.setDisabled();
-        ipcRenderer.send('set_percentage', 0);
-        ipcRenderer.send('add_abort');
+        ipcRenderer.send("set_percentage", 0);
+        ipcRenderer.send("add_abort");
 
         let progressTotal = document.querySelector(".progress-total progress");
         let infoTotal = document.querySelector(".progress-total .info p");
@@ -285,7 +301,7 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
         let mode = tools.getCookie("mode");
         let id = this.getAttribute("data-id");
 
-        if (typeof tools.specificSettings[id] !== 'undefined' && typeof tools.specificSettings[id]["mode"] !== 'undefined')
+        if (typeof tools.specificSettings[id] !== "undefined" && typeof tools.specificSettings[id]["mode"] !== "undefined")
             mode = tools.specificSettings[id]["mode"];
 
         tools.removeActives(context.querySelector(".mode"));
@@ -306,7 +322,7 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
         }
 
         tools.removeActives(context.querySelector(".quality"));
-        if (typeof tools.specificSettings[id] !== 'undefined' && typeof tools.specificSettings[id]["quality"] !== "undefined") {
+        if (typeof tools.specificSettings[id] !== "undefined" && typeof tools.specificSettings[id]["quality"] !== "undefined") {
             context.querySelector(".quality [data-value='" + tools.specificSettings[id]["quality"] + "']").classList.add("active");
         } else {
             let quality = tools.getCookie("quality");
@@ -314,7 +330,7 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
         }
 
         tools.removeActives(context.querySelector(".codecAudio"));
-        if (typeof tools.specificSettings[id] !== 'undefined' && typeof tools.specificSettings[id]["codec"] !== "undefined") {
+        if (typeof tools.specificSettings[id] !== "undefined" && typeof tools.specificSettings[id]["codec"] !== "undefined") {
             context.querySelector(".codecAudio [data-value='" + tools.specificSettings[id]["codec"] + "']").classList.add("active");
         } else {
             let codec = tools.getCookie("codecAudio");
@@ -369,7 +385,7 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
     for (let active of actives) {
         let id = active.getAttribute("data-id");
 
-        if (typeof tools.specificSettings[id] === 'undefined')
+        if (typeof tools.specificSettings[id] === "undefined")
             tools.specificSettings[id] = {};
 
         tools.specificSettings[id][className] = this.getAttribute("data-value");
@@ -414,7 +430,7 @@ tools.bindEvent("click", "#contextMenu .copy", function () {
 
 // TODO: Comment
 tools.bindEvent("click", "#contextMenu .location", function () {
-    ipcRenderer.send('open_file_dialog');
+    ipcRenderer.send("open_file_dialog");
 
     ipcRenderer.on("selected_file", function specificLocation(event, path) {
         let actives = document.querySelectorAll(".listBox li.active");
@@ -437,20 +453,7 @@ tools.bindEvent("click", "#contextMenu .location", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", function () {
-    ipcRenderer.send('open_file_dialog');
-
-    // TODO: Comment
-    ipcRenderer.on("selected_file", function mainLocation(event, path) {
-        let location = document.querySelector(".location #location");
-        let locationButton = document.querySelector(".location .location-button");
-
-        location.value = path;
-        locationButton.ariaDisabled = "false";
-
-        this.off("selected_file", mainLocation);
-    });
-});
+tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", searchButton);
 
 // TODO: Comment
 tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])", function () {
@@ -489,17 +492,27 @@ tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async fun
 });
 
 // TODO: Comment
-ipcRenderer.on('download', function () {
+ipcRenderer.on("download", function () {
     document.querySelector(".startAbort .start-button").click();
 });
 
 // TODO: Comment
-ipcRenderer.on('abort', function () {
+ipcRenderer.on("clear", function () {
+    tools.clearList();
+});
+
+// TODO: Comment
+ipcRenderer.on("location", function () {
+    searchButton();
+});
+
+// TODO: Comment
+ipcRenderer.on("abort", function () {
     document.querySelector(".startAbort .abort-button").click();
 });
 
 // TODO: Comment
-ipcRenderer.on('url', function (event, value) {
+ipcRenderer.on("url", function (event, value) {
     let input = document.querySelector(".input input");
     input.value = value;
 
@@ -507,7 +520,7 @@ ipcRenderer.on('url', function (event, value) {
 });
 
 // TODO: Comment
-ipcRenderer.on('translate', function (event, array) {
+ipcRenderer.on("translate", function (event, array) {
     let value = [];
     let language = tools.languageDB[tools.selectedLang];
 

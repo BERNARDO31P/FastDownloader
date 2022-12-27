@@ -1,7 +1,7 @@
 import * as tools from "../tools.js";
 import {showNotification} from "../tools.js";
 
-const {ipcRenderer} = require('electron');
+const {ipcRenderer} = require("electron");
 
 let body = document.getElementsByTagName("body")[0];
 
@@ -80,6 +80,25 @@ tools.bindEvent("click", "settings .closeToTray .checkbox", function (){
 
     tools.saveSettings();
 });
+
+// TODO: Comment
+tools.bindEvent("click", "settings .clearList .checkbox", function () {
+    let clearList = this.closest(".clearList");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        clearList.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["clearListDisabled"]);
+    } else {
+        this.classList.add("active");
+        clearList.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["clearListEnabled"]);
+    }
+
+    tools.saveSettings();
+})
 
 // TODO: Comment
 tools.bindEvent("click", "settings .premium .checkbox", function () {
@@ -161,7 +180,7 @@ tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", as
     tools.setCookie("lang", lang);
     tools.getAllData();
 
-    ipcRenderer.send('restart');
+    ipcRenderer.send("restart");
 });
 
 // TODO: Comment

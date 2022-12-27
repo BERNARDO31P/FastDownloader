@@ -1,11 +1,11 @@
 import mustache from "./lib/mustache.min.js";
 
-const NP = require('number-precision');
-const {promisify} = require('util');
-const ytpl = require('ytpl');
-const {ipcRenderer, clipboard} = require('electron');
-const {exec} = require('child_process');
-const execSync = promisify(require('child_process').exec);
+const NP = require("number-precision");
+const {promisify} = require("util");
+const ytpl = require("ytpl");
+const {ipcRenderer, clipboard} = require("electron");
+const {exec} = require("child_process");
+const execSync = promisify(require("child_process").exec);
 
 let theme = getCookie("theme");
 
@@ -45,11 +45,11 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
  *
  * Ist das Äquivalent zu .on(eventNames, selector, handler) in jQuery
  */
-export function bindEvent (eventNames, selectors, handler) {
-    eventNames.split(', ').forEach((eventName) => {
+export function bindEvent(eventNames, selectors, handler) {
+    eventNames.split(", ").forEach((eventName) => {
         document.addEventListener(eventName, function (event) {
-            selectors.split(', ').forEach((selector) => {
-                if (event.target.matches(selector + ', ' + selector + ' *')) {
+            selectors.split(", ").forEach((selector) => {
+                if (event.target.matches(selector + ", " + selector + " *")) {
                     let element = event.target.closest(selector);
                     handler.apply(element, arguments);
                 }
@@ -72,7 +72,7 @@ worker.addEventListener("message", (event) => {
 
                 infoTotal.textContent = "100%";
                 progressTotal.value = 1;
-                ipcRenderer.send('set_percentage', 1);
+                ipcRenderer.send("set_percentage", 1);
 
                 setEnabled();
 
@@ -80,15 +80,17 @@ worker.addEventListener("message", (event) => {
                 processedUrls = [];
 
                 if (!aborted) {
-                    ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
+                    ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
+
+                    if (getCookie("clearList")) clearList();
                 } else {
                     showNotification(languageDB[selectedLang]["js"]["downloadAborted"]);
 
                     if (document.hidden)
-                        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["downloadAborted"]);
+                        ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["downloadAborted"]);
                 }
 
-                ipcRenderer.send('remove_abort');
+                ipcRenderer.send("remove_abort");
             });
             break;
         case "checkPremium":
@@ -133,9 +135,9 @@ export function setRealDir(dirname) {
 export function getCookie(name) {
     let cookie = localStorage.getItem(name);
 
-    return cookie === 'true' ? true :
-        cookie === 'false' ? false :
-            cookie === 'null' ? null : cookie;
+    return cookie === "true" ? true :
+        cookie === "false" ? false :
+            cookie === "null" ? null : cookie;
 }
 
 /*
@@ -158,6 +160,11 @@ export function setAborted(bool) {
 
 export function setWorkerCount(count) {
     workers = count;
+}
+
+export function clearList() {
+    let ul = document.querySelector(".listBox ul")
+    ul.innerHTML = "";
 }
 
 // TODO: Comment
@@ -226,13 +233,11 @@ function alreadyInList() {
     showNotification(languageDB[selectedLang]["js"]["urlInList"]);
 
     if (document.hidden)
-        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
+        ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
 }
 
 // TODO: Comment
 async function download(data) {
-    console.log(data);
-
     let percentage = Math.floor(100 / data.length * 100) / 100;
     downloading = true;
 
@@ -260,7 +265,7 @@ export function addUrlToList(url = "") {
         showNotification(languageDB[selectedLang]["js"]["noURL"]);
 
         if (document.hidden)
-            ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
+            ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
 
         return false;
     }
@@ -281,7 +286,7 @@ export function addUrlToList(url = "") {
             showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
 
             if (document.hidden)
-                ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
+                ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
 
             return false;
         }
@@ -321,7 +326,7 @@ export function addUrlToList(url = "") {
     showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
 
     if (document.hidden)
-        ipcRenderer.send('show_notification', languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
+        ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
 
     return true;
 }
@@ -564,7 +569,7 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
         childProcess = exec(command);
 
         let found;
-        childProcess.stdout.on('data', function (data) {
+        childProcess.stdout.on("data", function (data) {
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
                 progressSong.value = Number(found[1].replace("%", "")) / 100;
@@ -572,7 +577,7 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
             }
         });
 
-        childProcess.on('close', function () {
+        childProcess.on("close", function () {
             let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
             let percentageDecimal = percentageTotal / 100;
 
@@ -582,7 +587,7 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
             progressSong.value = 1;
             infoSong.textContent = "100%";
 
-            ipcRenderer.send('set_percentage', percentageDecimal);
+            ipcRenderer.send("set_percentage", percentageDecimal);
 
             if (!aborted) {
                 resolve(true);
@@ -729,6 +734,7 @@ export function saveSettings() {
         let closeToTray = document.querySelector("settings #closeToTray");
         let autostart = document.querySelector("settings #autostart");
         let artistName = document.querySelector("settings #artistName");
+        let clearList = document.querySelector("settings #clearList");
         let premiumCheck = document.querySelector("settings #premium");
         let premiumBrowser = document.querySelector("settings #browser");
 
@@ -740,6 +746,7 @@ export function saveSettings() {
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
         setCookie("artistName", artistName.classList.contains("active"));
+        setCookie("clearList", clearList.classList.contains("active"));
         setCookie("premium", JSON.stringify({
             "browser": premiumBrowser.getAttribute("data-value"),
             "check": premiumCheck.classList.contains("active")
@@ -758,6 +765,7 @@ export function deleteSettings() {
     setCookie("autostart", false);
     setCookie("premium", JSON.stringify({"browser": null, "check": false}));
     setCookie("artistName", false);
+    setCookie("clearList", false);
 }
 
 // TODO: Comment
@@ -778,6 +786,7 @@ export function loadSettings() {
     let autostart = getCookie("autostart");
     let premium = JSON.parse(getCookie("premium"));
     let artistName = getCookie("artistName");
+    let clearList = getCookie("clearList");
 
     let option;
     if (modeValue) {
@@ -837,6 +846,14 @@ export function loadSettings() {
         artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
+    let clearListing = document.querySelector("settings .clearList");
+    if (clearList) {
+        clearListing.querySelector("#clearList").classList.add("active");
+        clearListing.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+    } else {
+        clearListing.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+    }
+
     let premiumCheck = document.querySelector("settings .premium");
     let premiumBrowser = document.querySelector("settings .browser");
 
@@ -844,7 +861,7 @@ export function loadSettings() {
         premiumCheck.querySelector("#premium").classList.add("active");
         premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
 
-        if (typeof premium["browser"] != 'undefined' && premium["browser"] != null) {
+        if (typeof premium["browser"] != "undefined" && premium["browser"] != null) {
             option = premiumBrowser.querySelector("[data-value='" + premium["browser"] + "']");
             selectOption(option);
         }
@@ -890,7 +907,7 @@ export async function loadPage(pageURL, element, callback = () => {
     await fetch(pageURL).then(response => {
         return response.text();
     }).then(htmlData => {
-        let template = new DOMParser().parseFromString(htmlData, 'text/html').body;
+        let template = new DOMParser().parseFromString(htmlData, "text/html").body;
 
         let scripts = template.getElementsByTagName("script");
         scripts = Object.assign([], scripts);
