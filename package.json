@@ -69,6 +69,10 @@
     "linux": {
       "category": "Utility",
       "target": [
+        "deb",
+        "AppImage",
+        "rpm",
+        "tar.gz",
         "pacman"
       ],
       "extraResources": [
