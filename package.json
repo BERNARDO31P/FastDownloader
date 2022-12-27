@@ -53,6 +53,10 @@
         {
           "from": "resources/yt-dlp.exe",
           "to": "yt-dlp.exe"
+        },
+        {
+          "from": "resources/256x256.png",
+          "to": "256x256.png"
         }
       ]
     },
@@ -65,10 +69,6 @@
     "linux": {
       "category": "Utility",
       "target": [
-        "deb",
-        "AppImage",
-        "rpm",
-        "tar.gz",
         "pacman"
       ],
       "extraResources": [
@@ -79,6 +79,10 @@
         {
           "from": "resources/yt-dlp",
           "to": "yt-dlp"
+        },
+        {
+          "from": "resources/icons/256x256.png",
+          "to": "icons/256x256.png"
         }
       ]
     }

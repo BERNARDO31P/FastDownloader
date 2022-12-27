@@ -15,6 +15,8 @@ const {exec} = require("child_process");
 const AutoLaunch = require("easy-auto-launch");
 let autoLauncher = null;
 
+__dirname = __dirname.replace("/resources/app.asar", "");
+
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 let lang = null, hidden = false;
 const languageDB = {
@@ -61,7 +63,7 @@ function createWindow() {
 
     win.center();
     win.loadFile("app/index.html").then(() => {
-        trayIcon = new Tray(__dirname + "/resources/icons/256x256.png")
+        trayIcon = new Tray(__dirname + "/resources/icons/256x256.png");
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
