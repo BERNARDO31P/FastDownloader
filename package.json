@@ -55,8 +55,8 @@
           "to": "yt-dlp.exe"
         },
         {
-          "from": "resources/256x256.png",
-          "to": "256x256.png"
+          "from": "resources/icons/256x256.png",
+          "to": "icons/256x256.png"
         }
       ]
     },
