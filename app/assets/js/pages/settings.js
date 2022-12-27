@@ -1,7 +1,7 @@
 import * as tools from "../tools.js";
 import {showNotification} from "../tools.js";
 
-const {ipcRenderer} = require('electron');
+const {ipcRenderer} = require("electron");
 
 let body = document.getElementsByTagName("body")[0];
 
@@ -180,7 +180,7 @@ tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", as
     tools.setCookie("lang", lang);
     tools.getAllData();
 
-    ipcRenderer.send('restart');
+    ipcRenderer.send("restart");
 });
 
 // TODO: Comment
