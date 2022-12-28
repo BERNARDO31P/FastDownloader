@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "easy-auto-launch": "^6.0.2",
-    "electron-notification-state": "^1.0.4",
     "electron-updater": "^5.3.0",
     "fastest-levenshtein": "^1.0.16",
     "node-youtube-music": "^0.8.3",

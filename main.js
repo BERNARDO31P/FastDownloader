@@ -11,7 +11,6 @@ const {
     clipboard
 } = require("electron");
 const {autoUpdater} = require("electron-updater");
-const {getDoNotDisturb} = require("electron-notification-state");
 const {exec} = require("child_process");
 const AutoLaunch = require("easy-auto-launch");
 const path = require("path");
@@ -184,12 +183,11 @@ function closeToTray(event) {
 }
 
 function showNotification(title, message) {
-    if (!getDoNotDisturb())
-        new Notification({
-            title: title,
-            body: message,
-            icon: __dirname + "/app/assets/ico/icon_64x64.png".replaceAll("/", path.sep)
-        }).show();
+    new Notification({
+        title: title,
+        body: message,
+        icon: __dirname + "/app/assets/ico/icon_64x64.png".replaceAll("/", path.sep)
+    }).show();
 }
 
 function addTrayItem(id, label, type, click) {
