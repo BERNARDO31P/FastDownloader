@@ -37,7 +37,7 @@ window.onload = async function () {
         notification.classList.remove('hidden');
     });
 
-    ipcRenderer.send("lang", tools.selectedLang ?? tools.getCookie("lang") ?? "en");
+    ipcRenderer.send("lang", tools.selectedLang ?? tools.getCookie("lang") ?? "en", tools.languageDB[tools.selectedLang]["tray"]);
 }
 
 // TODO: Comment

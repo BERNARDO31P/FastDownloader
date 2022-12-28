@@ -1,5 +1,15 @@
 {
   "de": {
+    "tray": {
+      "hide": "Verstecken",
+      "addUrl": "URL hinzufügen",
+      "download": "Herunterladen",
+      "close": "Schliessen",
+      "maximize": "Maximieren",
+      "abort": "Abbrechen",
+      "location": "Speicherort",
+      "clear": "Liste leeren"
+    },
     "main": {
       "button": {
         "add": "Hinzufügen",
@@ -81,6 +91,16 @@
     }
   },
   "en": {
+    "tray": {
+      "hide": "Hide",
+      "addUrl": "Add URL",
+      "download": "Download",
+      "close": "Close",
+      "maximize": "Maximize",
+      "abort": "Abort",
+      "location": "Saving location",
+      "clear": "Clear list"
+    },
     "main": {
       "button": {
         "add": "Add",

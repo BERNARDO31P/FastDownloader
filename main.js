@@ -11,6 +11,7 @@ const {
     clipboard
 } = require("electron");
 const {autoUpdater} = require("electron-updater");
+const {getDoNotDisturb} = require("electron-notification-state");
 const {exec} = require("child_process");
 const AutoLaunch = require("easy-auto-launch");
 let autoLauncher = null;
@@ -19,28 +20,7 @@ __dirname = __dirname.replace("/resources/app.asar", "");
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 let lang = null, hidden = false;
-const languageDB = {
-    "de": {
-        "hide": "Verstecken",
-        "addUrl": "URL hinzufügen",
-        "download": "Herunterladen",
-        "close": "Schliessen",
-        "maximize": "Maximieren",
-        "abort": "Abbrechen",
-        "location": "Speicherort",
-        "clear": "Liste leeren"
-    },
-    "en": {
-        "hide": "Hide",
-        "addUrl": "Add URL",
-        "download": "Download",
-        "close": "Close",
-        "maximize": "Maximize",
-        "abort": "Abort",
-        "location": "Saving location",
-        "clear": "Clear list"
-    }
-}
+let language = {};
 
 function createWindow() {
     const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
@@ -67,16 +47,17 @@ function createWindow() {
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
-        ipcMain.on("lang", function (event, selectedLang) {
+        ipcMain.on("lang", function (event, selectedLang, selectedLanguage) {
             lang = selectedLang;
+            language = selectedLanguage;
 
             trayMenu = Menu.buildFromTemplate([
-                {id: "hide", label: languageDB[lang]["hide"], type: "normal", click: hide},
-                {id: "addUrl", label: languageDB[lang]["addUrl"], type: "normal", click: addURL},
-                {id: "download", label: languageDB[lang]["download"], type: "normal", click: download},
-                {id: "location", label: languageDB[lang]["location"], type: "normal", click: location},
-                {id: "clear", label: languageDB[lang]["clear"], type: "normal", click: clear},
-                {id: "close", label: languageDB[lang]["close"], type: "normal", click: exit}
+                {id: "hide", label: language["hide"], type: "normal", click: hide},
+                {id: "addUrl", label: language["addUrl"], type: "normal", click: addURL},
+                {id: "download", label: language["download"], type: "normal", click: download},
+                {id: "location", label: language["location"], type: "normal", click: location},
+                {id: "clear", label: language["clear"], type: "normal", click: clear},
+                {id: "close", label: language["close"], type: "normal", click: exit}
             ]);
 
             trayIcon.setContextMenu(trayMenu);
@@ -85,7 +66,7 @@ function createWindow() {
                 hidden = true;
 
                 removeTrayItem("hide");
-                addTrayItem("maximize", languageDB[lang]["maximize"], "normal", maximize);
+                addTrayItem("maximize", language["maximize"], "normal", maximize);
 
                 trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
 
@@ -95,7 +76,7 @@ function createWindow() {
                 hidden = false;
 
                 removeTrayItem("maximize");
-                addTrayItem("hide", languageDB[lang]["hide"], "normal", hide);
+                addTrayItem("hide", language["hide"], "normal", hide);
 
                 trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
             });
@@ -164,24 +145,16 @@ ipcMain.on("kill_pid", (event, pid) => {
 
 ipcMain.on("add_abort", () => {
     removeTrayItem("download");
-    addTrayItem("abort", languageDB[lang]["abort"], "normal", abort);
+    addTrayItem("abort", language["abort"], "normal", abort);
 
     trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
 });
 
 ipcMain.on("remove_abort", () => {
     removeTrayItem("abort");
-    addTrayItem("download", languageDB[lang]["download"], "normal", download);
+    addTrayItem("download", language["download"], "normal", download);
 
     trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
-});
-
-ipcMain.on("translation", function (event, translations) {
-    let value = clipboard.readText();
-
-    if (!value)
-        showNotification(translations[0], translations[1]);
-    else win.webContents.send("url", value);
 });
 
 autoUpdater.on("update-available", () => {
@@ -212,7 +185,7 @@ ipcMain.on("disableAutostart", function () {
     });
 })
 
-function closeToTray (event) {
+function closeToTray(event) {
     event.preventDefault();
     win.hide();
 
@@ -220,11 +193,12 @@ function closeToTray (event) {
 }
 
 function showNotification(title, message) {
-    new Notification({
-        title: title,
-        body: message,
-        icon: __dirname + "/app/assets/ico/icon_64x64.png"
-    }).show();
+    if (!getDoNotDisturb())
+        new Notification({
+            title: title,
+            body: message,
+            icon: __dirname + "/app/assets/ico/icon_64x64.png"
+        }).show();
 }
 
 function addTrayItem(id, label, type, click) {
@@ -273,6 +247,14 @@ function location() {
 
 function addURL() {
     win.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
+
+    ipcMain.once("translation", (event, translations) => {
+        let value = clipboard.readText();
+
+        if (!value)
+            showNotification(translations[0], translations[1]);
+        else win.webContents.send("url", value);
+    });
 }
 
 app.whenReady().then(() => {

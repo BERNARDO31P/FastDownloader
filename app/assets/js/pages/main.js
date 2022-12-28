@@ -21,14 +21,12 @@ function searchButton () {
     ipcRenderer.send("open_file_dialog");
 
     // TODO: Comment
-    ipcRenderer.on("selected_file", function mainLocation(event, path) {
+    ipcRenderer.once("selected_file", (event, path) => {
         let location = document.querySelector(".location #location");
         let locationButton = document.querySelector(".location .location-button");
 
         location.value = path;
         locationButton.ariaDisabled = "false";
-
-        this.off("selected_file", mainLocation);
     });
 }
 
@@ -432,7 +430,7 @@ tools.bindEvent("click", "#contextMenu .copy", function () {
 tools.bindEvent("click", "#contextMenu .location", function () {
     ipcRenderer.send("open_file_dialog");
 
-    ipcRenderer.on("selected_file", function specificLocation(event, path) {
+    ipcRenderer.once("selected_file", (event, path) => {
         let actives = document.querySelectorAll(".listBox li.active");
         if (!actives.length) actives[actives.length] = contextElement;
 
@@ -446,7 +444,6 @@ tools.bindEvent("click", "#contextMenu .location", function () {
         }
 
         showNotification("Specific location has been set.");
-        ipcRenderer.off("selected_file", specificLocation);
     });
 
     this.closest("#contextMenu").classList.remove("show");
