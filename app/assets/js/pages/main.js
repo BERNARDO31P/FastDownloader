@@ -6,7 +6,7 @@ let lastClicked = null,
     contextElement = null;
 
 // TODO: Comment
-document.onclick = function (e) {
+document.onclick = (e) => {
     lastClicked = e.target;
 
     let context = document.getElementById("contextMenu");
@@ -31,14 +31,14 @@ function searchButton () {
 }
 
 // TODO: Comment
-tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", () => {
     let input = this.closest(".input").querySelector("input");
 
     if (tools.addUrlToList(input.value)) input.value = "";
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
+tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", (e) => {
     if (e.target === this) {
         let listBox = document.querySelector(".listBox");
 
@@ -48,7 +48,7 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e)
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e) {
+tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", (e) => {
     let listBox = this.closest(".listBox");
     let actives = listBox.querySelectorAll("li.active");
 
@@ -88,32 +88,32 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", () => {
     tools.removeActiveListItems();
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", () => {
     let clipboardText = clipboard.readText();
 
     if (!clipboardText) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"]);
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"], tools.languageDB[tools.selectedLang]["js"]["error"]);
     } else tools.addUrlToList(clipboardText);
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#updateNotification .close-button", function () {
+tools.bindEvent("click", "#updateNotification .close-button", () => {
     let notification = document.getElementById("updateNotification");
     notification.classList.add("hidden");
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#updateNotification .restart-button", function () {
+tools.bindEvent("click", "#updateNotification .restart-button", () => {
     ipcRenderer.send("restart_app");
 });
 
 // TODO: Comment
-tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
+tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", (e) => {
     if (e.code === "Enter") tools.addUrlToList(this.value);
 });
 
@@ -123,7 +123,7 @@ tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function 
  *
  * Ändert das Design-Attribut und ändert somit auch das Design
  */
-tools.bindEvent("click", ".theme-toggler", function () {
+tools.bindEvent("click", ".theme-toggler", () => {
     let html = document.getElementsByTagName("html")[0];
     let togglers = document.getElementsByClassName("theme-toggler");
 
@@ -151,7 +151,7 @@ tools.bindEvent("click", ".theme-toggler", function () {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async function () {
+tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async () => {
     tools.setAborted(false);
 
     download: {
@@ -165,56 +165,32 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         let quality = tools.getCookie("quality");
 
         if (!items.length) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
-
-            if (document.hidden)
-                ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["noURLs"]);
-
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"], tools.languageDB[tools.selectedLang]["js"]["error"]);
             return;
         }
 
         if (!mode) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
-
-            if (document.hidden)
-                ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["downloadMode"]);
-
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"], tools.languageDB[tools.selectedLang]["js"]["error"]);
             return;
         } else if (mode === "audio") {
             if (!codecAudio) {
-                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
-
-                if (document.hidden)
-                    ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
-
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"], tools.languageDB[tools.selectedLang]["js"]["error"]);
                 return;
             }
 
             if (!quality) {
-                showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"]);
-
-                if (document.hidden)
-                    ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["quality"]);
-
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"], tools.languageDB[tools.selectedLang]["js"]["error"]);
                 return;
             }
         } else {
             if (!codecVideo) {
-                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"]);
-
-                if (document.hidden)
-                    ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["codec"]);
-
+                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"], tools.languageDB[tools.selectedLang]["js"]["error"]);
                 return;
             }
         }
 
         if (!location.value) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
-
-            if (document.hidden)
-                ipcRenderer.send("show_notification", tools.languageDB[tools.selectedLang]["js"]["error"], tools.languageDB[tools.selectedLang]["js"]["storageLocation"]);
-
+            showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"], tools.languageDB[tools.selectedLang]["js"]["error"]);
             return;
         }
 
@@ -274,11 +250,11 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", () => {
     tools.setAborted(true);
 
     if (tools.childProcess) {
-        tools.getChildProcessRecursive(tools.childProcess.pid).then(function (pids) {
+        tools.getChildProcessRecursive(tools.childProcess.pid).then((pids) => {
             pids = pids.reverse();
             for (let pid of pids) {
                 ipcRenderer.send("kill_pid", Number(pid));
@@ -291,7 +267,7 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
 });
 
 // TODO: Comment
-tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", function (e) {
+tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", (e) => {
     e.preventDefault();
 
     if (!e.target.textContent.includes("playlist?list=")) {
@@ -348,13 +324,11 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", functi
 
         this.classList.add("active");
         tools.updateSelected();
-    } else {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["playlistContext"]);
-    }
+    } else showNotification(tools.languageDB[tools.selectedLang]["js"]["playlistContext"], tools.languageDB[tools.selectedLang]["js"]["error"]);
 });
 
 // TODO: Comment
-tools.bindEvent("mouseover", "#contextMenu .nav-select", function () {
+tools.bindEvent("mouseover", "#contextMenu .nav-select", () => {
     let select = this.querySelector(".select");
     let contextMenu = this.closest("#contextMenu");
     let left = contextMenu.getBoundingClientRect().width;
@@ -367,15 +341,11 @@ tools.bindEvent("mouseover", "#contextMenu .nav-select", function () {
         select.style.left = "-" + (selectBounding.width - 5) + "px"
     }
 
-    this.addEventListener("mouseleave", function mouseleave() {
-        select.classList.remove("show");
-
-        this.removeEventListener("mouseleave", mouseleave);
-    });
+    this.addEventListener("mouseleave", () => select.classList.remove("show"), {once: true});
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", function () {
+tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", () => {
     let navSelect = this.closest(".nav-select");
     let className = navSelect.classList[0];
 
@@ -420,14 +390,14 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#contextMenu .copy", function () {
+tools.bindEvent("click", "#contextMenu .copy", () => {
     tools.activeToClipboard();
 
     this.closest("#contextMenu").classList.remove("show");
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#contextMenu .location", function () {
+tools.bindEvent("click", "#contextMenu .location", () => {
     ipcRenderer.send("open_file_dialog");
 
     ipcRenderer.once("selected_file", (event, path) => {
@@ -443,7 +413,7 @@ tools.bindEvent("click", "#contextMenu .location", function () {
             tools.specificSettings[id]["location"] = path;
         }
 
-        showNotification("Specific location has been set.");
+        showNotification(tools.languageDB[tools.selectedLang]["js"]["specificLocation"]);
     });
 
     this.closest("#contextMenu").classList.remove("show");
@@ -453,14 +423,14 @@ tools.bindEvent("click", "#contextMenu .location", function () {
 tools.bindEvent("click", ".location .search-button:not([aria-disabled='true'])", searchButton);
 
 // TODO: Comment
-tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])", function () {
+tools.bindEvent("click", ".location .location-button:not([aria-disabled='true'])", () => {
     let location = document.querySelector(".location #location");
 
     if (location.value) shell.openPath(location.value);
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async function () {
+tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async () => {
     let settings = document.getElementsByTagName("settings")[0];
 
     if (settings.innerHTML === "") {
@@ -480,7 +450,7 @@ tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async fun
     ], {
         duration: 200,
         fill: "forwards"
-    }, function () {
+    }, () => {
         body.style.overflow = "";
 
         let nav = document.querySelector("settings #nav");
@@ -489,27 +459,27 @@ tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async fun
 });
 
 // TODO: Comment
-ipcRenderer.on("download", function () {
+ipcRenderer.on("download", () => {
     document.querySelector(".startAbort .start-button").click();
 });
 
 // TODO: Comment
-ipcRenderer.on("clear", function () {
+ipcRenderer.on("clear", () => {
     tools.clearList();
 });
 
 // TODO: Comment
-ipcRenderer.on("location", function () {
+ipcRenderer.on("location", () => {
     searchButton();
 });
 
 // TODO: Comment
-ipcRenderer.on("abort", function () {
+ipcRenderer.on("abort", () => {
     document.querySelector(".startAbort .abort-button").click();
 });
 
 // TODO: Comment
-ipcRenderer.on("url", function (event, value) {
+ipcRenderer.on("url", (event, value) => {
     let input = document.querySelector(".input input");
     input.value = value;
 
@@ -517,7 +487,7 @@ ipcRenderer.on("url", function (event, value) {
 });
 
 // TODO: Comment
-ipcRenderer.on("translate", function (event, array) {
+ipcRenderer.on("translate", (event, array) => {
     let value = [];
     let language = tools.languageDB[tools.selectedLang];
 
@@ -536,7 +506,7 @@ ipcRenderer.on("translate", function (event, array) {
 });
 
 // TODO: Comment
-document.addEventListener("keydown", function (e) {
+document.addEventListener("keydown", (e) => {
     if (e.code === "Delete" && !tools.downloading)
         tools.removeActiveListItems();
 

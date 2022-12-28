@@ -2,17 +2,16 @@ const {ipcRenderer, shell} = require('electron');
 import * as tools from "./tools.js";
 
 // TODO: Comment
-window.onload = async function () {
+window.onload = async () => {
     const title = document.getElementsByTagName("title")[0];
 
-    ipcRenderer.send('app_version');
-    ipcRenderer.on('app_version', (event, arg) => {
-        ipcRenderer.removeAllListeners('app_version');
+    ipcRenderer.send("app_version");
+    ipcRenderer.once("app_version", (event, arg) => {
         title.textContent += " " + arg.version;
     });
 
-    ipcRenderer.send('dir_name');
-    ipcRenderer.on('dir_name', (event, dirname) => {
+    ipcRenderer.send("dir_name");
+    ipcRenderer.once("dir_name", (event, dirname) => {
         tools.setRealDir(dirname);
     });
 
@@ -24,23 +23,21 @@ window.onload = async function () {
     const message = notification.querySelector(".message");
     const restartButton = notification.querySelector('.restart-button');
 
-    ipcRenderer.on('update_available', () => {
-        ipcRenderer.removeAllListeners('update_available');
-        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"];
-        notification.classList.remove('hidden');
+    ipcRenderer.once("update_available", (event, version) => {
+        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"].replace("XXX", version);
+        notification.classList.remove("hidden");
     });
 
-    ipcRenderer.on('update_downloaded', () => {
-        ipcRenderer.removeAllListeners('update_downloaded');
+    ipcRenderer.once("update_downloaded", () => {
         message.innerText = tools.languageDB[tools.selectedLang]["js"]["updateDownloaded"];
-        restartButton.classList.remove('hidden');
-        notification.classList.remove('hidden');
+        restartButton.classList.remove("hidden");
+        notification.classList.remove("hidden");
     });
 
     ipcRenderer.send("lang", tools.selectedLang ?? tools.getCookie("lang") ?? "en", tools.languageDB[tools.selectedLang]["tray"]);
 }
 
 // TODO: Comment
-tools.bindEvent("click", "button[data-href]", function () {
+tools.bindEvent("click", "button[data-href]", () => {
     shell.openExternal(this.getAttribute("data-href"));
 })

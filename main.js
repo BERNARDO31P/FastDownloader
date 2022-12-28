@@ -47,7 +47,7 @@ function createWindow() {
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
-        ipcMain.on("lang", function (event, selectedLang, selectedLanguage) {
+        ipcMain.on("lang", (event, selectedLang, selectedLanguage) => {
             lang = selectedLang;
             language = selectedLanguage;
 
@@ -62,7 +62,7 @@ function createWindow() {
 
             trayIcon.setContextMenu(trayMenu);
 
-            win.on("hide", function () {
+            win.on("hide", () => {
                 hidden = true;
 
                 removeTrayItem("hide");
@@ -72,7 +72,7 @@ function createWindow() {
 
             });
 
-            win.on("show", function () {
+            win.on("show", () => {
                 hidden = false;
 
                 removeTrayItem("maximize");
@@ -82,8 +82,6 @@ function createWindow() {
             });
         });
     });
-
-    app.setAppUserModelId("Fast Downloader");
 
     autoLauncher = new AutoLaunch({
         name: "FastDownloader",
@@ -97,7 +95,7 @@ app.on("window-all-closed", () => {
     }
 });
 
-app.on("activate", function () {
+app.on("activate", () => {
     if (win === null) createWindow();
 });
 
@@ -157,29 +155,21 @@ ipcMain.on("remove_abort", () => {
     trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
 });
 
-autoUpdater.on("update-available", () => {
-    win.webContents.send("update_available");
-});
-
-autoUpdater.on("update-downloaded", () => {
-    win.webContents.send("update_downloaded");
-});
-
-ipcMain.on("enableCloseToTray", function () {
+ipcMain.on("enableCloseToTray", () => {
     win.on("close", closeToTray);
 });
 
-ipcMain.on("disableCloseToTray", function () {
+ipcMain.on("disableCloseToTray", () => {
     win.off("close", closeToTray);
 });
 
-ipcMain.on("enableAutostart", function () {
+ipcMain.on("enableAutostart", () => {
     autoLauncher.isEnabled().then((isEnabled) => {
         if (!isEnabled) autoLauncher.enable();
     });
 });
 
-ipcMain.on("disableAutostart", function () {
+ipcMain.on("disableAutostart", () => {
     autoLauncher.isEnabled().then((isEnabled) => {
         if (isEnabled) autoLauncher.disable();
     });
@@ -258,6 +248,18 @@ function addURL() {
 }
 
 app.whenReady().then(() => {
-    autoUpdater.checkForUpdatesAndNotify();
+    if (process.platform === "win32")
+        app.setAppUserModelId("fm.bernardo.fastDownloader");
+
+    autoUpdater.checkForUpdatesAndNotify().then((result) => {
+        if (result && typeof result.downloadPromise !== "undefined") {
+            win.webContents.send("update_available", result.updateInfo.version);
+
+            autoUpdater.once("update-downloaded", () => {
+                win.webContents.send("update_downloaded");
+            });
+        }
+    });
+
     createWindow();
 });

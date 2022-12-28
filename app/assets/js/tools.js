@@ -27,12 +27,10 @@ export let childProcess = null, selectedLang = null;
 export let languageDB = {};
 
 // TODO: Comment
-HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
+HTMLElement.prototype.animateCallback = (keyframes, options, callback) => {
     let animation = this.animate(keyframes, options);
 
-    animation.onfinish = function () {
-        callback();
-    }
+    animation.onfinish = () => callback();
 }
 
 /*
@@ -47,7 +45,7 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
  */
 export function bindEvent(eventNames, selectors, handler) {
     eventNames.split(", ").forEach((eventName) => {
-        document.addEventListener(eventName, function (event) {
+        document.addEventListener(eventName, (event) => {
             selectors.split(", ").forEach((selector) => {
                 if (event.target.matches(selector + ", " + selector + " *")) {
                     let element = event.target.closest(selector);
@@ -83,12 +81,7 @@ worker.addEventListener("message", (event) => {
                     ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
 
                     if (getCookie("clearList")) clearList();
-                } else {
-                    showNotification(languageDB[selectedLang]["js"]["downloadAborted"]);
-
-                    if (document.hidden)
-                        ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["downloadAborted"]);
-                }
+                } else showNotification(languageDB[selectedLang]["js"]["downloadAborted"], languageDB[selectedLang]["js"]["error"]);
 
                 ipcRenderer.send("remove_abort");
             });
@@ -97,7 +90,7 @@ worker.addEventListener("message", (event) => {
             let li = document.querySelector("ul li[data-url='" + msg.old + "']");
 
             if (urlList.indexOf(msg.url) !== -1) {
-                alreadyInList();
+                showNotification(languageDB[selectedLang]["js"]["urlInList"], languageDB[selectedLang]["js"]["error"]);
                 li.remove();
 
                 return;
@@ -229,14 +222,6 @@ export function getAllData() {
 }
 
 // TODO: Comment
-function alreadyInList() {
-    showNotification(languageDB[selectedLang]["js"]["urlInList"]);
-
-    if (document.hidden)
-        ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlInList"]);
-}
-
-// TODO: Comment
 async function download(data) {
     let percentage = Math.floor(100 / data.length * 100) / 100;
     downloading = true;
@@ -262,11 +247,7 @@ async function download(data) {
 
 export function addUrlToList(url = "") {
     if (!url) {
-        showNotification(languageDB[selectedLang]["js"]["noURL"]);
-
-        if (document.hidden)
-            ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noURL"]);
-
+        showNotification(languageDB[selectedLang]["js"]["noURL"], languageDB[selectedLang]["js"]["error"]);
         return false;
     }
 
@@ -283,17 +264,12 @@ export function addUrlToList(url = "") {
         url["nf"] = match(value, "http(?:s?):\\/\\/(?:www\\.)?netflix.com");
 
         if (!url["yt"] && !url["nf"]) {
-            showNotification(languageDB[selectedLang]["js"]["noValidURL"]);
-
-            if (document.hidden)
-                ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["noValidURL"]);
-
+            showNotification(languageDB[selectedLang]["js"]["noValidURL"], languageDB[selectedLang]["js"]["error"]);
             return false;
         }
 
         if (urlList.indexOf(url["yt"]) !== -1 || urlList.indexOf(url["nf"]) !== -1) {
-            alreadyInList();
-
+            showNotification(languageDB[selectedLang]["js"]["urlInList"], languageDB[selectedLang]["js"]["error"]);
             return false;
         }
 
@@ -323,10 +299,7 @@ export function addUrlToList(url = "") {
 
     ul.scrollTop = ul.scrollHeight;
 
-    showNotification(languageDB[selectedLang]["js"]["urlAdded"]);
-
-    if (document.hidden)
-        ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["error"], languageDB[selectedLang]["js"]["urlAdded"]);
+    showNotification(languageDB[selectedLang]["js"]["urlAdded"], languageDB[selectedLang]["js"]["success"]);
 
     return true;
 }
@@ -363,7 +336,12 @@ export function removeActiveListItems() {
  * Animiert eine Benachrichtigung in die Anzeige
  * Wenn der Player angezeigt wird, wird die Benachrichtigung drüber angezeigt, sonst ganz unten
  */
-export function showNotification(message, time = 3000) {
+export function showNotification(message, type = "Info", time = 3000) {
+    if (document.hidden) {
+        ipcRenderer.send("show_notification", type, message);
+        return;
+    }
+
     let body = document.getElementsByTagName("body")[0];
 
     let notifications = document.getElementsByClassName("notification");
@@ -387,19 +365,10 @@ export function showNotification(message, time = 3000) {
 
     notification.animateCallback([{opacity: 0}, {opacity: 1}], {
         duration: 100, fill: "forwards"
-    }, function () {
-        timeoutOpacity = setTimeout(() => {
-            removeOpacityNotification(notification);
-        }, time);
-    });
+    }, () => timeoutOpacity = setTimeout(() => removeOpacityNotification(notification), time));
 
-    notification.onmouseover = function () {
-        clearTimeout(timeoutOpacity);
-    }
-
-    notification.onmouseout = function () {
-        removeOpacityNotification(notification);
-    }
+    notification.onmouseover = () => clearTimeout(timeoutOpacity);
+    notification.onmouseout = () => removeOpacityNotification(notification);
 }
 
 /*
@@ -414,9 +383,7 @@ export function showNotification(message, time = 3000) {
 function removeOpacityNotification(notification) {
     notification.animateCallback([{opacity: 1}, {opacity: 0}], {
         duration: 100, fill: "forwards"
-    }, function () {
-        notification.remove();
-    });
+    }, () => notification.remove());
 }
 
 // TODO: Comment
@@ -475,7 +442,7 @@ export function selectClick(element) {
         let nextElement = select.parentElement;
         let height = 0;
 
-        let interval = setInterval(function () {
+        let interval = setInterval(() => {
             let row = nextElement.closest(".row");
             if (row) nextElement = row;
 
@@ -569,7 +536,7 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
         childProcess = exec(command);
 
         let found;
-        childProcess.stdout.on("data", function (data) {
+        childProcess.stdout.on("data", (data) => {
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
                 progressSong.value = Number(found[1].replace("%", "")) / 100;
@@ -577,7 +544,7 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
             }
         });
 
-        childProcess.on("close", function () {
+        childProcess.on("close", () => {
             let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
             let percentageDecimal = percentageTotal / 100;
 
@@ -705,18 +672,18 @@ function toggleVisibility() {
     let videoSettings = document.querySelectorAll("settings .videoSettings");
 
     if (value === "audio") {
-        videoSettings.forEach(function (element) {
+        videoSettings.forEach((element) => {
             element.style.display = "";
         });
 
-        audioSettings.forEach(function (element) {
+        audioSettings.forEach((element) => {
             element.style.display = "block";
         });
     } else {
-        audioSettings.forEach(function (element) {
+        audioSettings.forEach((element) => {
             element.style.display = "";
         });
-        videoSettings.forEach(function (element) {
+        videoSettings.forEach((element) => {
             element.style.display = "block";
         });
     }
@@ -929,7 +896,7 @@ export async function loadPage(pageURL, element, callback = () => {
 
 // TODO: Comment
 export function setThemeIcon() {
-    setTimeout(function () {
+    setTimeout(() => {
         let icons = document.querySelectorAll(".theme-toggler svg");
         for (let icon of icons) {
             if (theme === "light") icon.classList.add("fa-moon");

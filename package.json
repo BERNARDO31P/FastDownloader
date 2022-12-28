@@ -40,10 +40,11 @@
     "ytpl": "^2.3.0"
   },
   "build": {
+    "appId": "fm.bernardo.fastDownloader",
+    "productName": "Fast Downloader",
     "directories": {
       "buildResources": "resources"
     },
-    "productName": "Fast Downloader",
     "win": {
       "target": "nsis",
       "extraResources": [
