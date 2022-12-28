@@ -1,5 +1,6 @@
 import mustache from "./lib/mustache.min.js";
 
+const path = require("path");
 const NP = require("number-precision");
 const {promisify} = require("util");
 const ytpl = require("ytpl");
@@ -105,13 +106,8 @@ worker.addEventListener("message", (event) => {
 
 // TODO: Comment
 export function setRealDir(dirname) {
-    if (process.platform !== "win32") {
-        if (dirname.includes("/app.asar")) dirname = dirname.replace("/app.asar", "");
-        if (!dirname.includes("/resources")) dirname = dirname + "/resources";
-    } else {
-        if (dirname.includes("\\app.asar")) dirname = dirname.replace("\\app.asar", "");
-        if (!dirname.includes("\\resources")) dirname = dirname + "\\resources";
-    }
+    dirname = dirname.replaceAll(path.sep + "app.asar", "");
+    if (!dirname.includes(path.sep + "resources")) dirname = dirname + path.sep + "resources";
 
     __realDir = dirname;
 }
@@ -349,7 +345,7 @@ export function showNotification(message, type = "Info", time = 3000) {
         let notificationStyle = window.getComputedStyle(notification);
         let notificationPosition = notification.getBoundingClientRect();
 
-        let bottom = Number(notificationStyle.bottom.replace("px", ""));
+        let bottom = Number(notificationStyle.bottom.replaceAll("px", ""));
         notification.style.bottom = bottom + notificationPosition.height + 5 + "px";
     }
 
@@ -533,13 +529,13 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
             command += "--add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
         }
 
-        childProcess = exec(command);
+        childProcess = exec(command.replaceAll("/", path.sep));
 
         let found;
         childProcess.stdout.on("data", (data) => {
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
-                progressSong.value = Number(found[1].replace("%", "")) / 100;
+                progressSong.value = Number(found[1].replaceAll("%", "")) / 100;
                 infoSong.textContent = found[1];
             }
         });

@@ -24,7 +24,7 @@ window.onload = async () => {
     const restartButton = notification.querySelector('.restart-button');
 
     ipcRenderer.once("update_available", (event, version) => {
-        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"].replace("XXX", version);
+        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"].replaceAll("XXX", version);
         notification.classList.remove("hidden");
     });
 

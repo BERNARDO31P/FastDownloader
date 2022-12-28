@@ -14,9 +14,10 @@ const {autoUpdater} = require("electron-updater");
 const {getDoNotDisturb} = require("electron-notification-state");
 const {exec} = require("child_process");
 const AutoLaunch = require("easy-auto-launch");
+const path = require("path");
 let autoLauncher = null;
 
-__dirname = __dirname.replace("/resources/app.asar", "");
+__dirname = __dirname.replaceAll("/resources/app.asar".replaceAll("/", path.sep), "");
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 let lang = null, hidden = false;
@@ -27,7 +28,7 @@ function createWindow() {
     const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
 
     win = new BrowserWindow({
-        icon: __dirname + "/resources/icons/256x256.png",
+        icon: __dirname + "/resources/icons/256x256.png".replaceAll("/", path.sep),
         minWidth: 900,
         minHeight: 580,
         x: currentScreen.workArea.x,
@@ -42,8 +43,8 @@ function createWindow() {
     });
 
     win.center();
-    win.loadFile("app/index.html").then(() => {
-        trayIcon = new Tray(__dirname + "/resources/icons/256x256.png");
+    win.loadFile("app/index.html".replaceAll("/", path.sep)).then(() => {
+        trayIcon = new Tray(__dirname + "/resources/icons/256x256.png".replaceAll("/", path.sep));
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
@@ -187,7 +188,7 @@ function showNotification(title, message) {
         new Notification({
             title: title,
             body: message,
-            icon: __dirname + "/app/assets/ico/icon_64x64.png"
+            icon: __dirname + "/app/assets/ico/icon_64x64.png".replaceAll("/", path.sep)
         }).show();
 }
 
