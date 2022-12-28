@@ -31,14 +31,14 @@ function searchButton () {
 }
 
 // TODO: Comment
-tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", () => {
-    let input = this.closest(".input").querySelector("input");
+tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", (e) => {
+    let input = e.target.closest(".input").querySelector("input");
 
     if (tools.addUrlToList(input.value)) input.value = "";
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", (e) => {
+tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
     if (e.target === this) {
         let listBox = document.querySelector(".listBox");
 
@@ -48,7 +48,7 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", (e) => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", (e) => {
+tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e) {
     let listBox = this.closest(".listBox");
     let actives = listBox.querySelectorAll("li.active");
 
@@ -113,7 +113,7 @@ tools.bindEvent("click", "#updateNotification .restart-button", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", (e) => {
+tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
     if (e.code === "Enter") tools.addUrlToList(this.value);
 });
 
@@ -267,7 +267,7 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
 });
 
 // TODO: Comment
-tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", (e) => {
+tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", function (e) {
     e.preventDefault();
 
     if (!e.target.textContent.includes("playlist?list=")) {
@@ -328,7 +328,7 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", (e) =>
 });
 
 // TODO: Comment
-tools.bindEvent("mouseover", "#contextMenu .nav-select", () => {
+tools.bindEvent("mouseover", "#contextMenu .nav-select", function () {
     let select = this.querySelector(".select");
     let contextMenu = this.closest("#contextMenu");
     let left = contextMenu.getBoundingClientRect().width;
@@ -345,7 +345,7 @@ tools.bindEvent("mouseover", "#contextMenu .nav-select", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", () => {
+tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", function () {
     let navSelect = this.closest(".nav-select");
     let className = navSelect.classList[0];
 
@@ -390,14 +390,14 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", () => 
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#contextMenu .copy", () => {
+tools.bindEvent("click", "#contextMenu .copy", function () {
     tools.activeToClipboard();
 
     this.closest("#contextMenu").classList.remove("show");
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#contextMenu .location", () => {
+tools.bindEvent("click", "#contextMenu .location", function () {
     ipcRenderer.send("open_file_dialog");
 
     ipcRenderer.once("selected_file", (event, path) => {

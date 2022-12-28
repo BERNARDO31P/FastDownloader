@@ -27,7 +27,7 @@ export let childProcess = null, selectedLang = null;
 export let languageDB = {};
 
 // TODO: Comment
-HTMLElement.prototype.animateCallback = (keyframes, options, callback) => {
+HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
     let animation = this.animate(keyframes, options);
 
     animation.onfinish = () => callback();
@@ -45,7 +45,7 @@ HTMLElement.prototype.animateCallback = (keyframes, options, callback) => {
  */
 export function bindEvent(eventNames, selectors, handler) {
     eventNames.split(", ").forEach((eventName) => {
-        document.addEventListener(eventName, (event) => {
+        document.addEventListener(eventName, function (event) {
             selectors.split(", ").forEach((selector) => {
                 if (event.target.matches(selector + ", " + selector + " *")) {
                     let element = event.target.closest(selector);

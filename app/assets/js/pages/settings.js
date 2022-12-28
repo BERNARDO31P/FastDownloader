@@ -19,7 +19,7 @@ setTimeout( () => {
 
 
 // TODO: Comment
-tools.bindEvent("click", "settings .artistName .checkbox", () => {
+tools.bindEvent("click", "settings .artistName .checkbox", function () {
     let artistNaming = this.closest(".artistName");
 
     if (this.classList.contains("active")) {
@@ -38,7 +38,7 @@ tools.bindEvent("click", "settings .artistName .checkbox", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "settings .save .checkbox", () => {
+tools.bindEvent("click", "settings .save .checkbox", function () {
     let saving = this.closest(".save");
 
     if (this.classList.contains("active")) {
@@ -59,7 +59,7 @@ tools.bindEvent("click", "settings .save .checkbox", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "settings .closeToTray .checkbox", () => {
+tools.bindEvent("click", "settings .closeToTray .checkbox", function () {
     let closingToTray = this.closest(".closeToTray");
 
     if (this.classList.contains("active")) {
@@ -82,7 +82,7 @@ tools.bindEvent("click", "settings .closeToTray .checkbox", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "settings .clearList .checkbox", () => {
+tools.bindEvent("click", "settings .clearList .checkbox", function () {
     let clearList = this.closest(".clearList");
 
     if (this.classList.contains("active")) {
@@ -101,7 +101,7 @@ tools.bindEvent("click", "settings .clearList .checkbox", () => {
 })
 
 // TODO: Comment
-tools.bindEvent("click", "settings .premium .checkbox", () => {
+tools.bindEvent("click", "settings .premium .checkbox", function () {
     let premium = this.closest(".premium");
 
     if (this.classList.contains("active")) {
@@ -120,7 +120,7 @@ tools.bindEvent("click", "settings .premium .checkbox", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "settings .autostart .checkbox", () => {
+tools.bindEvent("click", "settings .autostart .checkbox", function () {
     let autostarting = this.closest(".autostart");
 
     if (this.classList.contains("active")) {
@@ -167,7 +167,7 @@ tools.bindEvent("click", "#settings-close:not([aria-disabled='true'])", () => {
 });
 
 // TODO: Comment
-tools.bindEvent("click", "settings .select .option:not([aria-disabled='true'])", () => {
+tools.bindEvent("click", "settings .select .option:not([aria-disabled='true'])", function () {
     tools.selectOption(this);
 
     tools.saveSettings();
@@ -175,7 +175,7 @@ tools.bindEvent("click", "settings .select .option:not([aria-disabled='true'])",
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", async () => {
+tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", async function () {
     let lang = this.getAttribute("data-value");
     tools.setCookie("lang", lang);
     tools.getAllData();
@@ -184,7 +184,7 @@ tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", as
 });
 
 // TODO: Comment
-tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", () => {
+tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function () {
     let active = document.querySelector(".select.active");
     let select = this.closest(".select");
     let clicked = this;

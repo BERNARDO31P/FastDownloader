@@ -38,6 +38,6 @@ window.onload = async () => {
 }
 
 // TODO: Comment
-tools.bindEvent("click", "button[data-href]", () => {
+tools.bindEvent("click", "button[data-href]", function () {
     shell.openExternal(this.getAttribute("data-href"));
 })
