@@ -10,6 +10,7 @@ let keywords = [
     "video",
     "musi(c|k)(\\s+)?video",
     "original mix",
+    "no copyright",
     "\\(",
     "\\)",
     "tdt #001",
