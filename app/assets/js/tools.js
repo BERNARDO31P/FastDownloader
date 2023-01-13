@@ -20,7 +20,7 @@ let hiddenElements = [], urlList = [], processedUrls = [];
 
 export let specificSettings = {};
 
-export let worker = new Worker("assets/js/lib/worker.js");
+export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
 export let downloading = false, aborted = false;

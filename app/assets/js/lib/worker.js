@@ -1,5 +1,6 @@
+const ytMusic = require("node-youtube-music");
+
 const yt = require("youtube-sr");
-const ytmusic = require("node-youtube-music");
 const levenshtein = require("fastest-levenshtein");
 
 let keywords = [
@@ -124,7 +125,7 @@ function getSortedLength(string1, string2) {
 // TODO: Comment
 async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
     try {
-        let results = await ytmusic.searchMusics(ytFullTitle);
+        let results = await ytMusic.searchMusics(ytFullTitle);
         if (results) return results[0];
     } catch (e) {
         if (run === retry) return [];
