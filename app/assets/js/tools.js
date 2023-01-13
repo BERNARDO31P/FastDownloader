@@ -524,12 +524,12 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
         }
 
         if (getCookie("artistName")) {
-            command += "--add-metadata -o \"" + location + "/%(creator)s - %(title)s.%(ext)s\" " + url;
+            command += "--add-metadata -o \"" + location + "/%(creator)s - %(title)s.%(ext)s\"";
         } else {
-            command += "--add-metadata -o \"" + location + "/%(title)s.%(ext)s\" " + url;
+            command += "--add-metadata -o \"" + location + "/%(title)s.%(ext)s\"";
         }
 
-        childProcess = exec(command.replaceAll("/", path.sep));
+        childProcess = exec(command.replaceAll("/", path.sep) + " " + url);
 
         let found;
         childProcess.stdout.on("data", (data) => {
