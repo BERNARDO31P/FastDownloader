@@ -406,13 +406,12 @@ export function selectClick(element) {
 
         if (select.classList.contains("top")) {
             select.classList.remove("top");
-            label.style.opacity = "1";
+            label.classList.remove("hidden");
         }
 
 
         for (let element of hiddenElements) {
-            element.style.opacity = "1";
-            element.style.pointerEvents = "";
+            element.classList.remove("hidden");
         }
 
         hiddenElements = [];
@@ -432,7 +431,7 @@ export function selectClick(element) {
 
         if ((clientRectBody.height - 20) - clientRectSelect.bottom < optionsHeight) {
             select.classList.add("top");
-            label.style.opacity = "0";
+            label.classList.add("hidden");
         }
 
         let nextElement = select.parentElement;
@@ -460,15 +459,13 @@ export function selectClick(element) {
                 if (height > 100) {
                     clearInterval(interval);
                     for (let element of hiddenElements) {
-                        element.style.opacity = "0";
-                        element.style.pointerEvents = "none";
+                        element.classList.add("hidden");
                     }
                 }
             } else {
                 clearInterval(interval);
                 for (let element of hiddenElements) {
-                    element.style.opacity = "0";
-                    element.style.pointerEvents = "none";
+                    element.classList.add("hidden");
                 }
             }
         });
@@ -669,18 +666,18 @@ function toggleVisibility() {
 
     if (value === "audio") {
         videoSettings.forEach((element) => {
-            element.style.display = "";
+            element.classList.remove("visible");
         });
 
         audioSettings.forEach((element) => {
-            element.style.display = "block";
+            element.classList.add("visible");
         });
     } else {
         audioSettings.forEach((element) => {
-            element.style.display = "";
+            element.classList.remove("visible");
         });
         videoSettings.forEach((element) => {
-            element.style.display = "block";
+            element.classList.add("visible");
         });
     }
 }
