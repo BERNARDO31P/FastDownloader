@@ -154,6 +154,8 @@ export function setWorkerCount(count) {
 export function clearList() {
     let ul = document.querySelector(".listBox ul")
     ul.innerHTML = "";
+
+    urlList = [];
 }
 
 // TODO: Comment
