@@ -501,19 +501,32 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
 
-        let command = "\"" + __realDir + "/yt-dlp" + fileEnding + "\" -f ";
-        if (mode === "audio") {
-            command += "bestaudio --ffmpeg-location \"" + __realDir + "/ffmpeg" + fileEnding + "\" --extract-audio --audio-format " + codecAudio + " --audio-quality " + quality + " ";
+        let config = [
+            "--ffmpeg-location " + __realDir + "/ffmpeg" + fileEnding,
+            "--add-metadata"
+        ];
 
-            if (["mp3", "aac", "flac"].includes(codecAudio)) command += "--embed-thumbnail ";
+        if (mode === "audio") {
+            config.push("-f bestaudio");
+            config.push("--extract-audio");
+            config.push("--audio-format " + codecAudio);
+            config.push("--audio-quality " + quality);
+
+            if (["mp3", "aac", "flac"].includes(codecAudio)) config.push("--embed-thumbnail");
+
         } else {
-            command += "bestvideo+bestaudio -S vcodec:" + codecVideo + " --ffmpeg-location \"" + __realDir + "/ffmpeg" + fileEnding + "\" --embed-thumbnail --audio-format mp3 --audio-quality 9 --merge-output-format mp4 ";
+            config.push("-f bestvideo+bestaudio");
+            config.push("-S vcodec:" + codecVideo);
+            config.push("--embed-thumbnail");
+            config.push("--audio-format mp3");
+            config.push("--audio-quality 9");
+            config.push("--merge-output-format mp4");
         }
 
         let premium = JSON.parse(getCookie("premium"));
         if (premium["check"]) {
             if (premium["browser"] !== "") {
-                command += "--cookies-from-browser " + premium["browser"] + " ";
+                config.push("--cookies-from-browser " + premium["browser"]);
             } else {
                 showNotification(languageDB[selectedLang]["js"]["noBrowser"]);
                 resolve(false);
@@ -521,11 +534,12 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
         }
 
         if (getCookie("artistName")) {
-            command += "--add-metadata -o \"" + location + "/%(creator)s - %(title)s.%(ext)s\"";
+            config.push("-o \"" + location + "/%(creator)s - %(title)s.%(ext)s\"");
         } else {
-            command += "--add-metadata -o \"" + location + "/%(title)s.%(ext)s\"";
+            config.push("-o \"" + location + "/%(title)s.%(ext)s\"");
         }
 
+        let command = "\"" + __realDir + "/yt-dlp" + fileEnding + "\" " + config.join(" ");
         childProcess = exec(command.replaceAll("/", path.sep) + " " + url);
 
         let found;
