@@ -1,4 +1,9 @@
+import {getCookie} from "./tools.js";
+
+const {promisify} = require("util");
 const {ipcRenderer, shell} = require('electron');
+const execSync = promisify(require("child_process").exec);
+
 import * as tools from "./tools.js";
 
 // TODO: Comment
@@ -13,6 +18,8 @@ window.onload = async () => {
     ipcRenderer.send("dir_name");
     ipcRenderer.once("dir_name", (event, dirname) => {
         tools.setRealDir(dirname);
+
+        updateYtDl();
     });
 
     await tools.initialize();
@@ -38,6 +45,20 @@ window.onload = async () => {
 }
 
 // TODO: Comment
+function updateYtDl() {
+    execSync(tools.ytDl + " -U").then((result) => {
+        let output = result["stdout"];
+        // TODO: Continue HERE!!!
+        if (!output.includes("yt-dlp is up to date") && getCookie("extractors") !== null) {
+            tools.setDisabled();
+            tools.setExtractors().then(() => {
+                tools.setEnabled();
+            });
+        }
+    });
+}
+
+// TODO: Comment
 tools.bindEvent("click", "button[data-href]", function () {
     shell.openExternal(this.getAttribute("data-href"));
-})
+});

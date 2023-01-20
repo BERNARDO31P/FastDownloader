@@ -15,6 +15,9 @@ setCookie("theme", theme);
 
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
+let fileEnding = "";
+if (process.platform === "win32") fileEnding = ".exe";
+
 let __realDir = null;
 let hiddenElements = [], urlList = [], processedUrls = [];
 
@@ -26,6 +29,11 @@ export let workers = 0;
 export let downloading = false, aborted = false;
 export let childProcess = null, selectedLang = null;
 export let languageDB = {};
+
+export let ytDl = "";
+let ffmpeg = "";
+let extractors = [];
+
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -110,6 +118,14 @@ export function setRealDir(dirname) {
     if (!dirname.includes(path.sep + "resources")) dirname = dirname + path.sep + "resources";
 
     __realDir = dirname;
+
+    updateBinaryLocations();
+}
+
+// TODO: Comment
+function updateBinaryLocations() {
+    ytDl = "\"" + __realDir + "/yt-dlp" + fileEnding + "\"";
+    ffmpeg = __realDir + "/ffmpeg" + fileEnding;
 }
 
 /*
@@ -252,33 +268,32 @@ export function addUrlToList(url = "") {
     let values = url.split(/[\n\s]+/);
     let ul = document.querySelector(".listBox ul");
     for (let value of values) {
-        value = value.trim();
+        let url = null;
 
-        let url = [];
-
-        url["yt"] = match(value, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
-
-        // TODO: Complete regex for netflix
-        url["nf"] = match(value, "http(?:s?):\\/\\/(?:www\\.)?netflix.com");
-
-        if (!url["yt"] && !url["nf"]) {
+        try {
+            url = new URL(value.trim());
+        } catch (e) {
             showNotification(languageDB[selectedLang]["js"]["noValidURL"], languageDB[selectedLang]["js"]["error"]);
             return false;
         }
 
-        if (urlList.indexOf(url["yt"]) !== -1 || urlList.indexOf(url["nf"]) !== -1) {
+        let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
+        if (!extractors.includes(host)) {
+            showNotification(languageDB[selectedLang]["js"]["noValidURL"], languageDB[selectedLang]["js"]["error"]);
+            return false;
+        }
+
+        if (urlList.indexOf(url.toString()) !== -1) {
             showNotification(languageDB[selectedLang]["js"]["urlInList"], languageDB[selectedLang]["js"]["error"]);
             return false;
         }
 
-        let finalUrl = url["yt"] ?? url["nf"];
-
         let li = document.createElement("li");
-        li.textContent = finalUrl
+        li.textContent = url.toString();
 
         let nextID = ul.querySelectorAll("li").length;
         li.setAttribute("data-id", nextID.toString());
-        li.setAttribute("data-url", finalUrl)
+        li.setAttribute("data-url", url.toString());
 
         ul.appendChild(li);
 
@@ -488,6 +503,16 @@ export function hideSelect(element) {
 }
 
 // TODO: Comment
+export async function setExtractors() {
+    let result = (await execSync(ytDl + " --list-extractors"))["stdout"];
+    extractors = result.split("\n");
+
+    for (let i = 0; i < extractors.length; i++) {
+        extractors[i] = extractors[i].split(":")[0].toLowerCase();
+    }
+}
+
+// TODO: Comment
 export function downloadNFURL() {
 
 }
@@ -495,16 +520,13 @@ export function downloadNFURL() {
 // TODO: Comment
 function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
     return new Promise((resolve) => {
-        let fileEnding = "";
-        if (process.platform === "win32") fileEnding = ".exe";
-
         let progressTotal = document.querySelector(".progress-total progress");
         let infoTotal = document.querySelector(".progress-total .info p");
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
 
         let config = [
-            "--ffmpeg-location " + __realDir + "/ffmpeg" + fileEnding,
+            "--ffmpeg-location " + ffmpeg,
             "--add-metadata"
         ];
 
@@ -541,7 +563,9 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
             config.push("-o \"" + location + "/%(title)s.%(ext)s\"");
         }
 
-        let command = "\"" + __realDir + "/yt-dlp" + fileEnding + "\" " + config.join(" ");
+        let command = ytDl + " " + config.join(" ");
+        console.log(command);
+
         childProcess = exec(command.replaceAll("/", path.sep) + " " + url);
 
         let found;
