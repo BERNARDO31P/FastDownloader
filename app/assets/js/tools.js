@@ -9,10 +9,9 @@ const {exec} = require("child_process");
 const execSync = promisify(require("child_process").exec);
 
 let theme = getCookie("theme");
-
 if (!theme) theme = "light";
-setCookie("theme", theme);
 
+setCookie("theme", theme);
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 let fileEnding = "";
@@ -26,13 +25,12 @@ export let specificSettings = {};
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
-export let downloading = false, aborted = false;
-export let childProcess = null, selectedLang = null;
+export let downloading = false, aborted = false, childProcess = null, selectedLang = null;
 export let languageDB = {};
 
 export let ytDl = "";
 let ffmpeg = "";
-let extractors = [];
+let extractors = [], extendedExtractors = ["netflix"];
 
 
 // TODO: Comment
@@ -241,8 +239,11 @@ async function download(data) {
     downloading = true;
 
     for (let item of data) {
-        if (!item.url.includes("netflix")) {
-            aborted = !await downloadYTURL(
+        let url = new URL(item.url.trim());
+        let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
+
+        if (!extendedExtractors.includes(host)) {
+            aborted = !await downloadURL(
                 item.mode,
                 item.location,
                 item.url,
@@ -288,23 +289,28 @@ export function addUrlToList(url = "") {
             return false;
         }
 
-        let li = document.createElement("li");
-        li.textContent = url.toString();
+        url = url.toString();
+        let found = null;
 
-        let nextID = ul.querySelectorAll("li").length;
-        li.setAttribute("data-id", nextID.toString());
-        li.setAttribute("data-url", url.toString());
+        if ((found = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) !== null) {
+            url = found;
 
-        ul.appendChild(li);
-
-        if (url["yt"]) {
             worker.postMessage({
                 type: "loadPremiumAndMode",
                 premium: getCookie("premium"),
                 mode: getCookie("mode")
             });
-            worker.postMessage({type: "checkPremium", url: url["yt"]});
+            worker.postMessage({type: "checkPremium", url: found});
         }
+
+        let li = document.createElement("li");
+        li.textContent = url;
+
+        let nextID = ul.querySelectorAll("li").length;
+        li.setAttribute("data-id", nextID.toString());
+        li.setAttribute("data-url", url);
+
+        ul.appendChild(li);
     }
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
@@ -503,6 +509,11 @@ export function hideSelect(element) {
 }
 
 // TODO: Comment
+export function loadExtractors(data) {
+    extractors = JSON.parse(data);
+}
+
+// TODO: Comment
 export async function setExtractors() {
     let result = (await execSync(ytDl + " --list-extractors"))["stdout"];
     extractors = result.split("\n");
@@ -510,6 +521,8 @@ export async function setExtractors() {
     for (let i = 0; i < extractors.length; i++) {
         extractors[i] = extractors[i].split(":")[0].toLowerCase();
     }
+
+    setCookie("extractors", JSON.stringify(extractors));
 }
 
 // TODO: Comment
@@ -518,7 +531,7 @@ export function downloadNFURL() {
 }
 
 // TODO: Comment
-function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
+function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
     return new Promise((resolve) => {
         let progressTotal = document.querySelector(".progress-total progress");
         let infoTotal = document.querySelector(".progress-total .info p");
@@ -564,8 +577,6 @@ function downloadYTURL(mode, location, url, percentage, codecAudio, codecVideo, 
         }
 
         let command = ytDl + " " + config.join(" ");
-        console.log(command);
-
         childProcess = exec(command.replaceAll("/", path.sep) + " " + url);
 
         let found;
@@ -650,35 +661,6 @@ export function setEnabled() {
         button.ariaDisabled = "false";
 
     abortButton.ariaDisabled = "true";
-}
-
-// TODO: Comment
-export async function getChildProcessRecursive(ppid) {
-    let output = [], tempOutput;
-    if (process.platform === "win32") {
-        tempOutput = await execSync("wmic process where (ParentProcessId=" + ppid + ") get ProcessId");
-    } else {
-        tempOutput = await execSync("pgrep -P " + ppid).catch(() => {
-        });
-        if (!tempOutput) tempOutput = [];
-    }
-
-    if (Object.keys(tempOutput).length) {
-        tempOutput = [...tempOutput["stdout"].matchAll("\\d+")];
-    }
-
-    for (let i = 0; i < tempOutput.length; i++) {
-        output[i] = Number(tempOutput[i][0]);
-    }
-
-    for (let pid of output) {
-        tempOutput = await getChildProcessRecursive(pid);
-        if (Array.isArray(tempOutput)) {
-            output = [...tempOutput, ...output];
-        }
-    }
-
-    return output;
 }
 
 // TODO: Comment

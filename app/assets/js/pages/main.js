@@ -253,14 +253,11 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", () => {
     tools.setAborted(true);
 
-    if (tools.childProcess) {
-        tools.getChildProcessRecursive(tools.childProcess.pid).then((pids) => {
-            pids = pids.reverse();
-            for (let pid of pids) {
-                ipcRenderer.send("kill_pid", Number(pid));
-            }
-            ipcRenderer.send("kill_pid", tools.childProcess.pid);
-        });
+    if (tools.childProcess.pid) {
+        try {
+            process.kill(tools.childProcess.pid, "SIGKILL");
+            tools.childProcess.kill("SIGKILL");
+        } catch (e) {}
     }
 
     tools.setEnabled();

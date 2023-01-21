@@ -14,6 +14,8 @@ const {autoUpdater} = require("electron-updater");
 const {exec} = require("child_process");
 const AutoLaunch = require("easy-auto-launch");
 const path = require("path");
+const terminate = require('terminate').default;
+
 let autoLauncher = null;
 
 __dirname = __dirname.replaceAll("/resources/app.asar".replaceAll("/", path.sep), "");
@@ -131,14 +133,6 @@ ipcMain.on("open_file_dialog", () => {
 
 ipcMain.on("show_notification", (event, title, message) => {
     showNotification(title, message);
-});
-
-ipcMain.on("kill_pid", (event, pid) => {
-    if (process.platform === "win32")
-        exec("taskkill /F /T /PID " + pid);
-    else {
-        exec("pkill -KILL -P " + pid);
-    }
 });
 
 ipcMain.on("add_abort", () => {

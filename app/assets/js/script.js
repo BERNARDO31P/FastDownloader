@@ -48,12 +48,15 @@ window.onload = async () => {
 function updateYtDl() {
     execSync(tools.ytDl + " -U").then((result) => {
         let output = result["stdout"];
-        // TODO: Continue HERE!!!
-        if (!output.includes("yt-dlp is up to date") && getCookie("extractors") !== null) {
+        let extractors = getCookie("extractors");
+
+        if (!output.includes("yt-dlp is up to date") || !extractors) {
             tools.setDisabled();
             tools.setExtractors().then(() => {
                 tools.setEnabled();
             });
+        } else {
+            tools.loadExtractors(extractors);
         }
     });
 }
