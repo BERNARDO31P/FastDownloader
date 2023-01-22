@@ -47,7 +47,7 @@
       "buildResources": "resources"
     },
     "win": {
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
       "target": [
         {
           "target": "nsis",
