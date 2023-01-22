@@ -1037,7 +1037,7 @@ export async function loadInfo() {
             let infoBox = document.createElement("div");
             for (let info of infos) {
                 let infoText = document.createElement("p");
-                infoText.textContent = info;
+                infoText.innerHTML = info;
 
                 infoBox.appendChild(infoText);
             }

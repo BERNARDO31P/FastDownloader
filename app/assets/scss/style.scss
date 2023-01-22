@@ -355,6 +355,11 @@ settings {
 
   #dynamic {
     white-space: pre-wrap;
+
+    a {
+      color: #1971d3;
+      text-decoration: none;
+    }
   }
 
   &.show {

@@ -22,7 +22,7 @@ Main features:
   - Clear URL list
 - Autostart
 - Auto update
-- Download from [supported sites](https://github.com/BERNARDO31P/FastDownloader/blob/master/supportedsites.md)
+- Download from [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
 
 ## Settings
 - Save artist name in song title

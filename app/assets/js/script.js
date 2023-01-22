@@ -42,6 +42,11 @@ window.onload = async () => {
 }
 
 // TODO: Comment
-tools.bindEvent("click", "button[data-href]", function () {
+tools.bindEvent("click", "button[data-href],a[data-href]", function () {
     shell.openExternal(this.getAttribute("data-href"));
+});
+
+// TODO: Comment
+tools.bindEvent("click", "a[href]", function (e) {
+    e.preventDefault();
 });
