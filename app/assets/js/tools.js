@@ -130,7 +130,7 @@ export function setRealDir(dirname) {
 // TODO: Comment
 function updateBinaryLocations() {
     ytDl = "\"" + __realDir + "/yt-dlp" + fileEnding + "\"";
-    ffmpeg = __realDir + "/ffmpeg" + fileEnding;
+    ffmpeg = "\"" + __realDir + "/ffmpeg" + fileEnding + "\"";
 }
 
 /*
