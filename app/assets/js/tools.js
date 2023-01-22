@@ -1,5 +1,6 @@
 import mustache from "./lib/mustache.min.js";
 
+const terminate = require("terminate");
 const path = require("path");
 const NP = require("number-precision");
 const {promisify} = require("util");
@@ -30,7 +31,13 @@ export let languageDB = {};
 
 export let ytDl = "";
 let ffmpeg = "";
-let extractors = [], extendedExtractors = ["netflix"];
+
+let extractors = [];
+let extendedExtractors = [
+    "netflix",
+    "youtu",
+];
+let extractorFilter = new RegExp(extendedExtractors.join("|"), 'gi');
 
 
 // TODO: Comment
@@ -166,7 +173,7 @@ export function setWorkerCount(count) {
 }
 
 export function clearList() {
-    let ul = document.querySelector(".listBox ul")
+    let ul = document.querySelector(".listBox ul");
     ul.innerHTML = "";
 
     urlList = [];
@@ -279,7 +286,7 @@ export function addUrlToList(url = "") {
         }
 
         let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
-        if (!extractors.includes(host)) {
+        if (!extractors.includes(host) && !match(host, extractorFilter)) {
             showNotification(languageDB[selectedLang]["js"]["noValidURL"], languageDB[selectedLang]["js"]["error"]);
             return false;
         }
@@ -516,10 +523,13 @@ export function loadExtractors(data) {
 // TODO: Comment
 export async function setExtractors() {
     let result = (await execSync(ytDl + " --list-extractors"))["stdout"];
-    extractors = result.split("\n");
+    result = result.split("\n");
 
-    for (let i = 0; i < extractors.length; i++) {
-        extractors[i] = extractors[i].split(":")[0].toLowerCase();
+    let extractors = [];
+    for (let i = 0; i < result.length; i++) {
+        let extractor = result[i].split(":")[0].toLowerCase();
+
+        if (!extractors.includes(extractor)) extractors.push(extractor);
     }
 
     setCookie("extractors", JSON.stringify(extractors));
@@ -878,9 +888,42 @@ export async function initialize() {
     let main = document.getElementsByTagName("main")[0];
     await loadPage("assets/template/main.html", main, () => {
         setThemeIcon();
+        updateYtDl();
+    });
+}
+
+// TODO: Comment
+function updateYtDl() {
+    let update = true;
+
+    showNotification(languageDB[selectedLang]["js"]["libUpdate"]);
+    setDisabled();
+
+    childProcess = exec(ytDl + " -U");
+
+    childProcess.stdout.on("data", (data) => {
+        if (data.includes("yt-dlp is up to date")) {
+            update = false;
+            terminate(childProcess.pid);
+        }
     });
 
-    //loadSettings();
+    childProcess.on("close", () => {
+        let extractors = getCookie("extractors");
+
+        if (update || !extractors) {
+            setExtractors().then(() => {
+                setEnabled();
+
+                showNotification(languageDB[selectedLang]["js"]["libUpdated"]);
+            });
+        } else {
+            loadExtractors(extractors);
+            setEnabled();
+
+            showNotification(languageDB[selectedLang]["js"]["libUptoDate"]);
+        }
+    });
 }
 
 // TODO: Comment
@@ -911,13 +954,17 @@ export async function loadPage(pageURL, element, callback = () => {
 
 // TODO: Comment
 export function setThemeIcon() {
-    setTimeout(() => {
+    let themeInterval = setInterval(() => {
         let icons = document.querySelectorAll(".theme-toggler svg");
-        for (let icon of icons) {
-            if (theme === "light") icon.classList.add("fa-moon");
-            else icon.classList.add("fa-sun");
+        if (icons.length) {
+            clearInterval(themeInterval);
+
+            for (let icon of icons) {
+                if (theme === "light") icon.classList.add("fa-moon");
+                else icon.classList.add("fa-sun");
+            }
         }
-    }, 500);
+    }, 50);
 }
 
 // TODO: Comment

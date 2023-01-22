@@ -11,10 +11,8 @@ const {
     clipboard
 } = require("electron");
 const {autoUpdater} = require("electron-updater");
-const {exec} = require("child_process");
 const AutoLaunch = require("easy-auto-launch");
 const path = require("path");
-const terminate = require('terminate').default;
 
 let autoLauncher = null;
 

@@ -18,6 +18,7 @@
         "download": "Herunterladen",
         "abort": "Abbrechen",
         "close": "Schliessen",
+        "clear": "Liste leeren",
         "restart": "Neustarten",
         "copy": "Kopieren"
       },
@@ -87,6 +88,9 @@
       "premiumEnabled": "Der Premium-Download wurde aktiviert",
       "premiumDisabled": "Der Premium-Download wurde deaktiviert",
       "noBrowser": "Sie haben den Premium-Download aktiviert, jedoch keinen Browser ausgewählt",
+      "libUpdate": "Bibliotheken werden auf Aktualisierungen überprüft",
+      "libUptoDate": "Bibliotheken sind alle aktuell",
+      "libUpdated": "Bilbiotheken wurden erfolgreich aktualisiert",
       "on": "An",
       "off": "Aus"
     }
@@ -110,6 +114,7 @@
         "download": "Download",
         "abort": "Abort",
         "close": "Close",
+        "clear": "Clear list",
         "restart": "Restart",
         "copy": "Copy"
       },
@@ -179,6 +184,9 @@
       "premiumEnabled": "Premium download has been enabled",
       "premiumDisabled": "Premium download has been disabled",
       "noBrowser": "You've enabled premium download but didn't select a browser",
+      "libUpdate": "Libraries are being checked for updates",
+      "libUptoDate": "Libraries are upto date",
+      "libUpdated": "Successfully updated all libraries",
       "on": "On",
       "off": "Off"
     }

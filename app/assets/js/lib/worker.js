@@ -31,7 +31,7 @@ let keywords = [
     "'",
     "\\(prod\\.(.+)?\\)"
 ];
-let ytfilter = new RegExp(keywords.join("|"), 'gi');
+let ytFilter = new RegExp(keywords.join("|"), 'gi');
 
 let globalSettings = {};
 let globalMode, globalCodecAudio, globalCodecVideo, globalQuality, globalPremium;
@@ -147,7 +147,7 @@ async function getYoutubeMusic(url) {
         let delimiter = new RegExp(" - | – ", "gi");
         const deviation = 65;
 
-        ytTitle = ytTitle.replace(ytfilter, "").trim();
+        ytTitle = ytTitle.replace(ytFilter, "").trim();
 
         if (!contains(ytTitle, delimiter)) {
             ytArtist = channelName;
@@ -162,7 +162,7 @@ async function getYoutubeMusic(url) {
         let artists = null, found = false;
         find: {
             if (music && Object.keys(music).length) {
-                music.title = music.title.replace(ytfilter, "").trim();
+                music.title = music.title.replace(ytFilter, "").trim();
 
                 let duration = result.duration / 1000;
                 if (contains(ytTitle, "(remix)")) {

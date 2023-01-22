@@ -445,9 +445,12 @@ settings {
     }
   }
 
-  .delete-button {
-    margin: 0 0 15px 0;
+  .delete-button, .clear-button {
     float: right;
+  }
+
+  .clear-button {
+    margin: 0 10px 0 0;
   }
 
   &[aria-disabled="true"] {

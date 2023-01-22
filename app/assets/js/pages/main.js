@@ -1,5 +1,7 @@
 import * as tools from "../tools.js";
 import {showNotification} from "../tools.js";
+
+const terminate = require("terminate");
 const {clipboard, ipcRenderer, shell} = require("electron");
 
 let lastClicked = null,
@@ -90,6 +92,11 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
 // TODO: Comment
 tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", () => {
     tools.removeActiveListItems();
+});
+
+// TODO: Comment
+tools.bindEvent("click", ".listBox .clear-button:not([aria-disabled='true'])", () => {
+    tools.clearList();
 });
 
 // TODO: Comment
@@ -255,8 +262,8 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
 
     if (tools.childProcess.pid) {
         try {
-            process.kill(tools.childProcess.pid, "SIGKILL");
             tools.childProcess.kill("SIGKILL");
+            terminate(tools.childProcess.pid);
         } catch (e) {}
     }
 
