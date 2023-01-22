@@ -22,6 +22,7 @@ Main features:
   - Clear URL list
 - Autostart
 - Auto update
+- Download from [supported sites](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/supportedsites.md)
 
 ## Settings
 - Save artist name in song title
@@ -78,11 +79,12 @@ Main features:
 - [ytpl](https://www.npmjs.com/package/ytpl) -> ^2.3.0
 - [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
-- [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> 1.0.16
+- [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> ^1.0.16
+- [terminate](https://www.npmjs.com/package/terminate) -> ^2.6.1
 
 ## Binaries
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 2022.11.11
-- [ffmpeg](https://ffmpeg.org) -> 2022-11-21
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 2023.01.06
+- [ffmpeg](https://ffmpeg.org) -> 2023-01-22
 
 ## License
 Copyright © 2022 Bernardo de Oliveira
