@@ -1,7 +1,4 @@
-import {getCookie, showNotification} from "./tools.js";
-
 const {ipcRenderer, shell} = require('electron');
-const {exec} = require("child_process");
 
 import * as tools from "./tools.js";
 
@@ -49,4 +46,12 @@ tools.bindEvent("click", "button[data-href],a[data-href]", function () {
 // TODO: Comment
 tools.bindEvent("click", "a[href]", function (e) {
     e.preventDefault();
+});
+
+// TODO: Comment
+tools.bindEvent("click", "#info-close", () => {
+    let info = document.getElementById("info");
+
+    info.classList.remove("show");
+    document.body.style.overflow = "";
 });

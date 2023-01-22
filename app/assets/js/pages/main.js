@@ -446,9 +446,7 @@ tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async () 
         });
     }
 
-    let body = document.getElementsByTagName("body")[0];
-
-    body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
     settings.style.display = "initial";
     settings.animateCallback([
         {top: "100%"},
@@ -457,7 +455,7 @@ tools.bindEvent("click", "#settings-open:not([aria-disabled='true'])", async () 
         duration: 200,
         fill: "forwards"
     }, () => {
-        body.style.overflow = "";
+        document.body.style.overflow = "";
 
         let nav = document.querySelector("settings #nav");
         nav.classList.add("static");

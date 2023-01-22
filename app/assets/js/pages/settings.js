@@ -3,12 +3,10 @@ import {showNotification} from "../tools.js";
 
 const {ipcRenderer} = require("electron");
 
-let body = document.getElementsByTagName("body")[0];
-
 setTimeout( () => {
     let nav = document.querySelector("settings #nav");
 
-    body.onscroll = () => {
+    document.body.onscroll = () => {
         if (window.scrollY > 10 && !nav.classList.contains("shadow")) {
             nav.classList.add("shadow");
         } else if (window.scrollY < 10 && nav.classList.contains("shadow")) {
@@ -145,11 +143,10 @@ tools.bindEvent("click", "settings .autostart .checkbox", function () {
 // TODO: Comment
 tools.bindEvent("click", "#settings-close:not([aria-disabled='true'])", () => {
     let settings = document.getElementsByTagName("settings")[0];
-    let body = document.getElementsByTagName("body")[0];
     let nav = settings.querySelector("#nav");
 
     nav.classList.remove("static");
-    body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
 
     settings.animateCallback([
         {top: "0%"},
@@ -158,7 +155,7 @@ tools.bindEvent("click", "#settings-close:not([aria-disabled='true'])", () => {
         duration: 200,
         fill: "forwards"
     }, () => {
-        body.style.overflow = "";
+        document.body.style.overflow = "";
         settings.style.display = "";
 
         let nav = document.querySelector("settings #nav");
@@ -196,12 +193,4 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
 // TODO: Comment
 tools.bindEvent("click", "#info-open", () => {
     tools.showChangelog();
-});
-
-// TODO: Comment
-tools.bindEvent("click", "#info-close", () => {
-    let info = document.getElementById("info");
-
-    info.classList.remove("show");
-    body.style.overflow = "";
 });

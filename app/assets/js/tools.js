@@ -368,8 +368,6 @@ export function showNotification(message, type = "Info", time = 3000) {
         return;
     }
 
-    let body = document.getElementsByTagName("body")[0];
-
     let notifications = document.getElementsByClassName("notification");
     for (let notification of notifications) {
         let notificationStyle = window.getComputedStyle(notification);
@@ -385,7 +383,7 @@ export function showNotification(message, type = "Info", time = 3000) {
     notification.textContent = message;
     notification.style.left = "10px";
 
-    body.appendChild(notification);
+    document.body.appendChild(notification);
 
     let timeoutOpacity;
 
@@ -423,7 +421,6 @@ function match(string, regex) {
 // TODO: Comment
 export function selectClick(element) {
     let select = element;
-    let body = document.getElementsByTagName("body")[0];
 
     if (!element.classList.contains("select")) {
         select = element.closest(".select");
@@ -457,7 +454,7 @@ export function selectClick(element) {
         optionsHeight = optionsHeight > 100 ? 100 : optionsHeight;
 
         let clientRectSelect = select.getClientRects()[0];
-        let clientRectBody = body.getClientRects()[0];
+        let clientRectBody = document.body.getClientRects()[0];
 
         if ((clientRectBody.height - 20) - clientRectSelect.bottom < optionsHeight) {
             select.classList.add("top");
@@ -864,7 +861,6 @@ export function loadSettings() {
 
 // TODO: Comment
 export async function showChangelog(update = false) {
-    let body = document.getElementsByTagName("body")[0];
     let info = document.getElementById("info");
     let dynamic = info.querySelector("#dynamic");
 
@@ -875,7 +871,7 @@ export async function showChangelog(update = false) {
         title.classList.remove("hidden");
     }
 
-    body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
     info.classList.add("show");
 }
 
@@ -902,15 +898,14 @@ export async function initialize() {
     }
     selectedLang = lang;
 
-    let body = document.getElementsByTagName("body")[0];
-    body.innerHTML = mustache.render(body.innerHTML, languageDB[selectedLang]);
+    document.body.innerHTML = mustache.render(document.body.innerHTML, languageDB[selectedLang]);
 
     let main = document.getElementsByTagName("main")[0];
     await loadPage("assets/template/main.html", main, () => {
         setThemeIcon();
         updateYtDl();
 
-        if (getCookie("update")) {
+        if (getCookie("update") !== false) {
             setCookie("update", false);
             showChangelog(true);
         }
