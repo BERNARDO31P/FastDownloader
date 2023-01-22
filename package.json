@@ -27,7 +27,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^22.0.3",
-    "electron-builder": "^23.6.0"
+    "electron-builder": "^23.6.0",
+    "@electron/asar": "^3.2.3"
   },
   "dependencies": {
     "easy-auto-launch": "^6.0.2",
