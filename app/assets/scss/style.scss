@@ -176,8 +176,7 @@ settings {
   }
 
   .hidden {
-    opacity: 0;
-    pointer-events: none;
+    display: unset;
   }
 
   .audioSettings, .videoSettings {
@@ -370,6 +369,12 @@ settings {
 .text-button {
   padding: 5px 10px;
   margin: 10px 0 5px 0;
+}
+
+.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .toggle {

@@ -1,5 +1,9 @@
 {
   "de": {
+    "index": {
+      "update": "Neue Funktionen!",
+      "changelog": "Alle Veränderungen ansehen"
+    },
     "tray": {
       "hide": "Verstecken",
       "addUrl": "URL hinzufügen",
@@ -96,6 +100,10 @@
     }
   },
   "en": {
+    "index": {
+      "update": "New features!",
+      "changelog": "See full changelog"
+    },
     "tray": {
       "hide": "Hide",
       "addUrl": "Add URL",

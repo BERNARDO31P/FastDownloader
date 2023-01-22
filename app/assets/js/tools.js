@@ -863,6 +863,23 @@ export function loadSettings() {
 }
 
 // TODO: Comment
+export async function showChangelog(update = false) {
+    let body = document.getElementsByTagName("body")[0];
+    let info = document.getElementById("info");
+    let dynamic = info.querySelector("#dynamic");
+
+    if (dynamic.innerHTML === "") await loadInfo();
+
+    if (update) {
+        let title = info.querySelector("#title");
+        title.classList.remove("hidden");
+    }
+
+    body.style.overflow = "hidden";
+    info.classList.add("show");
+}
+
+// TODO: Comment
 export async function initialize() {
     if (!Object.keys(languageDB).length) {
         await fetch("assets/db/language.json").then(response => {
@@ -885,10 +902,18 @@ export async function initialize() {
     }
     selectedLang = lang;
 
+    let body = document.getElementsByTagName("body")[0];
+    body.innerHTML = mustache.render(body.innerHTML, languageDB[selectedLang]);
+
     let main = document.getElementsByTagName("main")[0];
     await loadPage("assets/template/main.html", main, () => {
         setThemeIcon();
         updateYtDl();
+
+        if (getCookie("update")) {
+            setCookie("update", false);
+            showChangelog(true);
+        }
     });
 }
 

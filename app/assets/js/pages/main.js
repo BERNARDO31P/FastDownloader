@@ -116,6 +116,8 @@ tools.bindEvent("click", "#updateNotification .close-button", () => {
 
 // TODO: Comment
 tools.bindEvent("click", "#updateNotification .restart-button", () => {
+    tools.setCookie("update", true);
+
     ipcRenderer.send("restart_app");
 });
 

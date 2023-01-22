@@ -194,14 +194,8 @@ tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function (
 });
 
 // TODO: Comment
-tools.bindEvent("click", "#info-open", async () => {
-    let info = document.getElementById("info");
-    let dynamic = info.querySelector("#dynamic");
-
-    if (dynamic.innerHTML === "") await tools.loadInfo();
-
-    body.style.overflow = "hidden";
-    info.classList.add("show");
+tools.bindEvent("click", "#info-open", () => {
+    tools.showChangelog();
 });
 
 // TODO: Comment
