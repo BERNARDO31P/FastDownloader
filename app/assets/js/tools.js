@@ -1009,7 +1009,7 @@ function addLeadingZero(string, size) {
 }
 
 // TODO: Comment
-export async function loadInfo() {
+async function loadInfo() {
     let dynamic = document.querySelector("#info #dynamic");
 
     await fetch("https://api.github.com/repos/BERNARDO31P/FastDownloader/releases?per_page=10").then(response => {
@@ -1028,6 +1028,7 @@ export async function loadInfo() {
 
             let infos = tag.body.split("\r\n");
             infos = infos.filter(n => n);
+            infos.shift();
 
             let infoBox = document.createElement("div");
             for (let info of infos) {

@@ -446,8 +446,11 @@ settings {
       color: var(--text-color);
 
       cursor: pointer;
-
       user-select: none;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
 
       &.active {
         background-color: #3f6d952b;
