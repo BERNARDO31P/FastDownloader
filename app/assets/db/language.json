@@ -2,7 +2,9 @@
   "de": {
     "index": {
       "update": "Neue Funktionen!",
-      "changelog": "Alle Veränderungen ansehen"
+      "changelog": "Alle Veränderungen ansehen",
+      "close": "Schliessen",
+      "restart": "Neustarten"
     },
     "tray": {
       "hide": "Verstecken",
@@ -21,9 +23,7 @@
         "browse": "Durchsuchen",
         "download": "Herunterladen",
         "abort": "Abbrechen",
-        "close": "Schliessen",
         "clear": "Liste leeren",
-        "restart": "Neustarten",
         "copy": "Kopieren"
       },
       "label": {
@@ -102,7 +102,9 @@
   "en": {
     "index": {
       "update": "New features!",
-      "changelog": "See full changelog"
+      "changelog": "See full changelog",
+      "close": "Close",
+      "restart": "Restart"
     },
     "tray": {
       "hide": "Hide",
@@ -121,9 +123,7 @@
         "browse": "Browse",
         "download": "Download",
         "abort": "Abort",
-        "close": "Close",
         "clear": "Clear list",
-        "restart": "Restart",
         "copy": "Copy"
       },
       "label": {

@@ -249,6 +249,16 @@ app.whenReady().then(() => {
             autoUpdater.once("update-downloaded", () => {
                 win.webContents.send("update_downloaded");
             });
+        } else {
+            let updateInterval = null;
+
+            ipcMain.once("app_upto_date", () => {
+                clearInterval(updateInterval);
+            });
+
+            updateInterval = setInterval(() => {
+                win.webContents.send("app_upto_date");
+            }, 50);
         }
     });
 

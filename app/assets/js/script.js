@@ -20,13 +20,18 @@ window.onload = async () => {
 
     if (tools.getCookie("cache") !== null) tools.loadAllData();
 
-    const notification = document.getElementById('updateNotification');
+    const notification = document.getElementById("updateNotification");
     const message = notification.querySelector(".message");
     const restartButton = notification.querySelector('.restart-button');
 
     ipcRenderer.once("update_available", (event, version) => {
         message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"].replaceAll("XXX", version);
         notification.classList.remove("hidden");
+    });
+
+    ipcRenderer.once("app_upto_date", () => {
+        ipcRenderer.send("app_upto_date");
+        tools.updateYtDl();
     });
 
     ipcRenderer.once("update_downloaded", () => {

@@ -903,7 +903,6 @@ export async function initialize() {
     let main = document.getElementsByTagName("main")[0];
     await loadPage("assets/template/main.html", main, () => {
         setThemeIcon();
-        updateYtDl();
 
         if (getCookie("update") !== false) {
             setCookie("update", false);
@@ -913,7 +912,7 @@ export async function initialize() {
 }
 
 // TODO: Comment
-function updateYtDl() {
+export function updateYtDl() {
     let update = true;
 
     showNotification(languageDB[selectedLang]["js"]["libUpdate"]);
