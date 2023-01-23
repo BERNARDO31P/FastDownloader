@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {

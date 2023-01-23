@@ -177,7 +177,7 @@
       "songsDownloaded": "All songs have been successfully downloaded",
       "downloadAborted": "The download has been successfully aborted",
       "newVersion": "Version XXX is available and is being downloaded..",
-      "updateDownloaded": "Updated downloaded. Restart the application now to apply the changes.",
+      "updateDownloaded": "Update downloaded. Restart the application now to apply the changes.",
       "settingsSaved": "The settings are saved from now on",
       "settingsAborted": "The settings are no longer saved",
       "closeToTrayEnabled": "The application now closes to tray",
