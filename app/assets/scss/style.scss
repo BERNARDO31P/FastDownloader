@@ -543,6 +543,8 @@ settings {
     padding: 0 10px;
     overflow: hidden;
 
+    position: relative;
+
     .option {
       cursor: pointer;
       transition: 0.2s;
