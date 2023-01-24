@@ -483,7 +483,8 @@ export function selectClick(element) {
                 if (style.opacity !== "0")
                     hiddenElements.push(nextElement);
 
-                if (height > 100) {
+                console.log(height);
+                if (height > 60) {
                     clearInterval(interval);
                     for (let element of hiddenElements) {
                         element.classList.add("hidden");
