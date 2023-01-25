@@ -28,7 +28,8 @@
   "devDependencies": {
     "electron": "^22.0.3",
     "electron-builder": "^23.6.0",
-    "@electron/asar": "^3.2.3"
+    "@electron/asar": "^3.2.3",
+    "@electron/osx-sign": "^1.0.4"
   },
   "dependencies": {
     "easy-auto-launch": "^6.0.2",
