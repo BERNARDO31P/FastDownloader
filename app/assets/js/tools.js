@@ -26,7 +26,7 @@ export let specificSettings = {};
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
-export let downloading = false, aborted = false, childProcess = null, selectedLang = null;
+export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null;
 export let languageDB = {};
 
 export let ytDl = "";
@@ -91,7 +91,21 @@ worker.addEventListener("message", (event) => {
                 downloading = false;
                 processedUrls = [];
 
-                if (!aborted) {
+                switch(resolve) {
+                    case "aborted":
+                        showNotification(languageDB[selectedLang]["js"]["downloadAborted"], languageDB[selectedLang]["js"]["error"]);
+                        break;
+                    case "error":
+                        // TODO: Check if any url couldn't download
+                        break;
+                    case "success":
+                        showNotification(languageDB[selectedLang]["js"]["songsDownloaded"], languageDB[selectedLang]["js"]["success"]);
+
+                        if (getCookie("clearList")) clearList();
+                        break;
+                }
+
+                if (resolve === "aborted") {
                     ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
 
                     if (getCookie("clearList")) clearList();
@@ -244,13 +258,14 @@ export function getAllData() {
 async function download(data) {
     let percentage = Math.floor(100 / data.length * 100) / 100;
     downloading = true;
+    resolve = null;
 
     for (let item of data) {
         let url = new URL(item.url.trim());
         let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
 
         if (!extendedExtractors.includes(host)) {
-            aborted = !await downloadURL(
+            resolve = !await downloadURL(
                 item.mode,
                 item.location,
                 item.url,
@@ -260,10 +275,10 @@ async function download(data) {
                 item.quality
             );
         } else {
-            aborted = await downloadNFURL(
+            resolve = await downloadNFURL(
             );
         }
-        if (aborted) break;
+        if (resolve === "aborted") break;
     }
 }
 
@@ -483,7 +498,6 @@ export function selectClick(element) {
                 if (style.opacity !== "0")
                     hiddenElements.push(nextElement);
 
-                console.log(height);
                 if (height > 60) {
                     clearInterval(interval);
                     for (let element of hiddenElements) {
@@ -574,7 +588,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 config.push("--cookies-from-browser " + premium["browser"]);
             } else {
                 showNotification(languageDB[selectedLang]["js"]["noBrowser"]);
-                resolve(false);
+                resolve(null);
             }
         }
 
@@ -608,12 +622,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
             ipcRenderer.send("set_percentage", percentageDecimal);
 
-            if (!aborted) {
-                resolve(true);
-            } else {
-                resolve(false);
-                aborted = false;
-            }
+            if (!aborted) resolve("success");
+            else resolve("aborted");
         });
     });
 }
@@ -931,7 +941,7 @@ export function updateYtDl() {
     childProcess.on("close", () => {
         let extractors = getCookie("extractors");
 
-        if (update || !extractors) {
+        if (update || !extractors || !extractors.length) {
             setExtractors().then(() => {
                 setEnabled();
 
