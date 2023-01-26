@@ -1,6 +1,6 @@
 # Fast Downloader ![Icon](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/icons/32x32.png)
 
-This is a fast YouTube downloader written in Electron. 
+This is an intelligent and fast downloader for all [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) written in Electron. 
 
 It was tested on:
 - Windows 10/11
