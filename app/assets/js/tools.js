@@ -566,14 +566,12 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         ];
 
         if (mode === "audio") {
-            config.push("-f bestaudio");
             config.push("--extract-audio");
             config.push("--audio-format " + codecAudio);
             config.push("--audio-quality " + quality);
 
             if (["mp3", "aac", "flac"].includes(codecAudio)) config.push("--embed-thumbnail");
         } else {
-            config.push("-f bestvideo+bestaudio");
             config.push("-S vcodec:" + codecVideo);
             config.push("--embed-thumbnail");
             config.push("--audio-format mp3");
@@ -602,8 +600,6 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         let found;
         childProcess.stdout.on("data", (data) => {
-            console.log(data);
-
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
                 progressSong.value = Number(found[1].replaceAll("%", "")) / 100;
