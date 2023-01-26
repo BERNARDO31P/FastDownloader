@@ -572,7 +572,6 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             config.push("--audio-quality " + quality);
 
             if (["mp3", "aac", "flac"].includes(codecAudio)) config.push("--embed-thumbnail");
-
         } else {
             config.push("-f bestvideo+bestaudio");
             config.push("-S vcodec:" + codecVideo);
@@ -603,6 +602,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         let found;
         childProcess.stdout.on("data", (data) => {
+            console.log(data);
+
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
                 progressSong.value = Number(found[1].replaceAll("%", "")) / 100;
@@ -894,20 +895,19 @@ export async function initialize() {
         }).then(jsonData => languageDB = jsonData);
     }
 
+    let extractors = getCookie("extractors");
+    if (extractors && extractors.length) loadExtractors(extractors);
+
     let cookie = getCookie("lang");
-    let lang = null;
-    if (cookie) {
-        lang = cookie;
-    } else {
+    if (cookie) selectedLang = cookie;
+    else {
         for (let language of navigator.languages) {
             if (typeof languageDB[language] !== "undefined")
-                lang = language;
+                selectedLang = language;
         }
-        if (!lang) lang = "en";
-
-        setCookie("lang", lang);
+        if (!selectedLang) selectedLang = "en";
+        setCookie("lang", selectedLang);
     }
-    selectedLang = lang;
 
     document.body.innerHTML = mustache.render(document.body.innerHTML, languageDB[selectedLang]);
 
@@ -939,19 +939,14 @@ export function updateYtDl() {
     });
 
     childProcess.on("close", () => {
-        let extractors = getCookie("extractors");
-
         if (update || !extractors || !extractors.length) {
             setExtractors().then(() => {
                 setEnabled();
-
                 showNotification(languageDB[selectedLang]["js"]["libUpdated"]);
             });
         } else {
-            loadExtractors(extractors);
-            setEnabled();
-
             showNotification(languageDB[selectedLang]["js"]["libUptoDate"]);
+            setEnabled();
         }
     });
 }
