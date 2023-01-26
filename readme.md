@@ -1,4 +1,5 @@
-# Fast Downloader
+# Fast Downloader ![Icon](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/icons/32x32.png)
+
 This is a fast YouTube downloader written in Electron. 
 
 It was tested on:
