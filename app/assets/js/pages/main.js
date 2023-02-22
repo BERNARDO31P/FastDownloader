@@ -7,7 +7,11 @@ const {clipboard, ipcRenderer, shell} = require("electron");
 let lastClicked = null,
     contextElement = null;
 
-// TODO: Comment
+/**
+ * Add click event listener to document and removes context menu if it's open and clicked outside of it.
+ *
+ * @param {MouseEvent} e - The click event.
+ */
 document.onclick = (e) => {
     lastClicked = e.target;
 
@@ -18,11 +22,12 @@ document.onclick = (e) => {
     }
 }
 
-// TODO: Comment
+/**
+ * Sends "open_file_dialog" message to the main process and updates location input field and button when a file is selected.
+ */
 function searchButton () {
     ipcRenderer.send("open_file_dialog");
 
-    // TODO: Comment
     ipcRenderer.once("selected_file", (event, path) => {
         let location = document.querySelector(".location #location");
         let locationButton = document.querySelector(".location .location-button");
@@ -32,14 +37,23 @@ function searchButton () {
     });
 }
 
-// TODO: Comment
+/**
+ * Adds the input value as a URL to the list.
+ * Removes the value on success.
+ *
+ * @param {MouseEvent} e - The click event.
+ */
 tools.bindEvent("click", ".input .add-button:not([aria-disabled='true'])", (e) => {
     let input = e.target.closest(".input").querySelector("input");
 
     if (tools.addUrlToList(input.value)) input.value = "";
 });
 
-// TODO: Comment
+/**
+ * Removes all active items.
+ *
+ * @param {MouseEvent} e - The click event.
+ */
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e) {
     if (e.target === this) {
         let listBox = document.querySelector(".listBox");
@@ -49,7 +63,17 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) ul", function (e)
     }
 });
 
-// TODO: Comment
+/**
+ * Adds or removes "active" class based on the click modifiers.
+ *
+ * ShiftKey allows the user to select to a specific element.
+ * CtrlKey allows the user to select specific elements.
+ * CtrlKey + A allows the user to select all elements.
+ *
+ * A click without any of these keys result in deselection of all elements.
+ *
+ * @param {MouseEvent} e - The click event.
+ */
 tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e) {
     let listBox = this.closest(".listBox");
     let actives = listBox.querySelectorAll("li.active");
@@ -89,17 +113,23 @@ tools.bindEvent("click", ".listBox:not([aria-disabled='true']) li", function (e)
     tools.updateSelected();
 });
 
-// TODO: Comment
+/**
+ * Removes all active items.
+ */
 tools.bindEvent("click", ".listBox .delete-button:not([aria-disabled='true'])", () => {
     tools.removeActiveListItems();
 });
 
-// TODO: Comment
+/**
+ * Removes all items.
+ */
 tools.bindEvent("click", ".listBox .clear-button:not([aria-disabled='true'])", () => {
     tools.clearList();
 });
 
-// TODO: Comment
+/**
+ * Adds the clipboard text as a URL to the list.
+ */
 tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", () => {
     let clipboardText = clipboard.readText();
 
@@ -108,29 +138,38 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", () 
     } else tools.addUrlToList(clipboardText);
 });
 
-// TODO: Comment
+/**
+ * Hides the notification.
+ */
 tools.bindEvent("click", "#updateNotification .close-button", () => {
     let notification = document.getElementById("updateNotification");
     notification.classList.add("hidden");
 });
 
-// TODO: Comment
+/**
+ * Sets the "update" cookie and restarts the app.
+ * The update cookie is used to determinate on the first startup if it was freshly installed or updated.
+ */
 tools.bindEvent("click", "#updateNotification .restart-button", () => {
     tools.setCookie("update", true);
 
     ipcRenderer.send("restart_app");
 });
 
-// TODO: Comment
+/**
+ * Adds the input value as a URL to the list when EnterKey is pressed.
+ *
+ * @param {KeyboardEvent} e - The keydown event.
+ */
 tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
     if (e.code === "Enter") tools.addUrlToList(this.value);
 });
 
-/*
- * Funktion: Anonym
- * Autor: Bernardo de Oliveira
+/**
+ * This function switches the theme between light and dark mode by changing the "data-theme" attribute of the HTML element.
+ * The theme button gets replaced with the corresponding icon.
  *
- * Ändert das Design-Attribut und ändert somit auch das Design
+ * The theme is saved in the cookies for keeping the theme after a restart.
  */
 tools.bindEvent("click", ".theme-toggler", () => {
     let html = document.getElementsByTagName("html")[0];
@@ -159,7 +198,14 @@ tools.bindEvent("click", ".theme-toggler", () => {
     }
 });
 
-// TODO: Comment
+/**
+ * When the user clicks the start button, this function starts the download process.
+ *
+ * It sends the configuration to the worker to prepare.
+ * Playlists are converted to single URLS.
+ *
+ * The URLs are then converted to YouTube Music by the worker (if configured).
+ */
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])", async () => {
     tools.setAborted(false);
 

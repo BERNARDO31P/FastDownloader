@@ -105,12 +105,6 @@ worker.addEventListener("message", (event) => {
                         break;
                 }
 
-                if (resolve === "aborted") {
-                    ipcRenderer.send("show_notification", languageDB[selectedLang]["js"]["success"], languageDB[selectedLang]["js"]["songsDownloaded"]);
-
-                    if (getCookie("clearList")) clearList();
-                } else showNotification(languageDB[selectedLang]["js"]["downloadAborted"], languageDB[selectedLang]["js"]["error"]);
-
                 ipcRenderer.send("remove_abort");
             });
             break;
