@@ -40,7 +40,10 @@
             "customWebpackConfig": {
               "path": "./angular.webpack.js",
               "replaceDuplicatePlugins": true
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "rxjs"
+            ]
           },
           "configurations": {
             "dev": {

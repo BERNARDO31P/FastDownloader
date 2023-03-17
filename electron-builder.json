@@ -1,6 +1,9 @@
 {
+  "appId": "fm.bernardo.fastDownloader",
+  "productName": "Fast Downloader",
   "asar": true,
   "directories": {
+    "buildResources": "resources/",
     "output": "release/"
   },
   "files": [
@@ -11,28 +14,65 @@
     "!package-lock.json",
     {
       "from": "../dist",
-      "filter": ["**/*"]
+      "filter": [
+        "**/*"
+      ]
     }
   ],
   "win": {
-    "icon": "dist/assets/icons",
+    "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
     "target": [
-      "portable"
+      {
+        "target": "nsis",
+        "arch": [
+          "x64",
+          "ia32"
+        ]
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "resources/bin/ffmpeg.exe",
+        "to": "ffmpeg.exe"
+      },
+      {
+        "from": "resources/bin/yt-dlp.exe",
+        "to": "yt-dlp.exe"
+      },
+      {
+        "from": "resources/icons/256x256.png",
+        "to": "icons/256x256.png"
+      }
     ]
   },
-  "portable": {
-    "splashImage": "dist/assets/icons/electron.bmp"
-  },
-  "mac": {
-    "icon": "dist/assets/icons",
-    "target": [
-      "dmg"
-    ]
+  "nsis": {
+    "allowElevation": false,
+    "allowToChangeInstallationDirectory": true,
+    "oneClick": false,
+    "perMachine": true
   },
   "linux": {
-    "icon": "dist/assets/icons",
+    "category": "Utility",
     "target": [
-      "AppImage"
+      "deb",
+      "AppImage",
+      "rpm",
+      "tar.gz",
+      "pacman"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/bin/ffmpeg",
+        "to": "ffmpeg"
+      },
+      {
+        "from": "resources/bin/yt-dlp",
+        "to": "yt-dlp"
+      },
+      {
+        "from": "resources/icons/256x256.png",
+        "to": "icons/256x256.png"
+      }
     ]
   }
 }

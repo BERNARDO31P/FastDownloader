@@ -1,13 +1,27 @@
 {
-  "name": "angular-electron",
-  "description": "Angular Electron sample",
-  "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
-  },
-  "version": "12.0.0",
+  "name": "fastdownloader",
+  "version": "0.5.5",
+  "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BERNARDO31P/fastDownloader.git"
+  },
+  "keywords": [
+    "downloader",
+    "youtube",
+    "fast",
+    "audio",
+    "video"
+  ],
+  "homepage": "https://github.com/BERNARDO31P/FastDownloader",
+  "author": {
+    "name": "Bernardo de Oliveira",
+    "email": "bernardo@bernardo.fm"
+  },
+  "license": "MIT",
   "dependencies": {
+  },
+  "devDependencies": {
   }
 }
