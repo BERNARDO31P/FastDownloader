@@ -91,7 +91,7 @@ worker.addEventListener("message", (event) => {
                 downloading = false;
                 processedUrls = [];
 
-                switch(resolve) {
+                switch (resolve) {
                     case "aborted":
                         showNotification(languageDB[selectedLang]["js"]["downloadAborted"], languageDB[selectedLang]["js"]["error"]);
                         break;
@@ -259,7 +259,7 @@ async function download(data) {
         let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
 
         if (!extendedExtractors.includes(host)) {
-            resolve = !await downloadURL(
+            resolve = await downloadURL(
                 item.mode,
                 item.location,
                 item.url,
@@ -556,7 +556,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         let config = [
             "--ffmpeg-location " + ffmpeg,
-            "--add-metadata"
+            "-o \"" + location + "/" + ((getCookie("artistName") && url.includes("music.youtube")) ? "%(artist)s - " : "") + "%(title)s.%(ext)s\""
         ];
 
         if (mode === "audio") {
@@ -581,12 +581,6 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 showNotification(languageDB[selectedLang]["js"]["noBrowser"]);
                 resolve(null);
             }
-        }
-
-        if (getCookie("artistName")) {
-            config.push("-o \"" + location + "/%(creator)s - %(title)s.%(ext)s\"");
-        } else {
-            config.push("-o \"" + location + "/%(title)s.%(ext)s\"");
         }
 
         let command = ytDl + " " + config.join(" ");
