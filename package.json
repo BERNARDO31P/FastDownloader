@@ -26,10 +26,10 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^22.3.3",
-    "electron-builder": "^23.6.0",
     "@electron/asar": "^3.2.3",
-    "@electron/osx-sign": "^1.0.4"
+    "@electron/osx-sign": "^1.0.4",
+    "electron": "^23.1.4",
+    "electron-builder": "^23.6.0"
   },
   "dependencies": {
     "easy-auto-launch": "^6.0.2",
