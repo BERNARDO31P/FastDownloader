@@ -6,6 +6,8 @@ const {ipcRenderer} = require("electron");
 setTimeout( () => {
     let nav = document.querySelector("settings #nav");
     let info = document.querySelector("body #info");
+
+    let dynamic = info.querySelector("#dynamic");
     let shadow = info.querySelector("#static");
 
     document.body.onscroll = () => {
@@ -16,10 +18,10 @@ setTimeout( () => {
         }
     }
 
-    info.onscroll = () => {
-        if (info.scrollTop > 10 && !shadow.classList.contains("shadow")) {
+    dynamic.onscroll = () => {
+        if (dynamic.scrollTop > 10 && !shadow.classList.contains("shadow")) {
             shadow.classList.add("shadow");
-        } else if (info.scrollTop < 10 && shadow.classList.contains("shadow")) {
+        } else if (dynamic.scrollTop < 10 && shadow.classList.contains("shadow")) {
             shadow.classList.remove("shadow");
         }
     }
