@@ -553,10 +553,11 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         let infoTotal = document.querySelector(".progress-total .info p");
         let progressSong = document.querySelector(".progress-song progress");
         let infoSong = document.querySelector(".progress-song .info p");
+        let artist = (getCookie("artistName") && url.includes("music.youtube"));
 
         let config = [
             "--ffmpeg-location " + ffmpeg,
-            "-o \"" + location + "/" + ((getCookie("artistName") && url.includes("music.youtube")) ? "%(artist)s - " : "") + "%(title)s.%(ext)s\""
+            "-o \"" + location + "/" + ((artist) ? "%(artist)s - " : "") + "%(title)s.%(ext)s\"",
         ];
 
         if (mode === "audio") {
