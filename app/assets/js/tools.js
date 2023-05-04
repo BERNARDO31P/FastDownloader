@@ -17,6 +17,8 @@ document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 let fileEnding = "";
 if (process.platform === "win32") fileEnding = ".exe";
+else if (process.platform === "linux") fileEnding = "_linux";
+else if (process.platform === "darwin") fileEnding = "_macos";
 
 let __realDir = null;
 let hiddenElements = [], urlList = [], processedUrls = [];
@@ -556,7 +558,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         let artist = (getCookie("artistName") && url.includes("music.youtube"));
 
         let config = [
-            "--ffmpeg-location " + ffmpeg,
+            "--ffmpeg_linux-location " + ffmpeg,
             "-o \"" + location + "/" + ((artist) ? "%(artist)s - " : "") + "%(title)s.%(ext)s\"",
         ];
 
