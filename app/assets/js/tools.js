@@ -556,7 +556,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         let artist = (getCookie("artistName") && url.includes("music.youtube"));
 
         let config = [
-            "--ffmpeg_linux-location " + ffmpeg,
+            "--ffmpeg-location " + ffmpeg,
             "-o \"" + location + "/" + ((artist) ? "%(artist)s - " : "") + "%(title)s.%(ext)s\"",
         ];
 
@@ -584,8 +584,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             }
         }
 
-        let command = ytDl + " " + config.join(" ");
-        childProcess = exec(command.replaceAll("/", path.sep) + " " + url);
+        let command = (ytDl + " " + config.join(" ")).replaceAll("/", path.sep) + " " + url;
+        childProcess = exec(command);
 
         let found;
         childProcess.stdout.on("data", (data) => {
