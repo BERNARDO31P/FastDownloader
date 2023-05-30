@@ -28,7 +28,7 @@ export let specificSettings = {};
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
-export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null;
+export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null, lastLi = null;
 export let languageDB = {};
 
 export let ytDl = "";
@@ -111,16 +111,14 @@ worker.addEventListener("message", (event) => {
             });
             break;
         case "checkPremium":
-            let li = document.querySelector("ul li[data-url='" + msg.old + "']");
-
             if (urlList.indexOf(msg.url) !== -1) {
                 showNotification(languageDB[selectedLang]["js"]["urlInList"], languageDB[selectedLang]["js"]["error"]);
-                li.remove();
+                lastLi.remove();
 
                 return;
             }
 
-            li.textContent = msg.url;
+            lastLi.textContent = msg.url;
             urlList.push(msg.url);
 
             break;
@@ -308,8 +306,18 @@ export function addUrlToList(url = "") {
         }
 
         url = url.toString();
-        let found = null;
 
+        let li = document.createElement("li");
+        let nextID = ul.querySelectorAll("li").length;
+
+        li.textContent = url;
+        li.setAttribute("data-id", nextID.toString());
+        li.setAttribute("data-url", url);
+
+        ul.appendChild(li);
+        lastLi = li;
+
+        let found = null;
         if ((found = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) !== null) {
             url = found;
 
@@ -320,15 +328,6 @@ export function addUrlToList(url = "") {
             });
             worker.postMessage({type: "checkPremium", url: found});
         }
-
-        let li = document.createElement("li");
-        li.textContent = url;
-
-        let nextID = ul.querySelectorAll("li").length;
-        li.setAttribute("data-id", nextID.toString());
-        li.setAttribute("data-url", url);
-
-        ul.appendChild(li);
     }
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
