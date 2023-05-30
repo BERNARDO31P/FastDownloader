@@ -1,6 +1,5 @@
+const yt = require("youtube-sr").default;
 const ytMusic = require("node-youtube-music");
-
-const yt = require("youtube-sr");
 const levenshtein = require("fastest-levenshtein");
 
 let keywords = [
@@ -133,11 +132,13 @@ async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
         await sleep(2000);
         return getYouTubeMusicSearch(ytFullTitle, run + 1, retry);
     }
+
+    return [];
 }
 
 // TODO: Comment
 async function getYoutubeMusic(url) {
-    return await yt.default.getVideo(url).then(async (result) => {
+    return await yt.getVideo(url).then(async (result) => {
         let channelName = result.channel.name;
 
         if (contains(channelName, "(various artists)|(- topic)"))
@@ -158,8 +159,8 @@ async function getYoutubeMusic(url) {
         }
 
         let music = await getYouTubeMusicSearch(ytFullTitle);
-
         let artists = null, found = false;
+
         find: {
             if (music && Object.keys(music).length) {
                 music.title = music.title.replace(ytFilter, "").trim();

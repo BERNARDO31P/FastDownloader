@@ -37,7 +37,7 @@ function createWindow() {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,
             nodeIntegrationInSubFrames: true,
-            contextIsolation: false //required flag
+            contextIsolation: false
         }
     });
 
