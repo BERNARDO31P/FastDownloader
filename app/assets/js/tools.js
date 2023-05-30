@@ -307,17 +307,7 @@ export function addUrlToList(url = "") {
 
         url = url.toString();
 
-        let li = document.createElement("li");
-        let nextID = ul.querySelectorAll("li").length;
-
-        li.textContent = url;
-        li.setAttribute("data-id", nextID.toString());
-        li.setAttribute("data-url", url);
-
-        ul.appendChild(li);
-        lastLi = li;
-
-        let found = null;
+        let li = document.createElement("li"), found = null;
         if ((found = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) !== null) {
             url = found;
 
@@ -328,6 +318,15 @@ export function addUrlToList(url = "") {
             });
             worker.postMessage({type: "checkPremium", url: found});
         }
+
+        let nextID = ul.querySelectorAll("li").length;
+
+        li.textContent = url;
+        li.setAttribute("data-id", nextID.toString());
+        li.setAttribute("data-url", url);
+
+        ul.appendChild(li);
+        lastLi = li;
     }
 
     if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
