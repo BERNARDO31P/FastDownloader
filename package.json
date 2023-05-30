@@ -90,12 +90,12 @@
       ],
       "extraResources": [
         {
-          "from": "resources/ffmpeg",
-          "to": "ffmpeg"
+          "from": "resources/ffmpeg_linux",
+          "to": "ffmpeg_linux"
         },
         {
-          "from": "resources/yt-dlp",
-          "to": "yt-dlp"
+          "from": "resources/yt-dlp_linux",
+          "to": "yt-dlp_linux"
         },
         {
           "from": "resources/icons/256x256.png",
