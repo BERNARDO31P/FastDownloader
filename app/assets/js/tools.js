@@ -282,7 +282,7 @@ export function addUrlToList(url = "") {
         return false;
     }
 
-    let values = url.split(/[\n\s]+/);
+    let values = url.trim().split(/[\n\s]+/);
     let ul = document.querySelector(".listBox ul");
     for (let value of values) {
         let url = null;
@@ -334,7 +334,12 @@ export function addUrlToList(url = "") {
 
     ul.scrollTop = ul.scrollHeight;
 
-    showNotification(languageDB[selectedLang]["js"]["urlAdded"], languageDB[selectedLang]["js"]["success"]);
+    showNotification(
+        (values.length === 1)
+            ? languageDB[selectedLang]["js"]["urlAdded"]
+            : languageDB[selectedLang]["js"]["urlsAdded"],
+        languageDB[selectedLang]["js"]["success"]
+    );
 
     return true;
 }
