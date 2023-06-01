@@ -41,6 +41,9 @@
     "youtube-sr": "^4.3.4",
     "ytpl": "^2.3.0"
   },
+  "files": [
+    "node_modules/node-youtube-music/dist/index.js"
+  ],
   "build": {
     "appId": "fm.bernardo.fastDownloader",
     "productName": "Fast Downloader",
