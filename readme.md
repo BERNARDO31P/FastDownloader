@@ -14,7 +14,7 @@ Main features:
 - Download multiple songs and playlists at once
 - YouTube Premium integration
   - You need a YouTube Premium subscription
-  - Automatic conversion of URLs from YouTube to YouTube Music
+- Automatic conversion of URLs from YouTube to YouTube Music
 - Highly customizable but still slim and clean
 - Tray icon with the most needed functionality
   - Insert URLs without entering the application
@@ -33,6 +33,7 @@ Main features:
 - Start automatically at system startup
 - Download mode
   - Audio only
+    - Automatically converts a YouTube URL to YouTube Music
   - Video and audio
 - Quality
   - Best 
