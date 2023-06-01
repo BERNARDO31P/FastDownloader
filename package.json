@@ -59,10 +59,7 @@
         }
       ],
       "extraResources": [
-        {
-          "from": "node_modules/node-youtube-music/dist/index.js",
-          "to": "node_modules/node-youtube-music/dist/index.js"
-        },
+        "node_modules/node-youtube-music/dist/index.js",
         {
           "from": "resources/ffmpeg.exe",
           "to": "ffmpeg.exe"
@@ -93,10 +90,7 @@
         "pacman"
       ],
       "extraResources": [
-        {
-          "from": "node_modules/node-youtube-music/dist/index.js",
-          "to": "node_modules/node-youtube-music/dist/index.js"
-        },
+        "node_modules/node-youtube-music/dist/index.js",
         {
           "from": "resources/ffmpeg_linux",
           "to": "ffmpeg_linux"
