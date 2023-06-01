@@ -1,6 +1,6 @@
 const yt = require("youtube-sr").default;
-const ytMusic = require("node-youtube-music");
 const levenshtein = require("fastest-levenshtein");
+import {searchMusics} from "../../../../node_modules/node-youtube-music/dist/index.js";
 
 let keywords = [
     "\\[.*\\]",
@@ -33,7 +33,7 @@ let keywords = [
 let ytFilter = new RegExp(keywords.join("|"), 'gi');
 
 let globalSettings = {};
-let globalMode, globalCodecAudio, globalCodecVideo, globalQuality, globalPremium;
+let globalMode, globalCodecAudio, globalCodecVideo, globalQuality;
 
 addEventListener('message', (event) => {
     const msg = event.data;
@@ -46,16 +46,14 @@ addEventListener('message', (event) => {
             });
             break;
         case "checkPremium":
+            globalMode = msg.mode;
+
             checkPremiumAndConvert(msg.url).then((url) => {
                 postMessage({type: "checkPremium", url: url, old: msg.url});
             });
             break;
         case "loadData":
-            loadData(msg.mode, msg.codecAudio, msg.codecVideo, msg.quality, msg.settings, msg.premium);
-            break;
-        case "loadPremiumAndMode":
-            globalPremium = msg.premium;
-            globalMode = msg.mode;
+            loadData(msg.mode, msg.codecAudio, msg.codecVideo, msg.quality, msg.settings);
             break;
     }
 });
@@ -66,19 +64,17 @@ function sleep(ms) {
 }
 
 // TODO: Comment
-function loadData(mode, codecAudio, codecVideo, quality, settings, premium) {
+function loadData(mode, codecAudio, codecVideo, quality, settings) {
     globalMode = mode;
     globalCodecAudio = codecAudio;
     globalCodecVideo = codecVideo;
     globalQuality = quality;
     globalSettings = settings;
-    globalPremium = premium;
 }
 
 // TODO: Comment
 async function checkPremiumAndConvert(url) {
-    let premium = JSON.parse(globalPremium);
-    if (globalMode === "audio" && premium && premium.check)
+    if (globalMode === "audio")
         if (!url.includes("music.youtube") && !url.includes("playlist")) {
             let musicUrl = await getYoutubeMusic(url);
             if (musicUrl) url = musicUrl;
@@ -124,7 +120,7 @@ function getSortedLength(string1, string2) {
 // TODO: Comment
 async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
     try {
-        let results = await ytMusic.searchMusics(ytFullTitle);
+        let results = await searchMusics(ytFullTitle);
         if (results) return results[0];
     } catch (e) {
         if (run === retry) return [];

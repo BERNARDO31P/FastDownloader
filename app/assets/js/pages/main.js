@@ -269,8 +269,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             codecAudio: codecAudio,
             codecVideo: codecVideo,
             quality: quality,
-            settings: tools.specificSettings,
-            premium: tools.getCookie("premium")
+            settings: tools.specificSettings
         });
 
         let count = 0;

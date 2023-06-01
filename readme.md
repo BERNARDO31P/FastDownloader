@@ -75,17 +75,17 @@ Main features:
 
 ## Libraries
 - [easy-auto-launch](https://www.npmjs.com/package/easy-auto-launch) -> ^6.0.2
-- [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^5.3.0
+- [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.0
 - [number-precision](https://www.npmjs.com/package/number-precision) -> ^1.6.0
 - [ytpl](https://www.npmjs.com/package/ytpl) -> ^2.3.0
-- [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
+- [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.10.2
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
 - [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> ^1.0.16
 - [terminate](https://www.npmjs.com/package/terminate) -> ^2.6.1
 
 ## Binaries
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 2023.01.06
-- [ffmpeg](https://ffmpeg.org) -> 2023-01-22
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 2023.03.04
+- [ffmpeg](https://ffmpeg.org) -> 2023-02-28
 
 ## License
 Copyright © 2022 Bernardo de Oliveira

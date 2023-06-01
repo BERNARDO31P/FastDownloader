@@ -25,7 +25,7 @@ let hiddenElements = [], urlList = [], processedUrls = [];
 
 export let specificSettings = {};
 
-export let worker = new Worker("assets/js/lib/worker.js");
+export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
 export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null, lastLi = null;
@@ -311,12 +311,7 @@ export function addUrlToList(url = "") {
         if ((found = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) !== null) {
             url = found;
 
-            worker.postMessage({
-                type: "loadPremiumAndMode",
-                premium: getCookie("premium"),
-                mode: getCookie("mode")
-            });
-            worker.postMessage({type: "checkPremium", url: found});
+            worker.postMessage({type: "checkPremium", url: found, mode: getCookie("mode")});
         }
 
         let nextID = ul.querySelectorAll("li").length;
