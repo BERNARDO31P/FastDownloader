@@ -41,9 +41,6 @@
     "youtube-sr": "^4.3.4",
     "ytpl": "^2.3.0"
   },
-  "files": [
-    "node_modules/node-youtube-music/dist/index.js"
-  ],
   "build": {
     "appId": "fm.bernardo.fastDownloader",
     "productName": "Fast Downloader",
@@ -62,6 +59,7 @@
         }
       ],
       "extraResources": [
+        "node_modules/node-youtube-music/dist/index.js",
         {
           "from": "resources/ffmpeg.exe",
           "to": "ffmpeg.exe"
@@ -92,6 +90,7 @@
         "pacman"
       ],
       "extraResources": [
+        "node_modules/node-youtube-music/dist/index.js",
         {
           "from": "resources/ffmpeg_linux",
           "to": "ffmpeg_linux"
