@@ -28,7 +28,7 @@
   "devDependencies": {
     "@electron/asar": "^3.2.4",
     "@electron/osx-sign": "^1.0.4",
-    "electron": "^25.0.0",
+    "electron": "^26.0.0-alpha.1",
     "electron-builder": "^24.4.0"
   },
   "dependencies": {
