@@ -5,7 +5,7 @@ This is an intelligent and fast downloader for all [supported sites](https://git
 It was tested on:
 - Windows 10/11
 - Ubuntu/Debian
-- CentOS/Red Hat
+- CentOS/RedHat
 - Arch Linux
 
 If your system isn't directly supported, try the `AppImage`.
@@ -23,6 +23,10 @@ Main features:
   - Clear URL list
 - Autostart
 - Auto update
+  - Windows
+  - AppImage
+  - Ubuntu/Debian (Beta)
+  - CentOS/RedHat (Beta)
 - Download from [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
 
 ## Settings
@@ -59,7 +63,7 @@ Main features:
   - YouTube Music URLs only
 - Browser selection
   - Allows the Fast Downloader to use your YouTube Premium cookie
-  - Don't worry, every application on your system has the permission to read browser cookies
+  - Don't worry, every application on your system has the permission to read rowser cookies
 - Clear list
   - Functionality to clear the URL list after a download
   - Only if download wasn't aborted
@@ -79,7 +83,7 @@ Main features:
 - [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.0
 - [number-precision](https://www.npmjs.com/package/number-precision) -> ^1.6.0
 - [ytpl](https://www.npmjs.com/package/ytpl) -> ^2.3.0
-- [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.10.2
+- [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
 - [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> ^1.0.16
 - [terminate](https://www.npmjs.com/package/terminate) -> ^2.6.1
