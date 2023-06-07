@@ -30,8 +30,6 @@ Main features:
 - Download from [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
 
 ## Settings
-- Save artist name in song title
-  - Useful when downloading from YouTube Music
 - Close to tray
   - Minimize to tray when closing
 - Start automatically at system startup
