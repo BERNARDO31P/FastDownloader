@@ -1,4 +1,5 @@
 import mustache from "./lib/mustache.min.js";
+import {ytFilter} from "./lib/filter.js";
 
 const terminate = require("terminate");
 const path = require("path");
@@ -548,16 +549,20 @@ export function downloadNFURL() {
 
 // TODO: Comment
 function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
-    return new Promise((resolve) => {
-        let progressTotal = document.querySelector(".progress-total progress");
-        let infoTotal = document.querySelector(".progress-total .info p");
-        let progressSong = document.querySelector(".progress-song progress");
-        let infoSong = document.querySelector(".progress-song .info p");
-        let artist = (getCookie("artistName") && url.includes("music.youtube"));
+    return new Promise(async (resolve) => {
+        const progressTotal = document.querySelector(".progress-total progress");
+        const progressTotalInfo = document.querySelector(".progress-total .info p");
+        const progressSong = document.querySelector(".progress-song progress");
+        const progressSongInfo = document.querySelector(".progress-song .info p");
+        const songInfo = JSON.parse((await execSync(ytDl + " --dump-json " + url)).stdout);
+        const artist = ("artist" in songInfo && songInfo["artist"] !== null && mode === "audio");
+
+        let title = ((artist) ? songInfo["artist"] + " - " + songInfo["title"] : songInfo["title"]).replace(ytFilter, "").trim();
+        title = title.replace(/\s{2,}/g, " ");
 
         let config = [
             "--ffmpeg-location " + ffmpeg,
-            "-o \"" + location + "/" + ((artist) ? "%(artist)s - " : "") + "%(title)s.%(ext)s\"",
+            "-o \"" + location + "/" + title + ".%(ext)s\"",
         ];
 
         if (mode === "audio") {
@@ -592,7 +597,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
                 progressSong.value = Number(found[1].replaceAll("%", "")) / 100;
-                infoSong.textContent = found[1];
+                progressSongInfo.textContent = found[1];
             }
         });
 
@@ -601,10 +606,10 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             let percentageDecimal = percentageTotal / 100;
 
             progressTotal.value = percentageDecimal;
-            infoTotal.textContent = percentageTotal + "%";
+            progressTotalInfo.textContent = percentageTotal + "%";
 
             progressSong.value = 1;
-            infoSong.textContent = "100%";
+            progressSongInfo.textContent = "100%";
 
             ipcRenderer.send("set_percentage", percentageDecimal);
 

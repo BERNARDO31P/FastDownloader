@@ -2,7 +2,9 @@ const yt = require("youtube-sr").default;
 const levenshtein = require("fastest-levenshtein");
 const ytMusic = require("node-youtube-music");
 
-let keywords = [
+import {ytFilter} from "./filter.js";
+
+/*let keywords = [
     "\\[.*\\]",
     "\\{.*\\}",
     "- official",
@@ -28,9 +30,10 @@ let keywords = [
     "visuals",
     "\"",
     "'",
-    "\\(prod\\.(.+)?\\)"
+    "\\(prod\\.(.+)?\\)",
+    "\\([A-Z]{2}\\)"
 ];
-let ytFilter = new RegExp(keywords.join("|"), 'gi');
+let ytFilter = new RegExp(keywords.join("|"), 'gi');*/
 
 let globalSettings = {};
 let globalMode, globalCodecAudio, globalCodecVideo, globalQuality;
@@ -135,16 +138,17 @@ async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
 // TODO: Comment
 async function getYoutubeMusic(url) {
     return await yt.getVideo(url).then(async (result) => {
-        let channelName = result.channel.name;
+        const channelName = result.channel.name;
 
         if (contains(channelName, "(various artists)|(- topic)"))
             return "https://music.youtube.com/watch?v=" + result.id;
 
-        let ytFullTitle, ytArtist, ytTitle = result.title;
-        let delimiter = new RegExp(" - | – ", "gi");
-        const deviation = 65;
+        let ytTitle = result.title.replace(ytFilter, "").trim();
+        ytTitle = ytTitle.replace(/\s{2,}/g, " ");
 
-        ytTitle = ytTitle.replace(ytFilter, "").trim();
+        let ytFullTitle, ytArtist;
+        const delimiter = new RegExp(" - | – ", "gi");
+        const deviation = 65;
 
         if (!contains(ytTitle, delimiter)) {
             ytArtist = channelName;
