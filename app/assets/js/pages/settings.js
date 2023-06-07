@@ -27,26 +27,6 @@ setTimeout( () => {
     }
 }, 1000);
 
-
-// TODO: Comment
-tools.bindEvent("click", "settings .artistName .checkbox", function () {
-    let artistNaming = this.closest(".artistName");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        artistNaming.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
-
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["artistNameDisabled"]);
-    } else {
-        this.classList.add("active");
-        artistNaming.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
-
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["artistNameEnabled"]);
-    }
-
-    tools.saveSettings();
-});
-
 // TODO: Comment
 tools.bindEvent("click", "settings .save .checkbox", function () {
     let saving = this.closest(".save");

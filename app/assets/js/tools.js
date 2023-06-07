@@ -724,7 +724,6 @@ export function saveSettings() {
         let codecVideo = document.querySelector("settings .codecVideo .select");
         let closeToTray = document.querySelector("settings #closeToTray");
         let autostart = document.querySelector("settings #autostart");
-        let artistName = document.querySelector("settings #artistName");
         let clearList = document.querySelector("settings #clearList");
         let premiumCheck = document.querySelector("settings #premium");
         let premiumBrowser = document.querySelector("settings #browser");
@@ -736,7 +735,6 @@ export function saveSettings() {
         setCookie("save", true);
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
-        setCookie("artistName", artistName.classList.contains("active"));
         setCookie("clearList", clearList.classList.contains("active"));
         setCookie("premium", JSON.stringify({
             "browser": premiumBrowser.getAttribute("data-value"),
@@ -755,7 +753,6 @@ export function deleteSettings() {
     setCookie("closeToTray", false);
     setCookie("autostart", false);
     setCookie("premium", JSON.stringify({"browser": null, "check": false}));
-    setCookie("artistName", false);
     setCookie("clearList", false);
 }
 
@@ -776,7 +773,6 @@ export function loadSettings() {
     let closeToTray = getCookie("closeToTray");
     let autostart = getCookie("autostart");
     let premium = JSON.parse(getCookie("premium"));
-    let artistName = getCookie("artistName");
     let clearList = getCookie("clearList");
 
     let option;
@@ -827,14 +823,6 @@ export function loadSettings() {
         autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
     } else {
         autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
-    }
-
-    let artistNaming = document.querySelector("settings .artistName");
-    if (artistName) {
-        artistNaming.querySelector("#artistName").classList.add("active");
-        artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
-    } else {
-        artistNaming.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
     }
 
     let clearListing = document.querySelector("settings .clearList");
