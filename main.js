@@ -11,7 +11,7 @@ const {
     clipboard
 } = require("electron");
 const {autoUpdater} = require("electron-updater");
-const AutoLaunch = require("easy-auto-launch");
+const AutoLaunch = require("auto-launch");
 const path = require("path");
 
 let autoLauncher = null;

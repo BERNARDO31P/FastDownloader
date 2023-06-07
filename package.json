@@ -28,11 +28,11 @@
   "devDependencies": {
     "@electron/asar": "^3.2.4",
     "@electron/osx-sign": "^1.0.4",
-    "electron": "^26.0.0-alpha.1",
+    "electron": "^26.0.0-alpha.4",
     "electron-builder": "^24.4.0"
   },
   "dependencies": {
-    "easy-auto-launch": "^6.0.2",
+    "auto-launch": "^5.0.6",
     "electron-updater": "^6.1.0",
     "fastest-levenshtein": "^1.0.16",
     "node-youtube-music": "^0.8.3",
