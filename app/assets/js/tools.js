@@ -4,11 +4,9 @@ import {ytFilter} from "./lib/filter.js";
 const terminate = require("terminate");
 const path = require("path");
 const NP = require("number-precision");
-const {promisify} = require("util");
 const ytpl = require("ytpl");
 const {ipcRenderer, clipboard} = require("electron");
-const {exec} = require("child_process");
-const execSync = promisify(require("child_process").exec);
+const {exec, spawnSync} = require("child_process");
 
 let theme = getCookie("theme");
 if (!theme) theme = "light";
@@ -74,6 +72,11 @@ export function bindEvent(eventNames, selectors, handler) {
 }
 
 // TODO: Comment
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// TODO: Comment
 worker.addEventListener("message", (event) => {
     const msg = event.data;
     switch (msg.type) {
@@ -97,9 +100,6 @@ worker.addEventListener("message", (event) => {
                 switch (resolve) {
                     case "aborted":
                         showNotification(languageDB[selectedLang]["js"]["downloadAborted"], languageDB[selectedLang]["js"]["error"]);
-                        break;
-                    case "error":
-                        // TODO: Check if any url couldn't download
                         break;
                     case "success":
                         showNotification(languageDB[selectedLang]["js"]["songsDownloaded"], languageDB[selectedLang]["js"]["success"]);
@@ -255,7 +255,10 @@ async function download(data) {
     downloading = true;
     resolve = null;
 
-    for (let item of data) {
+    let i = 0;
+    while (i < data.length) {
+        const item = data[i];
+
         let url = new URL(item.url.trim());
         let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
 
@@ -273,7 +276,12 @@ async function download(data) {
             resolve = await downloadNFURL(
             );
         }
-        if (resolve === "aborted") break;
+        if (resolve === "success") i++;
+        else if (resolve === "permission") {
+            showNotification(languageDB[selectedLang]["js"]["permission"], languageDB[selectedLang]["js"]["error"], 10000);
+            await sleep(10000);
+        } else if (resolve === "network") {
+        } else break;
     }
 }
 
@@ -529,7 +537,7 @@ export function loadExtractors(data) {
 
 // TODO: Comment
 export async function setExtractors() {
-    let result = (await execSync(ytDl + " --list-extractors"))["stdout"];
+    let result = spawnSync(ytDl + " --list-extractors", {shell: true}).stdout.toString();
     result = result.split("\n");
 
     let extractors = [];
@@ -550,11 +558,23 @@ export function downloadNFURL() {
 // TODO: Comment
 function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
     return new Promise(async (resolve) => {
+        let error = false;
+
         const progressTotal = document.querySelector(".progress-total progress");
         const progressTotalInfo = document.querySelector(".progress-total .info p");
         const progressSong = document.querySelector(".progress-song progress");
         const progressSongInfo = document.querySelector(".progress-song .info p");
-        const songInfo = JSON.parse((await execSync(ytDl + " --dump-json " + url)).stdout);
+        let songInfo = {};
+        try {
+            const output = spawnSync(ytDl.replaceAll("/", path.sep) + " --dump-json " + url, {shell: true}).stdout.toString();
+            songInfo = JSON.parse(output);
+        } catch (error) {
+            error = error.toString().toLowerCase();
+            if (error.includes("getaddrinfo failed")) resolve("network");
+
+            return;
+        }
+
         const artist = ("artist" in songInfo && songInfo["artist"] !== null && mode === "audio");
 
         let title = ((artist) ? songInfo["artist"] + " - " + songInfo["title"] : songInfo["title"]).replace(ytFilter, "").trim();
@@ -601,20 +621,32 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             }
         });
 
+        childProcess.stderr.on("data", (data) => {
+            if (!aborted) {
+                data = data.toLowerCase();
+                error = true;
+
+                if (data.includes("permission")) resolve("permission");
+                if (data.includes("getaddrinfo failed")) resolve("network");
+            }
+        });
+
         childProcess.on("close", () => {
-            let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
-            let percentageDecimal = percentageTotal / 100;
+            if (!error) {
+                let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
+                let percentageDecimal = percentageTotal / 100;
 
-            progressTotal.value = percentageDecimal;
-            progressTotalInfo.textContent = percentageTotal + "%";
+                progressTotal.value = percentageDecimal;
+                progressTotalInfo.textContent = percentageTotal + "%";
 
-            progressSong.value = 1;
-            progressSongInfo.textContent = "100%";
+                progressSong.value = 1;
+                progressSongInfo.textContent = "100%";
 
-            ipcRenderer.send("set_percentage", percentageDecimal);
+                ipcRenderer.send("set_percentage", percentageDecimal);
 
-            if (!aborted) resolve("success");
-            else resolve("aborted");
+                if (!aborted) resolve("success");
+                else resolve("aborted");
+            }
         });
     });
 }
