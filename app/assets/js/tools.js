@@ -624,7 +624,9 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         childProcess.stderr.on("data", (data) => {
             if (!aborted) {
                 data = data.toLowerCase();
-                error = true;
+
+                if (!data.includes("winerror 10054"))
+                    error = true;
 
                 if (data.includes("permission")) resolve("permission");
                 if (data.includes("getaddrinfo failed")) resolve("network");
