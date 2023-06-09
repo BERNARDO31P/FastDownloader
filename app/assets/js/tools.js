@@ -566,7 +566,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressSongInfo = document.querySelector(".progress-song .info p");
         let songInfo = {};
         try {
-            const output = spawnSync(ytDl.replaceAll("/", path.sep) + " --dump-json " + url, {shell: true}).stdout.toString();
+            const output = spawnSync(ytDl.replaceAll("/", path.sep) + " --dump-json " + url, {shell: true, maxBuffer: 10000000}).stdout.toString();
             songInfo = JSON.parse(output);
         } catch (error) {
             error = error.toString().toLowerCase();
