@@ -358,7 +358,7 @@ export function removeActiveListItems() {
             delete specificSettings[id];
 
             let index = urlList.indexOf(active.textContent);
-            delete urlList[index];
+            urlList.splice(index, 1);
 
             active.remove();
         }
