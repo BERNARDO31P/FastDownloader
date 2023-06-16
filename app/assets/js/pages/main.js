@@ -1,5 +1,5 @@
 import * as tools from "../tools.js";
-import {showNotification} from "../tools.js";
+import {showNotification, specificSettings} from "../tools.js";
 
 const terminate = require("terminate");
 const {clipboard, ipcRenderer, shell} = require("electron");
@@ -25,7 +25,7 @@ document.onclick = (e) => {
 /**
  * Sends "open_file_dialog" message to the main process and updates location input field and button when a file is selected.
  */
-function searchButton () {
+function searchButton() {
     ipcRenderer.send("open_file_dialog");
 
     ipcRenderer.once("selected_file", (event, path) => {
@@ -263,6 +263,28 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         infoTotal.textContent = "0%";
         infoSong.textContent = "0%";
 
+        let count = 0;
+        let allUrls = [];
+        for (let item of items) {
+            if (item.textContent.includes("playlist?list=")) {
+                let urls = await tools.getPlaylistUrls(item.textContent);
+                count += urls.length;
+                allUrls = [...allUrls, ...urls];
+
+                if (typeof specificSettings[item.textContent] !== "undefined") {
+                    for (let url of urls) {
+                        specificSettings[url] = specificSettings[item.textContent];
+                    }
+                    delete specificSettings[item.textContent];
+                }
+            } else {
+                count++;
+                allUrls.push(item.textContent);
+            }
+
+            if (tools.aborted) break download;
+        }
+
         tools.worker.postMessage({
             type: "loadData",
             mode: mode,
@@ -272,30 +294,13 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
             settings: tools.specificSettings
         });
 
-        let count = 0;
-        let allUrls = [];
-        for (let item of items) {
-            if (item.textContent.includes("playlist?list=")) {
-                let urls = await tools.getPlaylistUrls(item.textContent);
-                count += urls.length;
-                allUrls = [...allUrls, ...urls];
-            } else {
-                count++;
-                allUrls.push(item.textContent);
-            }
-
-            if (tools.aborted) break download;
-        }
-
         tools.setWorkerCount(allUrls.length);
-
-        for (let i = 0; i < allUrls.length; i++) {
+        for (let url of allUrls) {
             tools.worker.postMessage({
                 type: "checkPremiumAndAdd",
-                url: allUrls[i],
+                url: url,
                 location: location.value,
                 count: count,
-                id: i
             });
 
             if (tools.aborted) break download;
@@ -311,7 +316,8 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
         try {
             tools.childProcess.kill("SIGKILL");
             terminate(tools.childProcess.pid);
-        } catch (e) {}
+        } catch (e) {
+        }
     }
 
     tools.setEnabled();
@@ -321,61 +327,59 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
 tools.bindEvent("contextmenu", ".listBox:not([aria-disabled='true']) li", function (e) {
     e.preventDefault();
 
-    if (!e.target.textContent.includes("playlist?list=")) {
-        let context = document.getElementById("contextMenu");
-        let mode = tools.getCookie("mode");
-        let id = this.getAttribute("data-id");
+    let context = document.getElementById("contextMenu");
+    let mode = tools.getCookie("mode");
+    let url = this.getAttribute("data-url");
 
-        if (typeof tools.specificSettings[id] !== "undefined" && typeof tools.specificSettings[id]["mode"] !== "undefined")
-            mode = tools.specificSettings[id]["mode"];
+    if (typeof tools.specificSettings[url] !== "undefined" && typeof tools.specificSettings[url]["mode"] !== "undefined")
+        mode = tools.specificSettings[url]["mode"];
 
-        tools.removeActives(context.querySelector(".mode"));
-        if (mode === "audio") {
-            context.querySelector(".codecAudio").style.display = "";
-            context.querySelector(".quality").style.display = "";
+    tools.removeActives(context.querySelector(".mode"));
+    if (mode === "audio") {
+        context.querySelector(".codecAudio").style.display = "";
+        context.querySelector(".quality").style.display = "";
 
-            context.querySelector(".codecVideo").style.display = "none";
+        context.querySelector(".codecVideo").style.display = "none";
 
-            context.querySelector(".mode [data-value='audio']").classList.add("active");
-        } else {
-            context.querySelector(".codecAudio").style.display = "none";
-            context.querySelector(".quality").style.display = "none";
+        context.querySelector(".mode [data-value='audio']").classList.add("active");
+    } else {
+        context.querySelector(".codecAudio").style.display = "none";
+        context.querySelector(".quality").style.display = "none";
 
-            context.querySelector(".codecVideo").style.display = "";
+        context.querySelector(".codecVideo").style.display = "";
 
-            context.querySelector(".mode [data-value='video']").classList.add("active");
-        }
+        context.querySelector(".mode [data-value='video']").classList.add("active");
+    }
 
-        tools.removeActives(context.querySelector(".quality"));
-        if (typeof tools.specificSettings[id] !== "undefined" && typeof tools.specificSettings[id]["quality"] !== "undefined") {
-            context.querySelector(".quality [data-value='" + tools.specificSettings[id]["quality"] + "']").classList.add("active");
-        } else {
-            let quality = tools.getCookie("quality");
-            context.querySelector(".quality [data-value='" + quality + "']").classList.add("active");
-        }
+    tools.removeActives(context.querySelector(".quality"));
+    if (typeof tools.specificSettings[url] !== "undefined" && typeof tools.specificSettings[url]["quality"] !== "undefined") {
+        context.querySelector(".quality [data-value='" + tools.specificSettings[url]["quality"] + "']").classList.add("active");
+    } else {
+        let quality = tools.getCookie("quality");
+        context.querySelector(".quality [data-value='" + quality + "']").classList.add("active");
+    }
 
-        tools.removeActives(context.querySelector(".codecAudio"));
-        if (typeof tools.specificSettings[id] !== "undefined" && typeof tools.specificSettings[id]["codec"] !== "undefined") {
-            context.querySelector(".codecAudio [data-value='" + tools.specificSettings[id]["codec"] + "']").classList.add("active");
-        } else {
-            let codec = tools.getCookie("codecAudio");
-            context.querySelector(".codecAudio [data-value='" + codec + "']").classList.add("active");
-        }
+    tools.removeActives(context.querySelector(".codecAudio"));
+    if (typeof tools.specificSettings[url] !== "undefined" && typeof tools.specificSettings[url]["codec"] !== "undefined") {
+        context.querySelector(".codecAudio [data-value='" + tools.specificSettings[url]["codec"] + "']").classList.add("active");
+    } else {
+        let codec = tools.getCookie("codecAudio");
+        context.querySelector(".codecAudio [data-value='" + codec + "']").classList.add("active");
+    }
 
-        contextElement = e.target;
-        context.classList.add("show");
+    contextElement = e.target;
+    context.classList.add("show");
 
-        context.style.left = e.pageX + "px";
-        context.style.top = e.pageY + "px";
+    context.style.left = e.pageX + "px";
+    context.style.top = e.pageY + "px";
 
-        let contextBounding = context.getBoundingClientRect();
-        if (contextBounding.right > document.body.clientWidth) {
-            context.style.left = contextBounding.left + (document.body.clientWidth - contextBounding.left - contextBounding.width - 10) + "px";
-        }
+    let contextBounding = context.getBoundingClientRect();
+    if (contextBounding.right > document.body.clientWidth) {
+        context.style.left = contextBounding.left + (document.body.clientWidth - contextBounding.left - contextBounding.width - 10) + "px";
+    }
 
-        this.classList.add("active");
-        tools.updateSelected();
-    } else showNotification(tools.languageDB[tools.selectedLang]["js"]["playlistContext"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+    this.classList.add("active");
+    tools.updateSelected();
 });
 
 // TODO: Comment
@@ -402,12 +406,12 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
 
     let actives = document.querySelectorAll(".listBox li.active");
     for (let active of actives) {
-        let id = active.getAttribute("data-id");
+        let url = active.getAttribute("data-url");
 
-        if (typeof tools.specificSettings[id] === "undefined")
-            tools.specificSettings[id] = {};
+        if (typeof tools.specificSettings[url] === "undefined")
+            tools.specificSettings[url] = {};
 
-        tools.specificSettings[id][className] = this.getAttribute("data-value");
+        tools.specificSettings[url][className] = this.getAttribute("data-value");
     }
 
     let activeOptions = navSelect.querySelectorAll(".active");
@@ -456,12 +460,12 @@ tools.bindEvent("click", "#contextMenu .location", function () {
         if (!actives.length) actives[actives.length] = contextElement;
 
         for (let active of actives) {
-            let id = active.getAttribute("data-id");
+            let url = active.getAttribute("data-url");
 
-            if (typeof tools.specificSettings[id] !== "object")
-                tools.specificSettings[id] = {};
+            if (typeof tools.specificSettings[url] !== "object")
+                tools.specificSettings[url] = {};
 
-            tools.specificSettings[id]["location"] = path;
+            tools.specificSettings[url]["location"] = path;
         }
 
         showNotification(tools.languageDB[tools.selectedLang]["js"]["specificLocation"]);

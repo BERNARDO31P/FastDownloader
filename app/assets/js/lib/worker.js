@@ -44,7 +44,7 @@ addEventListener('message', (event) => {
     switch (msg.type) {
         case "checkPremiumAndAdd":
             checkPremiumAndConvert(msg.url).then((url) => {
-                let data = getUrlData(url, msg.location, msg.id);
+                let data = getUrlData(url, msg.location);
                 postMessage({type: "checkPremiumAndAdd", data: data});
             });
             break;
@@ -237,7 +237,7 @@ async function getYoutubeMusic(url) {
 }
 
 // TODO: Comment
-function getUrlData(url, location, id) {
+function getUrlData(url, location) {
     let individualLocation = location;
     let individualQuality = globalQuality;
     let individualMode = globalMode;
@@ -246,21 +246,21 @@ function getUrlData(url, location, id) {
     let item = {};
 
     if (!url.includes("netflix")) {
-        if (typeof globalSettings[id] !== 'undefined') {
-            if (typeof globalSettings[id]["quality"] !== 'undefined')
-                individualQuality = globalSettings[id]["quality"];
+        if (typeof globalSettings[url] !== 'undefined') {
+            if (typeof globalSettings[url]["quality"] !== 'undefined')
+                individualQuality = globalSettings[url]["quality"];
 
-            if (typeof globalSettings[id]["mode"] !== 'undefined')
-                individualMode = globalSettings[id]["mode"];
+            if (typeof globalSettings[url]["mode"] !== 'undefined')
+                individualMode = globalSettings[url]["mode"];
 
-            if (typeof globalSettings[id]["codecAudio"] !== 'undefined')
-                individualCodecAudio = globalSettings[id]["codecAudio"];
+            if (typeof globalSettings[url]["codecAudio"] !== 'undefined')
+                individualCodecAudio = globalSettings[url]["codecAudio"];
 
-            if (typeof globalSettings[id]["codecVideo"] !== 'undefined')
-                individualCodecVideo = globalSettings[id]["codecVideo"];
+            if (typeof globalSettings[url]["codecVideo"] !== 'undefined')
+                individualCodecVideo = globalSettings[url]["codecVideo"];
 
-            if (typeof globalSettings[id]["location"] !== 'undefined')
-                individualLocation = globalSettings[id]["location"];
+            if (typeof globalSettings[url]["location"] !== 'undefined')
+                individualLocation = globalSettings[url]["location"];
         }
 
         let qualityInt = 0;

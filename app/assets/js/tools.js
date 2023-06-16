@@ -323,10 +323,7 @@ export function addUrlToList(url = "") {
             worker.postMessage({type: "checkPremium", url: found, mode: getCookie("mode")});
         }
 
-        let nextID = ul.querySelectorAll("li").length;
-
         li.textContent = url;
-        li.setAttribute("data-id", nextID.toString());
         li.setAttribute("data-url", url);
 
         ul.appendChild(li);
@@ -354,8 +351,8 @@ export function removeActiveListItems() {
     let actives = ul.querySelectorAll("li.active");
     if (actives) {
         for (let active of actives) {
-            let id = active.getAttribute("data-id");
-            delete specificSettings[id];
+            let url = active.getAttribute("data-url");
+            delete specificSettings[url];
 
             let index = urlList.indexOf(active.textContent);
             urlList.splice(index, 1);
@@ -614,6 +611,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         let found;
         childProcess.stdout.on("data", (data) => {
+            console.log(data);
+
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
                 progressSong.value = Number(found[1].replaceAll("%", "")) / 100;
@@ -622,6 +621,9 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         });
 
         childProcess.stderr.on("data", (data) => {
+            console.log("Error start:");
+            console.log(data);
+            console.log("Error end!");
             if (!aborted) {
                 data = data.toLowerCase();
 
@@ -633,7 +635,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             }
         });
 
-        childProcess.on("close", () => {
+        childProcess.on("close", (num) => {
+            console.log("Closing status code: " + num);
             if (!error) {
                 let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
                 let percentageDecimal = percentageTotal / 100;
