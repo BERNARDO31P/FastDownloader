@@ -32,6 +32,10 @@
   background: var(--body-background)
 }
 
+:focus-visible {
+  outline: none !important;
+}
+
 body, settings {
   position: absolute;
   margin: 0;
@@ -86,10 +90,6 @@ input {
 
   &:focus:not([readonly]) {
     box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
-  }
-
-  &:focus-visible {
-    outline: none;
   }
 
   &[readonly] {

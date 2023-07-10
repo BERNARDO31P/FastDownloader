@@ -19,8 +19,8 @@ if (process.platform === "win32") fileEnding = ".exe";
 else if (process.platform === "linux") fileEnding = "_linux";
 else if (process.platform === "darwin") fileEnding = "_macos";
 
-let __realDir = null;
-let hiddenElements = [], urlList = [], processedUrls = [];
+let __realDir = null, debug = console.debug;
+let hiddenElements = [], urlList = [], processedUrls = [], logs = [];
 
 export let specificSettings = {};
 
@@ -46,6 +46,14 @@ HTMLElement.prototype.animateCallback = function (keyframes, options, callback) 
     let animation = this.animate(keyframes, options);
 
     animation.onfinish = () => callback();
+}
+
+// TODO: Comment
+console.debug = (log) => {
+    debug(log);
+
+    // TODO: Add check if logs are enabled
+    logs.push(log);
 }
 
 /*
@@ -572,11 +580,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             return;
         }
 
-        const artist = ("artist" in songInfo && songInfo["artist"] !== null && mode === "audio");
-
-        let title = ((artist) ? songInfo["artist"] + " - " + songInfo["title"] : songInfo["title"]).replace(ytFilter, "").trim();
-        title = title.replace(/\s{2,}/g, " ");
-
+        const title = clearTitle(songInfo, mode);
         let config = [
             "--ffmpeg-location " + ffmpeg,
             "-o \"" + location + "/" + title + ".%(ext)s\"",
@@ -611,7 +615,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         let found;
         childProcess.stdout.on("data", (data) => {
-            console.log(data);
+            console.debug(data);
 
             found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
             if (found) {
@@ -621,9 +625,10 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         });
 
         childProcess.stderr.on("data", (data) => {
-            console.log("Error start:");
-            console.log(data);
-            console.log("Error end!");
+            console.debug("Error start:");
+            console.debug(data);
+            console.debug("Error end!");
+
             if (!aborted) {
                 data = data.toLowerCase();
 
@@ -636,7 +641,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         });
 
         childProcess.on("close", (num) => {
-            console.log("Closing status code: " + num);
+            console.debug("Closing status code: " + num);
             if (!error) {
                 let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
                 let percentageDecimal = percentageTotal / 100;
@@ -644,8 +649,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 progressTotal.value = percentageDecimal;
                 progressTotalInfo.textContent = percentageTotal + "%";
 
-                progressSong.value = 1;
-                progressSongInfo.textContent = "100%";
+                progressSong.value = 0;
+                progressSongInfo.textContent = "0%";
 
                 ipcRenderer.send("set_percentage", percentageDecimal);
 
@@ -1010,6 +1015,17 @@ export function setThemeIcon() {
 // TODO: Comment
 function getNumber(string) {
     return Number((string).match(/\d+/));
+}
+
+// TODO: Comment
+function clearTitle(songInfo, mode) {
+    const artist = ("artist" in songInfo && songInfo["artist"] !== null && mode === "audio");
+
+    let title = ((artist) ? songInfo["artist"] + " - " + songInfo["title"] : songInfo["title"]).replace(ytFilter, "").trim();
+    title = title.replace(/\s{2,}/g, " ");
+    title = title.replace(/\(\)/g, "");
+
+    return title.trim();
 }
 
 // TODO: Comment
