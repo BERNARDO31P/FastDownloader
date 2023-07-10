@@ -202,5 +202,209 @@
       "on": "On",
       "off": "Off"
     }
+  },
+  "pt": {
+    "index": {
+      "update": "Novos recursos!",
+      "changelog": "Ver todas as diferenças de versão",
+      "close": "Fechar",
+      "restart": "Reiniciar"
+    },
+    "tray": {
+      "hide": "Esconder",
+      "addUrl": "Adicionar URL",
+      "download": "Baixar",
+      "close": "Fechar",
+      "maximize": "Maximizar",
+      "abort": "Abortar",
+      "location": "Localização",
+      "clear": "Limpar lista"
+    },
+    "main": {
+      "button": {
+        "add": "Adicionar",
+        "remove": "Remover",
+        "browse": "Navegar",
+        "download": "Baixar",
+        "abort": "Abortar",
+        "clear": "Limpar lista",
+        "copy": "Copiar"
+      },
+      "label": {
+        "progressTotal": "Progresso total",
+        "progress": "Progresso",
+        "storageLocation": "Localização de armazenamento",
+        "selected": "selecionado"
+      }
+    },
+    "settings": {
+      "title": "Configurações",
+      "label": {
+        "saveSettings": "Salvar configurações",
+        "closeToTray": "Fechar para a bandeja",
+        "autostart": "Iniciar automaticamente no arranque do sistema",
+        "downloadMode": "Modo de download",
+        "quality": "Qualidade",
+        "codec": "Codec",
+        "language": "Língua",
+        "artistName": "Salvar o nome do artista no título da música",
+        "clearList": "Limpar a lista de URLs após um download",
+        "enablePremium": "Ativar YouTube Premium para YouTube Music",
+        "needPremium": "(Você precisa de uma assinatura do YouTube Music Premium)",
+        "browser": "Selecione o navegador no qual você está logado"
+      },
+      "button": {
+        "nothingSelected": "Nada selecionado"
+      },
+      "option": {
+        "videoAudio": "Vídeo e áudio",
+        "audioOnly": "Somente áudio",
+        "best": "Melhor",
+        "medium": "Médio",
+        "bad": "Ruim"
+      }
+    },
+    "js": {
+      "noURL": "Você não forneceu um link",
+      "noClipboard": "Nada está no clipboard",
+      "noValidURL": "Você não forneceu um link válido",
+      "urlInList": "Este link já está na lista",
+      "urlAdded": "Link adicionado à lista",
+      "urlsAdded": "Links adicionados à lista",
+      "noURLs": "Você não forneceu nenhum link",
+      "downloadMode": "Você não selecionou um modo de download nas configurações",
+      "codec": "Você não selecionou um codec nas configurações",
+      "quality": "Você não selecionou uma qualidade nas configurações",
+      "storageLocation": "Você não forneceu um local de armazenamento",
+      "specificLocation": "Local de armazenamento individual foi definido",
+      "success": "Sucesso",
+      "error": "Erro",
+      "permission": "Por favor, feche o navegador, caso contrário, o acesso aos cookies não será possível",
+      "songsDownloaded": "Todas as músicas foram baixadas com sucesso",
+      "downloadAborted": "O download foi abortado com sucesso",
+      "newVersion": "Versão XXX está disponível e está sendo baixada..",
+      "updateDownloaded": "Atualização baixada. Reinicie o aplicativo agora para aplicar as alterações.",
+      "settingsSaved": "As configurações agora serão salvas",
+      "settingsAborted": "As configurações não serão mais salvas",
+      "closeToTrayEnabled": "O aplicativo agora será minimizado para a bandeja",
+      "closeToTrayDisabled": "O aplicativo agora será fechado completamente",
+      "autostartEnabled": "O aplicativo será iniciado automaticamente no arranque do sistema",
+      "autostartDisabled": "O aplicativo não será mais iniciado automaticamente no arranque do sistema",
+      "playlistContext": "Sem opções de configuração para playlists",
+      "artistNameEnabled": "O nome do artista agora será salvo no título da música",
+      "artistNameDisabled": "O nome do artista não será mais salvo no título da música",
+      "clearListEnabled": "A lista de URLs será limpa após um download",
+      "clearListDisabled": "A lista de URLs não será mais limpa após um download",
+      "premiumEnabled": "O download premium foi ativado",
+      "premiumDisabled": "O download premium foi desativado",
+      "noBrowser": "Você ativou o download premium, mas não selecionou um navegador",
+      "libUpdate": "As bibliotecas estão sendo verificadas para atualizações",
+      "libUptoDate": "Todas as bibliotecas estão atualizadas",
+      "libUpdated": "Bibliotecas foram atualizadas com sucesso",
+      "on": "Ligado",
+      "off": "Desligado"
+    }
+  },
+  "it": {
+    "index": {
+      "update": "Nuove funzioni!",
+      "changelog": "Visualizza tutte le differenze di versione",
+      "close": "Chiudi",
+      "restart": "Riavvia"
+    },
+    "tray": {
+      "hide": "Nascondi",
+      "addUrl": "Aggiungi URL",
+      "download": "Scarica",
+      "close": "Chiudi",
+      "maximize": "Massimizza",
+      "abort": "Annulla",
+      "location": "Posizione",
+      "clear": "Cancella lista"
+    },
+    "main": {
+      "button": {
+        "add": "Aggiungi",
+        "remove": "Rimuovi",
+        "browse": "Sfoglia",
+        "download": "Scarica",
+        "abort": "Annulla",
+        "clear": "Cancella lista",
+        "copy": "Copia"
+      },
+      "label": {
+        "progressTotal": "Progresso totale",
+        "progress": "Progresso",
+        "storageLocation": "Posizione di archiviazione",
+        "selected": "selezionato"
+      }
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "label": {
+        "saveSettings": "Salva impostazioni",
+        "closeToTray": "Chiudi a tray",
+        "autostart": "Avvio automatico all'avvio del sistema",
+        "downloadMode": "Modalità di download",
+        "quality": "Qualità",
+        "codec": "Codec",
+        "language": "Lingua",
+        "artistName": "Salva il nome dell'artista nel titolo della canzone",
+        "clearList": "Svuota la lista degli URL dopo un download",
+        "enablePremium": "Abilita YouTube Premium per YouTube Music",
+        "needPremium": "(Hai bisogno di un abbonamento a YouTube Music Premium)",
+        "browser": "Seleziona il browser in cui hai effettuato l'accesso"
+      },
+      "button": {
+        "nothingSelected": "Niente selezionato"
+      },
+      "option": {
+        "videoAudio": "Video e audio",
+        "audioOnly": "Solo audio",
+        "best": "Migliore",
+        "medium": "Medio",
+        "bad": "Scarso"
+      }
+    },
+    "js": {
+      "noURL": "Non hai fornito un link",
+      "noClipboard": "Niente è presente negli appunti",
+      "noValidURL": "Non hai fornito un link valido",
+      "urlInList": "Questo link è già presente nella lista",
+      "urlAdded": "Link aggiunto alla lista",
+      "urlsAdded": "Link aggiunti alla lista",
+      "noURLs": "Non hai fornito nessun link",
+      "downloadMode": "Non hai selezionato una modalità di download nelle impostazioni",
+      "codec": "Non hai selezionato un codec nelle impostazioni",
+      "quality": "Non hai selezionato una qualità nelle impostazioni",
+      "storageLocation": "Non hai fornito una posizione di archiviazione",
+      "specificLocation": "Posizione di archiviazione individuale impostata",
+      "success": "Successo",
+      "error": "Errore",
+      "permission": "Si prega di chiudere il browser, altrimenti non sarà possibile accedere ai cookie",
+      "songsDownloaded": "Tutte le canzoni sono state scaricate con successo",
+      "downloadAborted": "Il download è stato interrotto con successo",
+      "newVersion": "La versione XXX è disponibile e sta per essere scaricata..",
+      "updateDownloaded": "Aggiornamento scaricato. Riavvia l'applicazione ora per applicare le modifiche.",
+      "settingsSaved": "Le impostazioni saranno salvate d'ora in poi",
+      "settingsAborted": "Le impostazioni non saranno più salvate",
+      "closeToTrayEnabled": "L'applicazione ora verrà minimizzata nel tray",
+      "closeToTrayDisabled": "L'applicazione ora verrà completamente chiusa",
+      "autostartEnabled": "L'applicazione verrà avviata automaticamente all'avvio del sistema",
+      "autostartDisabled": "L'applicazione non verrà più avviata automaticamente all'avvio del sistema",
+      "playlistContext": "Nessuna opzione di configurazione per le playlist",
+      "artistNameEnabled": "Il nome dell'artista verrà ora salvato nel titolo della canzone",
+      "artistNameDisabled": "Il nome dell'artista non verrà più salvato nel titolo della canzone",
+      "clearListEnabled": "La lista degli URL verrà svuotata dopo un download",
+      "clearListDisabled": "La lista degli URL non verrà più svuotata dopo un download",
+      "premiumEnabled": "Il download premium è stato attivato",
+      "premiumDisabled": "Il download premium è stato disattivato",
+      "noBrowser": "Hai attivato il download premium, ma non hai selezionato un browser",
+      "libUpdate": "Le librerie stanno controllando gli aggiornamenti",
+      "libUptoDate": "Tutte le librerie sono aggiornate",
+      "libUpdated": "Le librerie sono state aggiornate con successo",
+      "on": "Acceso",
+      "off": "Spento"
+    }
   }
 }
