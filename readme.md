@@ -65,6 +65,11 @@ Main features:
 - Clear list
   - Functionality to clear the URL list after a download
   - Only if download wasn't aborted
+- Language
+  - German
+  - English
+  - Portuguese
+  - Italian
 
 ## Screenshots
 **Main window - light theme**
