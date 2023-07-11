@@ -61,7 +61,7 @@ Main features:
   - YouTube Music URLs only
 - Browser selection
   - Allows the Fast Downloader to use your YouTube Premium cookie
-  - Don't worry, every application on your system has the permission to read rowser cookies
+  - Don't worry, every application on your system has the permission to read browser cookies
 - Clear list
   - Functionality to clear the URL list after a download
   - Only if download wasn't aborted
