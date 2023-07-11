@@ -383,7 +383,7 @@ export function removeActiveListItems() {
  *  time: (Integer) Definiert wie lange die Benachrichtigung angezeigt werden soll
  *
  * Animiert eine Benachrichtigung in die Anzeige
- * Wenn der Player angezeigt wird, wird die Benachrichtigung drüber angezeigt, sonst ganz unten
+ * Wenn der Player angezeigt wird, wird die Benachrichtigung darüber angezeigt, sonst ganz unten
  */
 export function showNotification(message, type = "Info", time = 3000) {
     if (document.hidden) {
