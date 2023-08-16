@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
@@ -28,15 +28,15 @@
   "devDependencies": {
     "@electron/asar": "^3.2.4",
     "@electron/osx-sign": "^1.0.4",
-    "electron": "^25.2.0",
-    "electron-builder": "^24.4.0"
+    "electron": "^26.0.0",
+    "electron-builder": "^24.6.3"
   },
   "dependencies": {
     "auto-launch": "^5.0.6",
-    "electron-updater": "^6.1.1",
+    "electron-updater": "^6.1.4",
     "fastest-levenshtein": "^1.0.16",
     "node-youtube-music": "^0.8.3",
-    "number-precision": "^1.6.0",
+    "precisioner": "^0.3.7",
     "terminate": "^2.6.1",
     "youtube-sr": "^4.3.4",
     "ytpl": "^2.3.0"

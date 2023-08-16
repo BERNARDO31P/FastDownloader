@@ -3,7 +3,6 @@ import {ytFilter} from "./lib/filter.js";
 
 const terminate = require("terminate");
 const path = require("path");
-const NP = require("number-precision");
 const ytpl = require("ytpl");
 const {ipcRenderer, clipboard} = require("electron");
 const {exec, spawnSync} = require("child_process");
@@ -27,7 +26,8 @@ export let specificSettings = {};
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
-export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null, lastLi = null;
+export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null,
+    lastLi = null;
 export let languageDB = {};
 
 export let ytDl = "";
@@ -259,7 +259,7 @@ export function getAllData() {
 
 // TODO: Comment
 async function download(data) {
-    let percentage = Math.floor(100 / data.length * 100) / 100;
+    let percentage = Number((Math.floor(100 / data.length * 100) / 100).toFixed(2));
     downloading = true;
     resolve = null;
 
@@ -284,12 +284,26 @@ async function download(data) {
             resolve = await downloadNFURL(
             );
         }
-        if (resolve === "success") i++;
-        else if (resolve === "permission") {
-            showNotification(languageDB[selectedLang]["js"]["permission"], languageDB[selectedLang]["js"]["error"], 10000);
-            await sleep(10000);
-        } else if (resolve === "network") {
-        } else break;
+
+        let exitLoop = false;
+        switch (resolve) {
+            case "success":
+                i++;
+                break;
+            case "permission":
+                showNotification(languageDB[selectedLang]["js"]["permission"], languageDB[selectedLang]["js"]["error"], 10000);
+                await sleep(10000);
+                break;
+            case "network":
+                showNotification(languageDB[selectedLang]["js"]["network"], languageDB[selectedLang]["js"]["error"], 10000);
+                await sleep(10000);
+            case "drive":
+                await sleep(1000);
+                break;
+            default:
+                exitLoop = true;
+        }
+        if (exitLoop) break;
     }
 }
 
@@ -571,7 +585,10 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressSongInfo = document.querySelector(".progress-song .info p");
         let songInfo = {};
         try {
-            const output = spawnSync(ytDl.replaceAll("/", path.sep) + " --dump-json " + url, {shell: true, maxBuffer: 10000000}).stdout.toString();
+            const output = spawnSync(ytDl.replaceAll("/", path.sep) + " --dump-json " + url, {
+                shell: true,
+                maxBuffer: 10000000
+            }).stdout.toString();
             songInfo = JSON.parse(output);
         } catch (error) {
             error = error.toString().toLowerCase();
@@ -635,15 +652,17 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 if (!data.includes("winerror 10054"))
                     error = true;
 
+                if (data.includes("winerror 3")) resolve("drive");
                 if (data.includes("permission")) resolve("permission");
                 if (data.includes("getaddrinfo failed")) resolve("network");
+                if (data.includes("timed out")) resolve("network");
             }
         });
 
         childProcess.on("close", (num) => {
             console.debug("Closing status code: " + num);
             if (!error) {
-                let percentageTotal = NP.round(progressTotal.value * 100 + percentage, 2);
+                let percentageTotal = Number((progressTotal.value * 100).toFixed(2)) + percentage;
                 let percentageDecimal = percentageTotal / 100;
 
                 progressTotal.value = percentageDecimal;

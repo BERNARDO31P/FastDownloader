@@ -1,6 +1,6 @@
 # Fast Downloader ![Icon](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/icons/32x32.png)
 
-This is an intelligent and fast downloader for all [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) written in Electron. 
+This is an intelligent, free and fast downloader for all [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) written in Electron. 
 
 It was tested on:
 - Windows 10/11
@@ -70,6 +70,10 @@ Main features:
   - English
   - Portuguese
   - Italian
+  - French
+  - Chinese (simplified)
+
+If there are any mistakes in the translations, please let me know.
 
 ## Screenshots
 **Main window - light theme**
@@ -82,9 +86,8 @@ Main features:
 ![Main window - dark theme](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/screenshot/main_dark.png)
 
 ## Libraries
-- [easy-auto-launch](https://www.npmjs.com/package/easy-auto-launch) -> ^6.0.2
-- [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.0
-- [number-precision](https://www.npmjs.com/package/number-precision) -> ^1.6.0
+- [auto-launch](https://www.npmjs.com/package/auto-launch) -> ^5.0.6
+- [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.4
 - [ytpl](https://www.npmjs.com/package/ytpl) -> ^2.3.0
 - [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
