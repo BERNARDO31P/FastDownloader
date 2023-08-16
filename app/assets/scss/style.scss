@@ -213,6 +213,8 @@ settings {
 }
 
 #link-count {
+  pointer-events: none;
+
   font-size: 13px;
   opacity: 0;
 }

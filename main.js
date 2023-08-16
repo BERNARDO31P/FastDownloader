@@ -238,29 +238,49 @@ function addURL() {
     });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     if (process.platform === "win32")
         app.setAppUserModelId("fm.bernardo.fastDownloader");
 
-    autoUpdater.checkForUpdatesAndNotify().then((result) => {
-        if (result && typeof result.downloadPromise !== "undefined") {
-            win.webContents.send("update_available", result.updateInfo.version);
+    createWindow();
 
-            autoUpdater.once("update-downloaded", () => {
-                win.webContents.send("update_downloaded");
+    const timestamp = await new Promise((resolve) => {
+        win.webContents
+            .executeJavaScript('localStorage.getItem("lastCheck");', true)
+            .then(result => {
+                resolve(result);
             });
-        } else {
-            let updateInterval = null;
-
-            ipcMain.once("app_upto_date", () => {
-                clearInterval(updateInterval);
-            });
-
-            updateInterval = setInterval(() => {
-                win.webContents.send("app_upto_date");
-            }, 50);
-        }
     });
 
-    createWindow();
+    const currentTime = Date.now() / 1000;
+
+    if (currentTime - timestamp > 86400) {
+        autoUpdater.checkForUpdatesAndNotify().then(async (result) => {
+            await new Promise((resolve) => {
+                win.webContents
+                    .executeJavaScript('localStorage.setItem("lastCheck", ' + currentTime + ');', true)
+                    .then(result => {
+                        resolve(result);
+                    });
+            });
+
+            if (result && typeof result.downloadPromise !== "undefined") {
+                win.webContents.send("update_available", result.updateInfo.version);
+
+                autoUpdater.once("update-downloaded", () => {
+                    win.webContents.send("update_downloaded");
+                });
+            } else {
+                let updateInterval = null;
+
+                ipcMain.once("app_upto_date", () => {
+                    clearInterval(updateInterval);
+                });
+
+                updateInterval = setInterval(() => {
+                    win.webContents.send("app_upto_date");
+                }, 50);
+            }
+        });
+    }
 });
