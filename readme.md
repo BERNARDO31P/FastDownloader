@@ -10,7 +10,7 @@ It was tested on:
 
 If your system isn't directly supported, try the `AppImage`.
 
-Main features:
+## Features
 - Download multiple songs and playlists at once
 - YouTube Premium integration
   - You need a YouTube Premium subscription
