@@ -24,7 +24,7 @@
     "video"
   ],
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "devDependencies": {
     "@electron/asar": "^3.2.4",
     "@electron/osx-sign": "^1.0.4",
