@@ -649,7 +649,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             if (!aborted) {
                 data = data.toLowerCase();
 
-                if (!data.includes("winerror 10054"))
+                if (!data.includes("winerror 10054") && !data.includes("aes-cbc"))
                     error = true;
 
                 if (data.includes("winerror 3")) resolve("drive");
