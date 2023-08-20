@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
@@ -70,6 +70,10 @@
         {
           "from": "resources/icons/256x256.png",
           "to": "icons/256x256.png"
+        },
+        {
+          "from": "resources/icons/64x64.png",
+          "to": "icons/64x64.png"
         }
       ]
     },
@@ -100,6 +104,10 @@
         {
           "from": "resources/icons/256x256.png",
           "to": "icons/256x256.png"
+        },
+        {
+          "from": "resources/icons/64x64.png",
+          "to": "icons/64x64.png"
         }
       ]
     }

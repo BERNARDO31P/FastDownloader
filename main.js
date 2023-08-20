@@ -13,10 +13,23 @@ const {
 const {autoUpdater} = require("electron-updater");
 const AutoLaunch = require("auto-launch");
 const path = require("path");
+const fs = require("fs");
 
 let autoLauncher = null;
 
-__dirname = __dirname.replaceAll("/resources/app.asar".replaceAll("/", path.sep), "");
+const replacement = new RegExp([
+    path.sep + "resources" + path.sep + "app.asar",
+    path.sep + "app.asar",
+    path.sep + "resources"
+].join("|"), "gi");
+__dirname = __dirname.replaceAll(replacement, "");
+
+let iconDir = null;
+if (fs.existsSync(__dirname + path.sep + "resources")) {
+    iconDir = __dirname + path.sep + "resources" + path.sep + "icons";
+} else if (fs.existsSync(__dirname + path.sep + "icons")) {
+    iconDir = __dirname + path.sep + "icons";
+}
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
 let lang = null, hidden = false;
@@ -27,7 +40,7 @@ function createWindow() {
     const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
 
     win = new BrowserWindow({
-        icon: __dirname + "/resources/icons/256x256.png".replaceAll("/", path.sep),
+        icon: (iconDir) ? path.join(iconDir, "256x256.png") : null,
         minWidth: 900,
         minHeight: 580,
         x: currentScreen.workArea.x,
@@ -42,8 +55,8 @@ function createWindow() {
     });
 
     win.center();
-    win.loadFile("app/index.html".replaceAll("/", path.sep)).then(() => {
-        trayIcon = new Tray(__dirname + "/resources/icons/256x256.png".replaceAll("/", path.sep));
+    win.loadFile("app" + path.sep + "index.html").then(() => {
+        trayIcon = new Tray((iconDir) ? path.join(iconDir, "256x256.png") : null);
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
@@ -178,7 +191,7 @@ function showNotification(title, message) {
     new Notification({
         title: title,
         body: message,
-        icon: __dirname + "/app/assets/ico/icon_64x64.png".replaceAll("/", path.sep)
+        icon: (iconDir) ? path.join(iconDir, "64x64.png") : null
     }).show();
 }
 
