@@ -312,13 +312,8 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])", () => {
     tools.setAborted(true);
 
-    if (tools.childProcess && tools.childProcess.pid) {
-        try {
-            tools.childProcess.kill("SIGKILL");
-            terminate(tools.childProcess.pid);
-        } catch (e) {
-        }
-    }
+    if (tools.childProcess && tools.childProcess.pid)
+        terminate(tools.childProcess.pid);
 
     tools.setEnabled();
 });

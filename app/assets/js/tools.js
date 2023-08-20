@@ -146,8 +146,8 @@ export function setRealDir(dirname) {
 
 // TODO: Comment
 function updateBinaryLocations() {
-    ytDl = "\"" + __realDir + "/yt-dlp" + fileEnding + "\"";
-    ffmpeg = "\"" + __realDir + "/ffmpeg" + fileEnding + "\"";
+    ytDl = "\"" + __realDir + path.sep + "yt-dlp" + fileEnding + "\"";
+    ffmpeg = "\"" + __realDir + path.sep + "ffmpeg" + fileEnding + "\"";
 }
 
 /*
@@ -585,7 +585,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressSongInfo = document.querySelector(".progress-song .info p");
         let songInfo = {};
         try {
-            const output = spawnSync(ytDl.replaceAll("/", path.sep) + " --dump-json " + url, {
+            const output = spawnSync(ytDl + " --dump-json " + url, {
                 shell: true,
                 maxBuffer: 10000000
             }).stdout.toString();
@@ -600,7 +600,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const title = clearTitle(songInfo, mode);
         let config = [
             "--ffmpeg-location " + ffmpeg,
-            "-o \"" + location + "/" + title + ".%(ext)s\"",
+            "-o \"" + location + path.sep + title + ".%(ext)s\"",
         ];
 
         if (mode === "audio") {
@@ -627,7 +627,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             }
         }
 
-        let command = (ytDl + " " + config.join(" ")).replaceAll("/", path.sep) + " " + url;
+        let command = (ytDl + " " + config.join(" ")) + " " + url;
         childProcess = exec(command);
 
         let found;
