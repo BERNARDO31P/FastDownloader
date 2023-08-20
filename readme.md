@@ -27,6 +27,7 @@ If your system isn't directly supported, try the `AppImage`.
   - AppImage
   - Ubuntu/Debian (Beta)
   - CentOS/RedHat (Beta)
+  - ArchLinux ([AUR](https://aur.archlinux.org/packages/fastdownloader-bin))
 - Download from [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
 
 ## Settings
