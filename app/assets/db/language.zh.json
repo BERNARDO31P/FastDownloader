@@ -1,0 +1,103 @@
+{
+  "index": {
+    "update": "新功能！",
+    "changelog": "查看完整更新日志",
+    "close": "关闭",
+    "restart": "重新启动"
+  },
+  "tray": {
+    "hide": "隐藏",
+    "addUrl": "添加网址",
+    "download": "下载",
+    "close": "关闭",
+    "maximize": "最大化",
+    "abort": "终止",
+    "location": "保存位置",
+    "clear": "清除列表"
+  },
+  "main": {
+    "button": {
+      "add": "添加",
+      "remove": "移除",
+      "browse": "浏览",
+      "download": "下载",
+      "abort": "终止",
+      "clear": "清除列表",
+      "copy": "复制"
+    },
+    "label": {
+      "progressTotal": "总进度",
+      "progress": "进度",
+      "storageLocation": "存储位置",
+      "selected": "已选择"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "label": {
+      "saveSettings": "保存设置",
+      "closeToTray": "关闭到托盘",
+      "autostart": "系统启动时自动开始",
+      "downloadMode": "下载模式",
+      "quality": "质量",
+      "codec": "编码",
+      "language": "语言",
+      "artistName": "在歌曲标题中保存艺术家名字",
+      "clearList": "下载后清除URL列表",
+      "enablePremium": "为YouTube音乐启用YouTube高级版",
+      "needPremium": "(您需要YouTube音乐的高级订阅)",
+      "browser": "选择您已登录的浏览器"
+    },
+    "button": {
+      "nothingSelected": "未选择任何内容"
+    },
+    "option": {
+      "videoAudio": "视频和音频",
+      "audioOnly": "仅音频",
+      "best": "最好",
+      "medium": "中等",
+      "bad": "较差"
+    }
+  },
+  "js": {
+    "noURL": "您没有输入网址",
+    "noClipboard": "您的剪贴板中没有内容",
+    "noValidURL": "您输入的不是有效的网址",
+    "urlInList": "该网址已在列表中",
+    "urlAdded": "网址已添加到列表",
+    "urlsAdded": "网址已被添加到列表",
+    "noURLs": "您没有输入任何网址",
+    "downloadMode": "您在设置中没有选择下载模式",
+    "codec": "您在设置中没有选择编码",
+    "quality": "您在设置中没有选择质量",
+    "storageLocation": "您没有选择存储位置",
+    "specificLocation": "已设置特定位置",
+    "success": "成功",
+    "error": "错误",
+    "permission": "请关闭浏览器，否则无法获取cookie的访问权限",
+    "network": "您当前未连接到互联网",
+    "songsDownloaded": "所有歌曲已成功下载",
+    "downloadAborted": "下载已成功终止",
+    "newVersion": "版本XXX可用并正在下载..",
+    "updateDownloaded": "更新已下载。现在重启应用程序以应用更改。",
+    "settingsSaved": "设置已保存",
+    "settingsAborted": "设置未保存",
+    "closeToTrayEnabled": "应用程序现在关闭到托盘",
+    "closeToTrayDisabled": "应用程序现在完全关闭",
+    "autostartEnabled": "应用程序现在随系统启动",
+    "autostartDisabled": "应用程序不再随系统启动",
+    "playlistContext": "播放列表没有选项",
+    "artistNameEnabled": "艺术家名字现在会保存在歌曲标题中",
+    "artistNameDisabled": "艺术家名字将不在歌曲标题中保存",
+    "clearListEnabled": "下载后现在会清除URL列表",
+    "clearListDisabled": "下载后不会清除URL列表",
+    "premiumEnabled": "已启用高级下载",
+    "premiumDisabled": "已禁用高级下载",
+    "noBrowser": "您已启用高级下载，但没有选择浏览器",
+    "libUpdate": "正在检查库的更新",
+    "libUptoDate": "库是最新的",
+    "libUpdated": "所有库已成功更新",
+    "on": "开",
+    "off": "关"
+  }
+}

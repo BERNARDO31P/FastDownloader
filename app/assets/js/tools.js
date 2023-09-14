@@ -26,12 +26,11 @@ export let specificSettings = {};
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
-export let downloading = false, resolve = null, aborted = false, childProcess = null, selectedLang = null,
-    lastLi = null;
+export let downloading = false, resolve = null, aborted = false, childProcess = null, lastLi = null;
 export let languageDB = {};
 
-export let ytDl = "";
-let ffmpeg = "";
+let ytDl = "", ffmpeg = "";
+let selectedLang = null;
 
 let extractors = [];
 let extendedExtractors = [
@@ -107,10 +106,10 @@ worker.addEventListener("message", (event) => {
 
                 switch (resolve) {
                     case "aborted":
-                        showNotification(languageDB[selectedLang]["js"]["downloadAborted"], languageDB[selectedLang]["js"]["error"]);
+                        showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
                         break;
                     case "success":
-                        showNotification(languageDB[selectedLang]["js"]["songsDownloaded"], languageDB[selectedLang]["js"]["success"]);
+                        showNotification(languageDB["js"]["songsDownloaded"], languageDB["js"]["success"]);
 
                         if (getCookie("clearList")) clearList();
                         break;
@@ -121,7 +120,7 @@ worker.addEventListener("message", (event) => {
             break;
         case "checkPremium":
             if (urlList.indexOf(msg.url) !== -1) {
-                showNotification(languageDB[selectedLang]["js"]["urlInList"], languageDB[selectedLang]["js"]["error"]);
+                showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
                 lastLi.remove();
 
                 return;
@@ -292,11 +291,11 @@ async function download(data) {
                 i++;
                 break;
             case "permission":
-                showNotification(languageDB[selectedLang]["js"]["permission"], languageDB[selectedLang]["js"]["error"], 10000);
+                showNotification(languageDB["js"]["permission"], languageDB["js"]["error"], 10000);
                 await sleep(10000);
                 break;
             case "network":
-                showNotification(languageDB[selectedLang]["js"]["network"], languageDB[selectedLang]["js"]["error"], 10000);
+                showNotification(languageDB["js"]["network"], languageDB["js"]["error"], 10000);
                 await sleep(10000);
                 break;
             case "drive":
@@ -311,7 +310,7 @@ async function download(data) {
 
 export function addUrlToList(url = "") {
     if (!url) {
-        showNotification(languageDB[selectedLang]["js"]["noURL"], languageDB[selectedLang]["js"]["error"]);
+        showNotification(languageDB["js"]["noURL"], languageDB["js"]["error"]);
         return false;
     }
 
@@ -323,18 +322,18 @@ export function addUrlToList(url = "") {
         try {
             url = new URL(value.trim());
         } catch (e) {
-            showNotification(languageDB[selectedLang]["js"]["noValidURL"], languageDB[selectedLang]["js"]["error"]);
+            showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
             return false;
         }
 
         let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
         if (!extractors.includes(host) && !match(host, extractorFilter)) {
-            showNotification(languageDB[selectedLang]["js"]["noValidURL"], languageDB[selectedLang]["js"]["error"]);
+            showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
             return false;
         }
 
         if (urlList.indexOf(url.toString()) !== -1) {
-            showNotification(languageDB[selectedLang]["js"]["urlInList"], languageDB[selectedLang]["js"]["error"]);
+            showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
             return false;
         }
 
@@ -361,9 +360,9 @@ export function addUrlToList(url = "") {
 
     showNotification(
         (values.length === 1)
-            ? languageDB[selectedLang]["js"]["urlAdded"]
-            : languageDB[selectedLang]["js"]["urlsAdded"],
-        languageDB[selectedLang]["js"]["success"]
+            ? languageDB["js"]["urlAdded"]
+            : languageDB["js"]["urlsAdded"],
+        languageDB["js"]["success"]
     );
 
     return true;
@@ -631,7 +630,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             if (premium["browser"] !== "") {
                 config.push("--cookies-from-browser " + premium["browser"]);
             } else {
-                showNotification(languageDB[selectedLang]["js"]["noBrowser"]);
+                showNotification(languageDB["js"]["noBrowser"]);
                 resolve(null);
             }
         }
@@ -876,33 +875,33 @@ export function loadSettings() {
     let saving = document.querySelector("settings .save");
     if (save) {
         saving.querySelector("#save").classList.add("active");
-        saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+        saving.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
-        saving.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+        saving.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     let closingToTray = document.querySelector("settings .closeToTray");
     if (closeToTray) {
         closingToTray.querySelector("#closeToTray").classList.add("active");
-        closingToTray.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+        closingToTray.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
-        closingToTray.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+        closingToTray.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     let autostarting = document.querySelector("settings .autostart");
     if (autostart) {
         autostarting.querySelector("#autostart").classList.add("active");
-        autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+        autostarting.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
-        autostarting.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+        autostarting.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     let clearListing = document.querySelector("settings .clearList");
     if (clearList) {
         clearListing.querySelector("#clearList").classList.add("active");
-        clearListing.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+        clearListing.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
-        clearListing.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+        clearListing.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     let premiumCheck = document.querySelector("settings .premium");
@@ -910,14 +909,14 @@ export function loadSettings() {
 
     if (premium && typeof premium != "undefined" && (premium["check"] ?? false)) {
         premiumCheck.querySelector("#premium").classList.add("active");
-        premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["on"];
+        premiumCheck.querySelector("span").textContent = languageDB["js"]["on"];
 
         if (typeof premium["browser"] != "undefined" && premium["browser"] != null) {
             option = premiumBrowser.querySelector("[data-value='" + premium["browser"] + "']");
             selectOption(option);
         }
     } else {
-        premiumCheck.querySelector("span").textContent = languageDB[selectedLang]["js"]["off"];
+        premiumCheck.querySelector("span").textContent = languageDB["js"]["off"];
     }
 }
 
@@ -937,29 +936,36 @@ export async function showChangelog(update = false) {
     info.classList.add("show");
 }
 
+async function loadLanguage(language) {
+    return fetch("assets/db/language." + language + ".json").then(response => {
+        return response.json();
+    }).then(jsonData => languageDB = jsonData);
+}
+
 // TODO: Comment
 export async function initialize() {
-    if (!Object.keys(languageDB).length) {
-        await fetch("assets/db/language.json").then(response => {
-            return response.json();
-        }).then(jsonData => languageDB = jsonData);
-    }
-
     let extractors = getCookie("extractors");
     if (extractors && extractors.length) loadExtractors(extractors);
 
     let cookie = getCookie("lang");
-    if (cookie) selectedLang = cookie;
-    else {
+    if (cookie) {
+        selectedLang = cookie;
+
+        await loadLanguage(selectedLang);
+    } else {
         for (let language of navigator.languages) {
-            if (typeof languageDB[language] !== "undefined")
-                selectedLang = language;
+            await loadLanguage(language)
+                .then(() => selectedLang = language)
+                .catch(() => null);
         }
-        if (!selectedLang) selectedLang = "en";
+        if (!selectedLang) {
+            selectedLang = "en";
+            await loadLanguage(selectedLang);
+        }
         setCookie("lang", selectedLang);
     }
 
-    document.body.innerHTML = mustache.render(document.body.innerHTML, languageDB[selectedLang]);
+    document.body.innerHTML = mustache.render(document.body.innerHTML, languageDB);
 
     let main = document.getElementsByTagName("main")[0];
     await loadPage("assets/template/main.html", main, () => {
@@ -976,7 +982,7 @@ export async function initialize() {
 export function updateYtDl() {
     let update = true;
 
-    showNotification(languageDB[selectedLang]["js"]["libUpdate"]);
+    showNotification(languageDB["js"]["libUpdate"]);
     setDisabled();
 
     childProcess = exec(ytDl + " -U");
@@ -992,10 +998,10 @@ export function updateYtDl() {
         if (update || !extractors || !extractors.length) {
             setExtractors().then(() => {
                 setEnabled();
-                showNotification(languageDB[selectedLang]["js"]["libUpdated"]);
+                showNotification(languageDB["js"]["libUpdated"]);
             });
         } else {
-            showNotification(languageDB[selectedLang]["js"]["libUptoDate"]);
+            showNotification(languageDB["js"]["libUptoDate"]);
             setEnabled();
         }
     });
@@ -1022,7 +1028,7 @@ export async function loadPage(pageURL, element, callback = () => {
             script.parentElement.removeChild(script);
         }
 
-        element.innerHTML += mustache.render(template.innerHTML, languageDB[selectedLang]);
+        element.innerHTML += mustache.render(template.innerHTML, languageDB);
         callback();
     });
 }

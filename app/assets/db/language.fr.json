@@ -1,0 +1,103 @@
+{
+  "index": {
+    "update": "Nouvelles fonctionnalités !",
+    "changelog": "Voir le journal complet des modifications",
+    "close": "Fermer",
+    "restart": "Redémarrer"
+  },
+  "tray": {
+    "hide": "Masquer",
+    "addUrl": "Ajouter une URL",
+    "download": "Télécharger",
+    "close": "Fermer",
+    "maximize": "Maximiser",
+    "abort": "Annuler",
+    "location": "Lieu d'enregistrement",
+    "clear": "Effacer la liste"
+  },
+  "main": {
+    "button": {
+      "add": "Ajouter",
+      "remove": "Supprimer",
+      "browse": "Parcourir",
+      "download": "Télécharger",
+      "abort": "Annuler",
+      "clear": "Effacer la liste",
+      "copy": "Copier"
+    },
+    "label": {
+      "progressTotal": "Progression totale",
+      "progress": "Progression",
+      "storageLocation": "Lieu de stockage",
+      "selected": "sélectionné"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "label": {
+      "saveSettings": "Enregistrer les paramètres",
+      "closeToTray": "Fermer dans le plateau",
+      "autostart": "Démarrage automatique au lancement du système",
+      "downloadMode": "Mode de téléchargement",
+      "quality": "Qualité",
+      "codec": "Codec",
+      "language": "Langue",
+      "artistName": "Enregistrer le nom de l'artiste dans le titre de la chanson",
+      "clearList": "Effacer la liste d'URL après le téléchargement",
+      "enablePremium": "Activer YouTube Premium pour YouTube Music",
+      "needPremium": "(vous avez besoin d'un abonnement premium pour YouTube Music)",
+      "browser": "Sélectionnez votre navigateur où vous êtes connecté"
+    },
+    "button": {
+      "nothingSelected": "Rien n'est sélectionné"
+    },
+    "option": {
+      "videoAudio": "Vidéo et audio",
+      "audioOnly": "Audio seulement",
+      "best": "Meilleur",
+      "medium": "Moyen",
+      "bad": "Mauvais"
+    }
+  },
+  "js": {
+    "noURL": "Vous n'avez pas entré d'URL",
+    "noClipboard": "Il n'y a rien dans votre presse-papiers",
+    "noValidURL": "Vous n'avez pas entré une URL valide",
+    "urlInList": "Cette URL est déjà dans la liste",
+    "urlAdded": "L'URL a été ajoutée à la liste",
+    "urlsAdded": "Les URL ont été ajoutées à la liste",
+    "noURLs": "Vous n'avez entré aucune URL",
+    "downloadMode": "Vous n'avez pas choisi un mode de téléchargement dans les paramètres",
+    "codec": "Vous n'avez pas choisi un codec dans les paramètres",
+    "quality": "Vous n'avez pas choisi une qualité dans les paramètres",
+    "storageLocation": "Vous n'avez pas choisi un lieu de stockage",
+    "specificLocation": "Un emplacement individuel a été défini",
+    "success": "Succès",
+    "error": "Erreur",
+    "permission": "Veuillez fermer le navigateur, sinon l'accès aux cookies ne peut pas être obtenu",
+    "network": "Vous n'êtes actuellement pas connecté à Internet",
+    "songsDownloaded": "Toutes les chansons ont été téléchargées avec succès",
+    "downloadAborted": "Le téléchargement a été annulé avec succès",
+    "newVersion": "La version XXX est disponible et est en cours de téléchargement..",
+    "updateDownloaded": "Mise à jour téléchargée. Redémarrez l'application maintenant pour appliquer les modifications.",
+    "settingsSaved": "Les paramètres sont enregistrés à partir de maintenant",
+    "settingsAborted": "Les paramètres ne sont plus enregistrés",
+    "closeToTrayEnabled": "L'application se ferme maintenant dans le plateau",
+    "closeToTrayDisabled": "L'application se ferme complètement maintenant",
+    "autostartEnabled": "L'application démarre maintenant avec le système",
+    "autostartDisabled": "L'application ne démarre plus avec le système",
+    "playlistContext": "Il n'y a pas d'options pour les listes de lecture",
+    "artistNameEnabled": "Le nom de l'artiste sera maintenant enregistré dans le titre de la chanson",
+    "artistNameDisabled": "Le nom de l'artiste ne sera pas enregistré dans le titre de la chanson",
+    "clearListEnabled": "La liste d'URL sera maintenant effacée après un téléchargement",
+    "clearListDisabled": "La liste d'URL ne sera pas effacée après un téléchargement",
+    "premiumEnabled": "Le téléchargement premium a été activé",
+    "premiumDisabled": "Le téléchargement premium a été désactivé",
+    "noBrowser": "Vous avez activé le téléchargement premium mais n'avez pas sélectionné un navigateur",
+    "libUpdate": "Les bibliothèques sont vérifiées pour les mises à jour",
+    "libUptoDate": "Les bibliothèques sont à jour",
+    "libUpdated": "Toutes les bibliothèques ont été mises à jour avec succès",
+    "on": "Activé",
+    "off": "Désactivé"
+  }
+}

@@ -134,7 +134,7 @@ tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", () 
     let clipboardText = clipboard.readText();
 
     if (!clipboardText) {
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["noClipboard"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+        showNotification(tools.languageDB["js"]["noClipboard"], tools.languageDB["js"]["error"]);
     } else tools.addUrlToList(clipboardText);
 });
 
@@ -222,32 +222,32 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         let quality = tools.getCookie("quality");
 
         if (!items.length) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["noURLs"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+            showNotification(tools.languageDB["js"]["noURLs"], tools.languageDB["js"]["error"]);
             return;
         }
 
         if (!mode) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["downloadMode"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+            showNotification(tools.languageDB["js"]["downloadMode"], tools.languageDB["js"]["error"]);
             return;
         } else if (mode === "audio") {
             if (!codecAudio) {
-                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+                showNotification(tools.languageDB["js"]["codec"], tools.languageDB["js"]["error"]);
                 return;
             }
 
             if (!quality) {
-                showNotification(tools.languageDB[tools.selectedLang]["js"]["quality"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+                showNotification(tools.languageDB["js"]["quality"], tools.languageDB["js"]["error"]);
                 return;
             }
         } else {
             if (!codecVideo) {
-                showNotification(tools.languageDB[tools.selectedLang]["js"]["codec"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+                showNotification(tools.languageDB["js"]["codec"], tools.languageDB["js"]["error"]);
                 return;
             }
         }
 
         if (!location.value) {
-            showNotification(tools.languageDB[tools.selectedLang]["js"]["storageLocation"], tools.languageDB[tools.selectedLang]["js"]["error"]);
+            showNotification(tools.languageDB["js"]["storageLocation"], tools.languageDB["js"]["error"]);
             return;
         }
 
@@ -465,7 +465,7 @@ tools.bindEvent("click", "#contextMenu .location", function () {
             tools.specificSettings[url]["location"] = path;
         }
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["specificLocation"]);
+        showNotification(tools.languageDB["js"]["specificLocation"]);
     });
 
     this.closest("#contextMenu").classList.remove("show");
@@ -539,7 +539,7 @@ ipcRenderer.on("url", (event, value) => {
 // TODO: Comment
 ipcRenderer.on("translate", (event, array) => {
     let value = [];
-    let language = tools.languageDB[tools.selectedLang];
+    let language = tools.languageDB;
 
     let i = 0;
     for (let arrayLevels of array) {

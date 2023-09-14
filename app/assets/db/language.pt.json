@@ -1,0 +1,103 @@
+{
+  "index": {
+    "update": "Novas funções!",
+    "changelog": "Ver todas as diferenças de versão",
+    "close": "Fechar",
+    "restart": "Reiniciar"
+  },
+  "tray": {
+    "hide": "Esconder",
+    "addUrl": "Adicionar URL",
+    "download": "Baixar",
+    "close": "Fechar",
+    "maximize": "Maximizar",
+    "abort": "Abortar",
+    "location": "Localização",
+    "clear": "Limpar lista"
+  },
+  "main": {
+    "button": {
+      "add": "Adicionar",
+      "remove": "Remover",
+      "browse": "Navegar",
+      "download": "Baixar",
+      "abort": "Abortar",
+      "clear": "Limpar lista",
+      "copy": "Copiar"
+    },
+    "label": {
+      "progressTotal": "Progresso total",
+      "progress": "Progresso",
+      "storageLocation": "Localização de armazenamento",
+      "selected": "selecionado"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "label": {
+      "saveSettings": "Salvar configurações",
+      "closeToTray": "Fechar para a bandeja",
+      "autostart": "Iniciar automaticamente no arranque do sistema",
+      "downloadMode": "Modo de download",
+      "quality": "Qualidade",
+      "codec": "Codec",
+      "language": "Língua",
+      "artistName": "Salvar o nome do artista no título da música",
+      "clearList": "Limpar a lista de URLs após um download",
+      "enablePremium": "Ativar YouTube Premium para YouTube Music",
+      "needPremium": "(Você precisa de uma assinatura do YouTube Music Premium)",
+      "browser": "Selecione o navegador no qual você está logado"
+    },
+    "button": {
+      "nothingSelected": "Nada selecionado"
+    },
+    "option": {
+      "videoAudio": "Vídeo e áudio",
+      "audioOnly": "Somente áudio",
+      "best": "Melhor",
+      "medium": "Médio",
+      "bad": "Ruim"
+    }
+  },
+  "js": {
+    "noURL": "Você não forneceu um link",
+    "noClipboard": "Nada está no clipboard",
+    "noValidURL": "Você não forneceu um link válido",
+    "urlInList": "Este link já está na lista",
+    "urlAdded": "Link adicionado à lista",
+    "urlsAdded": "Links adicionados à lista",
+    "noURLs": "Você não forneceu nenhum link",
+    "downloadMode": "Você não selecionou um modo de download nas configurações",
+    "codec": "Você não selecionou um codec nas configurações",
+    "quality": "Você não selecionou uma qualidade nas configurações",
+    "storageLocation": "Você não forneceu um local de armazenamento",
+    "specificLocation": "Local de armazenamento individual foi definido",
+    "success": "Sucesso",
+    "error": "Erro",
+    "permission": "Por favor, feche o navegador, caso contrário, o acesso aos cookies não será possível",
+    "network": "Não está atualmente ligado à Internet",
+    "songsDownloaded": "Todas as músicas foram baixadas com sucesso",
+    "downloadAborted": "O download foi abortado com sucesso",
+    "newVersion": "Versão XXX está disponível e está sendo baixada..",
+    "updateDownloaded": "Atualização baixada. Reinicie o aplicativo agora para aplicar as alterações.",
+    "settingsSaved": "As configurações agora serão salvas",
+    "settingsAborted": "As configurações não serão mais salvas",
+    "closeToTrayEnabled": "O aplicativo agora será minimizado para a bandeja",
+    "closeToTrayDisabled": "O aplicativo agora será fechado completamente",
+    "autostartEnabled": "O aplicativo será iniciado automaticamente no arranque do sistema",
+    "autostartDisabled": "O aplicativo não será mais iniciado automaticamente no arranque do sistema",
+    "playlistContext": "Sem opções de configuração para playlists",
+    "artistNameEnabled": "O nome do artista agora será salvo no título da música",
+    "artistNameDisabled": "O nome do artista não será mais salvo no título da música",
+    "clearListEnabled": "A lista de URLs será limpa após um download",
+    "clearListDisabled": "A lista de URLs não será mais limpa após um download",
+    "premiumEnabled": "O download premium foi ativado",
+    "premiumDisabled": "O download premium foi desativado",
+    "noBrowser": "Você ativou o download premium, mas não selecionou um navegador",
+    "libUpdate": "As bibliotecas estão sendo verificadas para atualizações",
+    "libUptoDate": "Todas as bibliotecas estão atualizadas",
+    "libUpdated": "Bibliotecas foram atualizadas com sucesso",
+    "on": "Ligado",
+    "off": "Desligado"
+  }
+}

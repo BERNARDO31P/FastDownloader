@@ -33,18 +33,18 @@ tools.bindEvent("click", "settings .save .checkbox", function () {
 
     if (this.classList.contains("active")) {
         this.classList.remove("active");
-        saving.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+        saving.querySelector("span").textContent = tools.languageDB["js"]["off"];
 
         tools.deleteSettings();
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsAborted"]);
+        showNotification(tools.languageDB["js"]["settingsAborted"]);
     } else {
         this.classList.add("active");
-        saving.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+        saving.querySelector("span").textContent = tools.languageDB["js"]["on"];
 
         tools.saveSettings();
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["settingsSaved"]);
+        showNotification(tools.languageDB["js"]["settingsSaved"]);
     }
 });
 
@@ -54,18 +54,18 @@ tools.bindEvent("click", "settings .closeToTray .checkbox", function () {
 
     if (this.classList.contains("active")) {
         this.classList.remove("active");
-        closingToTray.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+        closingToTray.querySelector("span").textContent = tools.languageDB["js"]["off"];
 
         ipcRenderer.send("disableCloseToTray");
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["closeToTrayDisabled"]);
+        showNotification(tools.languageDB["js"]["closeToTrayDisabled"]);
     } else {
         this.classList.add("active");
-        closingToTray.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+        closingToTray.querySelector("span").textContent = tools.languageDB["js"]["on"];
 
         ipcRenderer.send("enableCloseToTray");
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["closeToTrayEnabled"]);
+        showNotification(tools.languageDB["js"]["closeToTrayEnabled"]);
     }
 
     tools.saveSettings();
@@ -77,14 +77,14 @@ tools.bindEvent("click", "settings .clearList .checkbox", function () {
 
     if (this.classList.contains("active")) {
         this.classList.remove("active");
-        clearList.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+        clearList.querySelector("span").textContent = tools.languageDB["js"]["off"];
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["clearListDisabled"]);
+        showNotification(tools.languageDB["js"]["clearListDisabled"]);
     } else {
         this.classList.add("active");
-        clearList.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+        clearList.querySelector("span").textContent = tools.languageDB["js"]["on"];
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["clearListEnabled"]);
+        showNotification(tools.languageDB["js"]["clearListEnabled"]);
     }
 
     tools.saveSettings();
@@ -96,14 +96,14 @@ tools.bindEvent("click", "settings .premium .checkbox", function () {
 
     if (this.classList.contains("active")) {
         this.classList.remove("active");
-        premium.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+        premium.querySelector("span").textContent = tools.languageDB["js"]["off"];
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["premiumDisabled"]);
+        showNotification(tools.languageDB["js"]["premiumDisabled"]);
     } else {
         this.classList.add("active");
-        premium.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+        premium.querySelector("span").textContent = tools.languageDB["js"]["on"];
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["premiumEnabled"]);
+        showNotification(tools.languageDB["js"]["premiumEnabled"]);
     }
 
     tools.saveSettings();
@@ -115,18 +115,18 @@ tools.bindEvent("click", "settings .autostart .checkbox", function () {
 
     if (this.classList.contains("active")) {
         this.classList.remove("active");
-        autostarting.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["off"];
+        autostarting.querySelector("span").textContent = tools.languageDB["js"]["off"];
 
         ipcRenderer.send("disableAutostart");
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["autostartDisabled"]);
+        showNotification(tools.languageDB["js"]["autostartDisabled"]);
     } else {
         this.classList.add("active");
-        autostarting.querySelector("span").textContent = tools.languageDB[tools.selectedLang]["js"]["on"];
+        autostarting.querySelector("span").textContent = tools.languageDB["js"]["on"];
 
         ipcRenderer.send("enableAutostart");
 
-        showNotification(tools.languageDB[tools.selectedLang]["js"]["autostartEnabled"]);
+        showNotification(tools.languageDB["js"]["autostartEnabled"]);
     }
 
     tools.saveSettings();

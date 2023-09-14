@@ -1,0 +1,103 @@
+{
+  "index": {
+    "update": "New features!",
+    "changelog": "See full changelog",
+    "close": "Close",
+    "restart": "Restart"
+  },
+  "tray": {
+    "hide": "Hide",
+    "addUrl": "Add URL",
+    "download": "Download",
+    "close": "Close",
+    "maximize": "Maximize",
+    "abort": "Abort",
+    "location": "Saving location",
+    "clear": "Clear list"
+  },
+  "main": {
+    "button": {
+      "add": "Add",
+      "remove": "Remove",
+      "browse": "Browse",
+      "download": "Download",
+      "abort": "Abort",
+      "clear": "Clear list",
+      "copy": "Copy"
+    },
+    "label": {
+      "progressTotal": "Total progress",
+      "progress": "Progress",
+      "storageLocation": "Storage location",
+      "selected": "selected"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "label": {
+      "saveSettings": "Save settings",
+      "closeToTray": "Close to tray",
+      "autostart": "Start automatically at system startup",
+      "downloadMode": "Download mode",
+      "quality": "Quality",
+      "codec": "Codec",
+      "language": "Language",
+      "artistName": "Save artist name in song title",
+      "clearList": "Clear URL list after download",
+      "enablePremium": "Enable YouTube premium for YouTube Music",
+      "needPremium": "(you need a premium subscription for YouTube Music)",
+      "browser": "Select your browser where you're logged in"
+    },
+    "button": {
+      "nothingSelected": "Nothing selected"
+    },
+    "option": {
+      "videoAudio": "Video and audio",
+      "audioOnly": "Audio only",
+      "best": "Best",
+      "medium": "Medium",
+      "bad": "Bad"
+    }
+  },
+  "js": {
+    "noURL": "You didn't enter a URL",
+    "noClipboard": "Theres nothing in your clipboard",
+    "noValidURL": "You didn't enter a valid URL",
+    "urlInList": "This URL is already in the list",
+    "urlAdded": "URL has been added to the list",
+    "urlsAdded": "URLs have been added to the list",
+    "noURLs": "You didn't enter any URLs",
+    "downloadMode": "You didn't choose a download mode in the settings",
+    "codec": "You didn't choose a codec in the settings",
+    "quality": "You didn't choose a quality in the settings",
+    "storageLocation": "You didn't choose a storage location",
+    "specificLocation": "Individual location has been set",
+    "success": "Success",
+    "error": "Error",
+    "permission": "Please close the browser, as otherwise access to the cookies cannot be obtained",
+    "network": "You are currently not connected to the Internet",
+    "songsDownloaded": "All songs have been successfully downloaded",
+    "downloadAborted": "The download has been successfully aborted",
+    "newVersion": "Version XXX is available and is being downloaded..",
+    "updateDownloaded": "Update downloaded. Restart the application now to apply the changes.",
+    "settingsSaved": "The settings are saved from now on",
+    "settingsAborted": "The settings are no longer saved",
+    "closeToTrayEnabled": "The application now closes to tray",
+    "closeToTrayDisabled": "The application now closes completely",
+    "autostartEnabled": "The application now starts with the system",
+    "autostartDisabled": "The application no longer starts with the system",
+    "playlistContext": "There are no options for playlists",
+    "artistNameEnabled": "The arist name will now be saved in the song title",
+    "artistNameDisabled": "The artist name will not be saved in the song title",
+    "clearListEnabled": "The URL list will now be cleared after a download",
+    "clearListDisabled": "The URL list will not be cleared after a download",
+    "premiumEnabled": "Premium download has been enabled",
+    "premiumDisabled": "Premium download has been disabled",
+    "noBrowser": "You've enabled premium download but didn't select a browser",
+    "libUpdate": "Libraries are being checked for updates",
+    "libUptoDate": "Libraries are upto date",
+    "libUpdated": "Successfully updated all libraries",
+    "on": "On",
+    "off": "Off"
+  }
+}
