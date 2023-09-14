@@ -259,7 +259,8 @@ export function getAllData() {
 
 // TODO: Comment
 async function download(data) {
-    let percentage = Number((Math.floor(100 / data.length * 100) / 100).toFixed(2));
+    let percentage = parseFloat((100 / data.length).toFixed(2));
+
     downloading = true;
     resolve = null;
 
@@ -297,6 +298,7 @@ async function download(data) {
             case "network":
                 showNotification(languageDB[selectedLang]["js"]["network"], languageDB[selectedLang]["js"]["error"], 10000);
                 await sleep(10000);
+                break;
             case "drive":
                 await sleep(1000);
                 break;
@@ -585,11 +587,10 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressSongInfo = document.querySelector(".progress-song .info p");
         let songInfo = {};
         try {
-            const output = spawnSync(ytDl + " --dump-json " + url, {
-                shell: true,
-                maxBuffer: 10000000
-            }).stdout.toString();
-            songInfo = JSON.parse(output);
+            const output = spawnSync(ytDl + " --print artist,title --skip-download --no-call-home " + url, {
+                shell: true
+            }).stdout.toString().split("\n");
+            songInfo = {artist: output[0], title: output[1]};
         } catch (error) {
             error = error.toString().toLowerCase();
             if (error.includes("getaddrinfo failed")) resolve("network");
@@ -597,10 +598,18 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             return;
         }
 
+        if (aborted) resolve("aborted");
+
         const title = clearTitle(songInfo, mode);
+        console.debug(title);
+
         let config = [
             "--ffmpeg-location " + ffmpeg,
             "-o \"" + location + path.sep + title + ".%(ext)s\"",
+            "--no-check-formats",
+            "--no-check-certificates",
+            "--no-call-home",
+            "-N 2"
         ];
 
         if (mode === "audio") {
@@ -628,6 +637,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         }
 
         let command = (ytDl + " " + config.join(" ")) + " " + url;
+        console.debug(command);
+
         childProcess = exec(command);
 
         let found;
@@ -662,11 +673,11 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         childProcess.on("close", (num) => {
             console.debug("Closing status code: " + num);
             if (!error) {
-                let percentageTotal = Number((progressTotal.value * 100).toFixed(2)) + percentage;
+                let percentageTotal = progressTotal.value * 100 + percentage;
                 let percentageDecimal = percentageTotal / 100;
 
                 progressTotal.value = percentageDecimal;
-                progressTotalInfo.textContent = percentageTotal + "%";
+                progressTotalInfo.textContent = percentageTotal.toFixed(2) + "%";
 
                 progressSong.value = 0;
                 progressSongInfo.textContent = "0%";
@@ -1041,6 +1052,7 @@ function clearTitle(songInfo, mode) {
     const artist = ("artist" in songInfo && songInfo["artist"] !== null && mode === "audio");
 
     let title = ((artist) ? songInfo["artist"] + " - " + songInfo["title"] : songInfo["title"]).replace(ytFilter, "").trim();
+    title = title.replace(/[\\/|:*"?<>]/g, "_");
     title = title.replace(/\s{2,}/g, " ");
     title = title.replace(/\(\)/g, "");
 

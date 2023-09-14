@@ -87,6 +87,7 @@ If there are any mistakes in the translations, please let me know.
 ![Main window - dark theme](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/screenshot/main_dark.png)
 
 ## Libraries
+- [electron](https://www.npmjs.com/package/electron) -> ^26.2.1
 - [auto-launch](https://www.npmjs.com/package/auto-launch) -> ^5.0.6
 - [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.4
 - [ytpl](https://www.npmjs.com/package/ytpl) -> ^2.3.0
@@ -96,5 +97,5 @@ If there are any mistakes in the translations, please let me know.
 - [terminate](https://www.npmjs.com/package/terminate) -> ^2.6.1
 
 ## Binaries
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 2023.03.04
-- [ffmpeg](https://ffmpeg.org) -> 2023-02-28
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 20230706
+- [ffmpeg](https://ffmpeg.org) -> 202309

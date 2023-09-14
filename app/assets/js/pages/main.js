@@ -162,7 +162,9 @@ tools.bindEvent("click", "#updateNotification .restart-button", () => {
  * @param {KeyboardEvent} e - The keydown event.
  */
 tools.bindEvent("keydown", ".input input:not([aria-disabled='true'])", function (e) {
-    if (e.code === "Enter") tools.addUrlToList(this.value);
+    if (e.code === "Enter") {
+        if (tools.addUrlToList(this.value)) this.value = "";
+    }
 });
 
 /**
