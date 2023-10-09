@@ -32,6 +32,10 @@ function searchButton() {
         let location = document.querySelector(".location #location");
         let locationButton = document.querySelector(".location .location-button");
 
+        if (tools.getCookie("saveLocation")) {
+            tools.setCookie("lastLocation", path);
+        }
+
         location.value = path;
         locationButton.ariaDisabled = "false";
     });

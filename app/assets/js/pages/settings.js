@@ -88,6 +88,25 @@ tools.bindEvent("click", "settings .clearList .checkbox", function () {
     }
 
     tools.saveSettings();
+});
+
+// TODO: Comment
+tools.bindEvent("click", "settings .saveLocation .checkbox", function () {
+    let saveLocation = this.closest(".saveLocation");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        saveLocation.querySelector("span").textContent = tools.languageDB["js"]["off"];
+
+        showNotification(tools.languageDB["js"]["saveLocationDisabled"]);
+    } else {
+        this.classList.add("active");
+        saveLocation.querySelector("span").textContent = tools.languageDB["js"]["on"];
+
+        showNotification(tools.languageDB["js"]["saveLocationEnabled"]);
+    }
+
+    tools.saveSettings();
 })
 
 // TODO: Comment

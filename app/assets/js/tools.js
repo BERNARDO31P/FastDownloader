@@ -30,7 +30,7 @@ export let downloading = false, resolve = null, aborted = false, childProcess = 
 export let languageDB = {};
 
 let ytDl = "", ffmpeg = "";
-let selectedLang = null;
+export let selectedLang = null;
 
 let extractors = [];
 let extendedExtractors = [
@@ -226,11 +226,11 @@ export function activeToClipboard() {
 }
 
 // TODO: Comment
-export function loadAllData() {
+export function loadAllData(location) {
     let data = JSON.parse(getCookie("cache"));
     setCookie("cache", null);
 
-    document.getElementById("location").value = data["location"];
+    location.value = data["location"];
 
     let listBox = document.querySelector(".listBox ul");
     for (let listItem of data["listItems"]) {
@@ -786,18 +786,19 @@ function toggleVisibility() {
 
 // TODO: Comment
 export function saveSettings() {
-    let save = document.querySelector("settings #save");
+    const save = document.querySelector("settings #save");
 
     if (save.classList.contains("active")) {
-        let mode = document.querySelector("settings .mode .select");
-        let quality = document.querySelector("settings .quality .select");
-        let codecAudio = document.querySelector("settings .codecAudio .select");
-        let codecVideo = document.querySelector("settings .codecVideo .select");
-        let closeToTray = document.querySelector("settings #closeToTray");
-        let autostart = document.querySelector("settings #autostart");
-        let clearList = document.querySelector("settings #clearList");
-        let premiumCheck = document.querySelector("settings #premium");
-        let premiumBrowser = document.querySelector("settings #browser");
+        const mode = document.querySelector("settings .mode .select");
+        const quality = document.querySelector("settings .quality .select");
+        const codecAudio = document.querySelector("settings .codecAudio .select");
+        const codecVideo = document.querySelector("settings .codecVideo .select");
+        const closeToTray = document.querySelector("settings #closeToTray");
+        const autostart = document.querySelector("settings #autostart");
+        const clearList = document.querySelector("settings #clearList");
+        const premiumCheck = document.querySelector("settings #premium");
+        const saveLocation = document.querySelector("settings #saveLocation");
+        const premiumBrowser = document.querySelector("settings #browser");
 
         setCookie("mode", mode.getAttribute("data-value"));
         setCookie("quality", quality.getAttribute("data-value"));
@@ -807,6 +808,7 @@ export function saveSettings() {
         setCookie("closeToTray", closeToTray.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
         setCookie("clearList", clearList.classList.contains("active"));
+        setCookie("saveLocation", saveLocation.classList.contains("active"));
         setCookie("premium", JSON.stringify({
             "browser": premiumBrowser.getAttribute("data-value"),
             "check": premiumCheck.classList.contains("active")
@@ -825,26 +827,28 @@ export function deleteSettings() {
     setCookie("autostart", false);
     setCookie("premium", JSON.stringify({"browser": null, "check": false}));
     setCookie("clearList", false);
+    setCookie("saveLocation", false);
 }
 
 // TODO: Comment
 export function loadSettings() {
-    let mode = document.querySelector("settings .mode .select");
-    let quality = document.querySelector("settings .quality .select");
-    let codecAudio = document.querySelector("settings .codecAudio .select");
-    let codecVideo = document.querySelector("settings .codecVideo .select");
-    let lang = document.querySelector("settings .lang .select");
+    const mode = document.querySelector("settings .mode .select");
+    const quality = document.querySelector("settings .quality .select");
+    const codecAudio = document.querySelector("settings .codecAudio .select");
+    const codecVideo = document.querySelector("settings .codecVideo .select");
+    const lang = document.querySelector("settings .lang .select");
 
-    let modeValue = getCookie("mode");
-    let qualityValue = getCookie("quality");
-    let codecAudioValue = getCookie("codecAudio");
-    let codecVideoValue = getCookie("codecVideo");
-    let langValue = getCookie("lang");
-    let save = getCookie("save");
-    let closeToTray = getCookie("closeToTray");
-    let autostart = getCookie("autostart");
-    let premium = JSON.parse(getCookie("premium"));
-    let clearList = getCookie("clearList");
+    const modeValue = getCookie("mode");
+    const qualityValue = getCookie("quality");
+    const codecAudioValue = getCookie("codecAudio");
+    const codecVideoValue = getCookie("codecVideo");
+    const langValue = getCookie("lang");
+    const save = getCookie("save");
+    const closeToTray = getCookie("closeToTray");
+    const autostart = getCookie("autostart");
+    const premium = JSON.parse(getCookie("premium"));
+    const clearList = getCookie("clearList");
+    const saveLocation = getCookie("saveLocation");
 
     let option;
     if (modeValue) {
@@ -872,7 +876,7 @@ export function loadSettings() {
         selectOption(option);
     }
 
-    let saving = document.querySelector("settings .save");
+    const saving = document.querySelector("settings .save");
     if (save) {
         saving.querySelector("#save").classList.add("active");
         saving.querySelector("span").textContent = languageDB["js"]["on"];
@@ -880,7 +884,7 @@ export function loadSettings() {
         saving.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
-    let closingToTray = document.querySelector("settings .closeToTray");
+    const closingToTray = document.querySelector("settings .closeToTray");
     if (closeToTray) {
         closingToTray.querySelector("#closeToTray").classList.add("active");
         closingToTray.querySelector("span").textContent = languageDB["js"]["on"];
@@ -888,7 +892,7 @@ export function loadSettings() {
         closingToTray.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
-    let autostarting = document.querySelector("settings .autostart");
+    const autostarting = document.querySelector("settings .autostart");
     if (autostart) {
         autostarting.querySelector("#autostart").classList.add("active");
         autostarting.querySelector("span").textContent = languageDB["js"]["on"];
@@ -896,7 +900,7 @@ export function loadSettings() {
         autostarting.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
-    let clearListing = document.querySelector("settings .clearList");
+    const clearListing = document.querySelector("settings .clearList");
     if (clearList) {
         clearListing.querySelector("#clearList").classList.add("active");
         clearListing.querySelector("span").textContent = languageDB["js"]["on"];
@@ -904,8 +908,16 @@ export function loadSettings() {
         clearListing.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
-    let premiumCheck = document.querySelector("settings .premium");
-    let premiumBrowser = document.querySelector("settings .browser");
+    const savingLocation = document.querySelector("settings .saveLocation");
+    if(saveLocation) {
+        savingLocation.querySelector("#saveLocation").classList.add("active");
+        savingLocation.querySelector("span").textContent = languageDB["js"]["on"];
+    } else {
+        savingLocation.querySelector("span").textContent = languageDB["js"]["off"];
+    }
+
+    const premiumCheck = document.querySelector("settings .premium");
+    const premiumBrowser = document.querySelector("settings .browser");
 
     if (premium && typeof premium != "undefined" && (premium["check"] ?? false)) {
         premiumCheck.querySelector("#premium").classList.add("active");

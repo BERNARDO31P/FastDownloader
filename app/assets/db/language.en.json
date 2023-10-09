@@ -36,6 +36,7 @@
     "title": "Settings",
     "label": {
       "saveSettings": "Save settings",
+      "saveLocation": "Save last storage location",
       "closeToTray": "Close to tray",
       "autostart": "Start automatically at system startup",
       "downloadMode": "Download mode",
@@ -82,6 +83,8 @@
     "updateDownloaded": "Update downloaded. Restart the application now to apply the changes.",
     "settingsSaved": "The settings are saved from now on",
     "settingsAborted": "The settings are no longer saved",
+    "saveLocationEnabled": "Last storage location is automatically inserted",
+    "saveLocationDisabled": "Last storage location is no longer inserted",
     "closeToTrayEnabled": "The application now closes to tray",
     "closeToTrayDisabled": "The application now closes completely",
     "autostartEnabled": "The application now starts with the system",

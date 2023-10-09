@@ -18,14 +18,18 @@ window.onload = async () => {
 
     await tools.initialize();
 
-    if (tools.getCookie("cache") !== null) tools.loadAllData();
+    const location = document.getElementById("location")
+    if (tools.getCookie("saveLocation")) location.value = tools.getCookie("lastLocation");
+    if (tools.getCookie("cache") !== null) tools.loadAllData(location);
+
+    const selectedLang = tools.selectedLang ?? tools.getCookie("lang") ?? "en";
 
     const notification = document.getElementById("updateNotification");
     const message = notification.querySelector(".message");
     const restartButton = notification.querySelector('.restart-button');
 
     ipcRenderer.once("update_available", (event, version) => {
-        message.innerText = tools.languageDB[tools.selectedLang]["js"]["newVersion"].replaceAll("XXX", version);
+        message.innerText = tools.languageDB[selectedLang]["js"]["newVersion"].replaceAll("XXX", version);
         notification.classList.remove("hidden");
     });
 
@@ -35,12 +39,12 @@ window.onload = async () => {
     });
 
     ipcRenderer.once("update_downloaded", () => {
-        message.innerText = tools.languageDB[tools.selectedLang]["js"]["updateDownloaded"];
+        message.innerText = tools.languageDB[selectedLang]["js"]["updateDownloaded"];
         restartButton.classList.remove("hidden");
         notification.classList.remove("hidden");
     });
 
-    ipcRenderer.send("lang", tools.selectedLang ?? tools.getCookie("lang") ?? "en", tools.languageDB[tools.selectedLang]["tray"]);
+    ipcRenderer.send("lang", selectedLang, selectedLang);
 }
 
 // TODO: Comment

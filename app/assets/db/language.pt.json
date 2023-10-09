@@ -36,6 +36,7 @@
     "title": "Configurações",
     "label": {
       "saveSettings": "Salvar configurações",
+      "saveLocation": "Salvar o último local de armazenamento",
       "closeToTray": "Fechar para a bandeja",
       "autostart": "Iniciar automaticamente no arranque do sistema",
       "downloadMode": "Modo de download",
@@ -82,6 +83,8 @@
     "updateDownloaded": "Atualização baixada. Reinicie o aplicativo agora para aplicar as alterações.",
     "settingsSaved": "As configurações agora serão salvas",
     "settingsAborted": "As configurações não serão mais salvas",
+    "saveLocationEnabled": "O último local de armazenamento é inserido automaticamente",
+    "saveLocationDisabled": "O último local de armazenamento não é mais inserido",
     "closeToTrayEnabled": "O aplicativo agora será minimizado para a bandeja",
     "closeToTrayDisabled": "O aplicativo agora será fechado completamente",
     "autostartEnabled": "O aplicativo será iniciado automaticamente no arranque do sistema",

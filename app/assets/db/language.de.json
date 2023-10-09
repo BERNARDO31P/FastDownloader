@@ -36,6 +36,7 @@
     "title": "Einstellungen",
     "label": {
       "saveSettings": "Einstellungen speichern",
+      "saveLocation": "Letzter Speicherort speichern",
       "closeToTray": "Ins Tray schliessen",
       "autostart": "Automatisch bei Systemstart starten",
       "downloadMode": "Download-Modus",
@@ -82,6 +83,8 @@
     "updateDownloaded": "Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.",
     "settingsSaved": "Die Einstellungen werden ab jetzt gespeichert",
     "settingsAborted": "Die Einstellungen werden nicht mehr gespeichert",
+    "saveLocationEnabled": "Der zuletzt verwendete Speicherort wird automatisch hinzugefügt",
+    "saveLocationDisabled": "Der zuletzt verwendete Speicherort wird nicht mehr hinzugefügt",
     "closeToTrayEnabled": "Die Anwendung wird nun im Tray minimiert",
     "closeToTrayDisabled": "Die Anwendung wird nun vollständig geschlossen",
     "autostartEnabled": "Die Applikation wird automatisch beim Systemstart gestartet",

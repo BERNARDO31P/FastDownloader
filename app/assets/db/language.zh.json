@@ -36,6 +36,7 @@
     "title": "设置",
     "label": {
       "saveSettings": "保存设置",
+      "saveLocation": "保存上次存储位置",
       "closeToTray": "关闭到托盘",
       "autostart": "系统启动时自动开始",
       "downloadMode": "下载模式",
@@ -82,6 +83,8 @@
     "updateDownloaded": "更新已下载。现在重启应用程序以应用更改。",
     "settingsSaved": "设置已保存",
     "settingsAborted": "设置未保存",
+    "saveLocationEnabled": "最后的存储位置会自动插入",
+    "saveLocationDisabled": "最后的存储位置不再插入",
     "closeToTrayEnabled": "应用程序现在关闭到托盘",
     "closeToTrayDisabled": "应用程序现在完全关闭",
     "autostartEnabled": "应用程序现在随系统启动",

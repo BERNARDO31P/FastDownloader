@@ -36,6 +36,7 @@
     "title": "Paramètres",
     "label": {
       "saveSettings": "Enregistrer les paramètres",
+      "saveLocation": "Enregistrer le dernier emplacement de stockage",
       "closeToTray": "Fermer dans le plateau",
       "autostart": "Démarrage automatique au lancement du système",
       "downloadMode": "Mode de téléchargement",
@@ -82,6 +83,8 @@
     "updateDownloaded": "Mise à jour téléchargée. Redémarrez l'application maintenant pour appliquer les modifications.",
     "settingsSaved": "Les paramètres sont enregistrés à partir de maintenant",
     "settingsAborted": "Les paramètres ne sont plus enregistrés",
+    "saveLocationEnabled": "Le dernier emplacement de stockage est inséré automatiquement",
+    "saveLocationDisabled": "Le dernier emplacement de stockage n'est plus inséré",
     "closeToTrayEnabled": "L'application se ferme maintenant dans le plateau",
     "closeToTrayDisabled": "L'application se ferme complètement maintenant",
     "autostartEnabled": "L'application démarre maintenant avec le système",
