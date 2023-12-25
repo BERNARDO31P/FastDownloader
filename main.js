@@ -32,8 +32,7 @@ if (fs.existsSync(__dirname + path.sep + "resources")) {
 }
 
 let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
-let lang = null, hidden = false;
-let language = {};
+let language = {}, hidden = false;
 
 function createWindow() {
     const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
@@ -60,8 +59,7 @@ function createWindow() {
         trayIcon.setTitle("Fast Downloader");
         trayIcon.setToolTip("Fast Downloader");
 
-        ipcMain.on("lang", (event, selectedLang, selectedLanguage) => {
-            lang = selectedLang;
+        ipcMain.on("lang", (event, selectedLanguage) => {
             language = selectedLanguage;
 
             trayMenu = Menu.buildFromTemplate([

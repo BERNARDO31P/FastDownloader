@@ -29,7 +29,7 @@ window.onload = async () => {
     const restartButton = notification.querySelector('.restart-button');
 
     ipcRenderer.once("update_available", (event, version) => {
-        message.innerText = tools.languageDB[selectedLang]["js"]["newVersion"].replaceAll("XXX", version);
+        message.innerText = tools.languageDB["js"]["newVersion"].replaceAll("XXX", version);
         notification.classList.remove("hidden");
     });
 
@@ -39,12 +39,12 @@ window.onload = async () => {
     });
 
     ipcRenderer.once("update_downloaded", () => {
-        message.innerText = tools.languageDB[selectedLang]["js"]["updateDownloaded"];
+        message.innerText = tools.languageDB["js"]["updateDownloaded"];
         restartButton.classList.remove("hidden");
         notification.classList.remove("hidden");
     });
 
-    ipcRenderer.send("lang", selectedLang, selectedLang);
+    ipcRenderer.send("lang", tools.languageDB["tray"]);
 }
 
 // TODO: Comment
