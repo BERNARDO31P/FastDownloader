@@ -26,18 +26,17 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@electron/asar": "^3.2.7",
-    "@electron/osx-sign": "^1.0.5",
-    "electron": "^26.3.0",
-    "electron-builder": "^24.7.0"
+    "@electron/asar": "^3.2.8",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
   },
   "dependencies": {
     "auto-launch": "^5.0.6",
-    "electron-updater": "^6.1.5",
+    "electron-updater": "^6.1.7",
     "fastest-levenshtein": "^1.0.16",
     "node-youtube-music": "^0.8.3",
     "terminate": "^2.6.1",
-    "youtube-sr": "^4.3.4",
+    "youtube-sr": "^4.3.10",
     "ytpl": "^2.3.0"
   },
   "build": {
