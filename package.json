@@ -34,7 +34,7 @@
     "auto-launch": "^5.0.6",
     "electron-updater": "^6.1.7",
     "fastest-levenshtein": "^1.0.16",
-    "node-youtube-music": "^0.8.3",
+    "node-youtube-music": "^0.10.3",
     "terminate": "^2.6.1",
     "youtube-sr": "^4.3.10",
     "ytpl": "^2.3.0"
