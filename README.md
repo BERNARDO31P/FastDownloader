@@ -2,14 +2,6 @@
 
 FastDownloader is a free tool to download video and/or audio from any [supported site](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md). 
 
-It was tested on:
-- Windows 10/11
-- Ubuntu/Debian
-- CentOS/RedHat
-- Arch Linux
-
-If your system isn't directly supported, try the `AppImage`.
-
 ## Features
 - Download multiple songs and playlists at once
 - YouTube Premium integration
@@ -75,6 +67,14 @@ If your system isn't directly supported, try the `AppImage`.
   - Chinese (simplified)
 
 If there are any mistakes in the translations, please let me know.
+
+It was tested on:
+- Windows 10/11
+- Ubuntu/Debian
+- CentOS/RedHat
+- Arch Linux
+
+If your system isn't directly supported, try the `AppImage`.
 
 ## Screenshots
 **Main window - light theme**
