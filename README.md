@@ -1,6 +1,4 @@
-![Icon](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/icons/64x64.png)
-
-FastDownloader is a free tool to download video and/or audio from any [supported site](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md). 
+FastDownloader is a free and minimalistic tool to download videos and/or audios from almost 1800 websites. Including YouTube, Facebook, Instagram, Twitter Bandcamp, etc. Click [here](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) to check if the website in your mind is supported. 
 
 ## Features
 - Download multiple songs and playlists at once
