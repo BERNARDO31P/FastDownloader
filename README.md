@@ -1,6 +1,6 @@
-# Fast Downloader ![Icon](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/icons/32x32.png)
+![Icon](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/icons/64x64.png)
 
-This is an intelligent, free and fast downloader for all [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) written in Electron. 
+FastDownloader is a free tool to download video and/or audio from any [supported site](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md). 
 
 It was tested on:
 - Windows 10/11
