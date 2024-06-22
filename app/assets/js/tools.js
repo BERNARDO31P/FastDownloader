@@ -1,5 +1,5 @@
 import mustache from "./lib/mustache.min.js";
-import {ytFilter} from "./lib/filter.js";
+import {errorFilter, ytFilter} from "./lib/filter.js";
 
 const terminate = require("terminate");
 const path = require("path");
@@ -659,8 +659,9 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             if (!aborted) {
                 data = data.toLowerCase();
 
-                if (!data.includes("winerror 10054") && !data.includes("aes-cbc"))
+                if (!data.match(errorFilter)) {
                     error = true;
+                }
 
                 if (data.includes("winerror 3")) resolve("drive");
                 if (data.includes("permission")) resolve("permission");

@@ -1,4 +1,4 @@
-let keywords = [
+const keywordsYt = [
     "\\[.*\\]",
     "\\{.*\\}",
     "\\([A-Za-z]{2}\\)",
@@ -25,6 +25,14 @@ let keywords = [
     "\"",
     "'"
 ];
-let ytFilter = new RegExp(keywords.join("|"), 'gi');
 
-export {ytFilter};
+const keywordsErrors = [
+    "winerror 10054",
+    "aes-cbc",
+    "[youtube]"
+];
+
+const ytFilter = new RegExp(keywordsYt.join("|"), 'gi');
+const errorFilter = new RegExp(keywordsErrors.join("|"), 'gi');
+
+export {ytFilter, errorFilter};
