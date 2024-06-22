@@ -686,7 +686,11 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
                 if (!aborted) resolve("success");
                 else resolve("aborted");
+
+                return;
             }
+
+            resolve("error");
         });
     });
 }
