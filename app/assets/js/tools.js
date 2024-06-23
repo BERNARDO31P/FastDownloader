@@ -627,8 +627,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         let premium = JSON.parse(getCookie("premium"));
         if (premium && premium.check) {
-            if (premium["browser"] !== "") {
-                config.push("--cookies-from-browser " + premium["browser"]);
+            if (premium.browser && premium.browser.length) {
+                config.push("--cookies-from-browser " + premium.browser);
             } else {
                 showNotification(languageDB["js"]["noBrowser"]);
                 resolve(null);
@@ -690,7 +690,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 return;
             }
 
-            resolve("error");
+            resolve(null);
         });
     });
 }
