@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "تحديث جديد!",
+    "changelog": "عرض جميع الإصدارات",
+    "close": "إغلاق",
+    "restart": "إعادة التشغيل"
+  },
+  "tray": {
+    "hide": "إخفاء",
+    "addUrl": "إضافة URL",
+    "download": "تحميل",
+    "close": "إغلاق",
+    "maximize": "تكبير",
+    "abort": "إلغاء",
+    "location": "الموقع",
+    "clear": "مسح القائمة"
+  },
+  "main": {
+    "button": {
+      "add": "إضافة",
+      "remove": "إزالة",
+      "browse": "استعراض",
+      "download": "تحميل",
+      "abort": "إلغاء",
+      "clear": "مسح القائمة",
+      "copy": "نسخ"
+    },
+    "label": {
+      "progressTotal": "التقدم الكلي",
+      "progress": "التقدم",
+      "storageLocation": "موقع التخزين",
+      "selected": "مختار"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "label": {
+      "saveSettings": "حفظ الإعدادات",
+      "saveLocation": "حفظ الموقع الأخير",
+      "closeToTray": "الإغلاق إلى علبة النظام",
+      "autostart": "بدء التشغيل التلقائي عند بدء النظام",
+      "downloadMode": "وضع التحميل",
+      "quality": "الجودة",
+      "codec": "كودك",
+      "language": "اللغة",
+      "artistName": "حفظ اسم الفنان في عنوان الأغنية",
+      "clearList": "مسح قائمة URL بعد التحميل",
+      "enablePremium": "تمكين YouTube Music Premium",
+      "needPremium": "(تتطلب اشتراك YouTube Music Premium)",
+      "browser": "اختر المتصفح لتسجيل الدخول"
+    },
+    "button": {
+      "nothingSelected": "لم يتم تحديد أي شيء"
+    },
+    "option": {
+      "videoAudio": "الفيديو والصوت",
+      "audioOnly": "الصوت فقط",
+      "best": "أفضل",
+      "medium": "متوسط",
+      "bad": "ضعيف"
+    }
+  },
+  "js": {
+    "noURL": "لم يتم تحديد رابط",
+    "noClipboard": "الحافظة فارغة",
+    "noValidURL": "لم يتم تحديد رابط صالح",
+    "urlInList": "هذا الرابط موجود بالفعل في القائمة",
+    "urlAdded": "تمت إضافة الرابط إلى القائمة",
+    "urlsAdded": "تمت إضافة الروابط إلى القائمة",
+    "noURLs": "لم يتم إدخال روابط",
+    "downloadMode": "لم يتم اختيار وضع التحميل في الإعدادات",
+    "codec": "لم يتم اختيار كودك في الإعدادات",
+    "quality": "لم يتم اختيار الجودة في الإعدادات",
+    "storageLocation": "لم يتم تحديد موقع التخزين",
+    "specificLocation": "تم تحديد موقع تخزين محدد",
+    "success": "نجاح",
+    "error": "خطأ",
+    "permission": "أغلق المتصفح للوصول إلى الكوكيز",
+    "network": "لا يوجد اتصال بالإنترنت",
+    "songsDownloaded": "تم تحميل جميع الأغاني بنجاح",
+    "downloadAborted": "تم إلغاء التحميل بنجاح",
+    "newVersion": "الإصدار XXX متاح وسيتم تنزيله.",
+    "updateDownloaded": "تم تنزيل التحديث. أعد تشغيل التطبيق لتطبيق التغييرات.",
+    "settingsSaved": "تم حفظ الإعدادات",
+    "settingsAborted": "تم إلغاء حفظ الإعدادات",
+    "saveLocationEnabled": "سيتم إضافة آخر موقع مستخدم تلقائيًا",
+    "saveLocationDisabled": "لن يتم إضافة آخر موقع مستخدم",
+    "closeToTrayEnabled": "سيتم تصغير التطبيق إلى علبة النظام",
+    "closeToTrayDisabled": "سيتم إغلاق التطبيق تمامًا",
+    "autostartEnabled": "سيبدأ التطبيق تلقائيًا عند بدء النظام",
+    "autostartDisabled": "لن يبدأ التطبيق تلقائيًا عند بدء النظام",
+    "playlistContext": "لا توجد خيارات إعدادات لقائمة التشغيل",
+    "artistNameEnabled": "سيتم حفظ اسم الفنان في عنوان الأغنية",
+    "artistNameDisabled": "لن يتم حفظ اسم الفنان في عنوان الأغنية",
+    "clearListEnabled": "سيتم مسح قائمة URL بعد التحميل",
+    "clearListDisabled": "لن يتم مسح قائمة URL بعد التحميل",
+    "premiumEnabled": "تم تفعيل التحميل المميز",
+    "premiumDisabled": "تم تعطيل التحميل المميز",
+    "noBrowser": "تم تفعيل التحميل المميز لكن لم يتم اختيار المتصفح",
+    "libUpdate": "جارٍ التحقق من تحديثات المكتبة",
+    "libUptoDate": "جميع المكتبات محدثة",
+    "libUpdated": "تم تحديث المكتبات بنجاح",
+    "on": "تشغيل",
+    "off": "إيقاف"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "새 기능!",
+    "changelog": "모든 버전의 차이점 보기",
+    "close": "닫기",
+    "restart": "다시 시작"
+  },
+  "tray": {
+    "hide": "숨기기",
+    "addUrl": "URL 추가",
+    "download": "다운로드",
+    "close": "닫기",
+    "maximize": "최대화",
+    "abort": "중단",
+    "location": "저장 위치",
+    "clear": "목록 지우기"
+  },
+  "main": {
+    "button": {
+      "add": "추가",
+      "remove": "제거",
+      "browse": "탐색",
+      "download": "다운로드",
+      "abort": "중단",
+      "clear": "목록 지우기",
+      "copy": "복사"
+    },
+    "label": {
+      "progressTotal": "전체 진행률",
+      "progress": "진행률",
+      "storageLocation": "저장 위치",
+      "selected": "선택됨"
+    }
+  },
+  "settings": {
+    "title": "설정",
+    "label": {
+      "saveSettings": "설정 저장",
+      "saveLocation": "마지막 위치 저장",
+      "closeToTray": "트레이로 닫기",
+      "autostart": "시작할 때 자동 시작",
+      "downloadMode": "다운로드 모드",
+      "quality": "품질",
+      "codec": "코덱",
+      "language": "언어",
+      "artistName": "노래 제목에 아티스트 이름 저장",
+      "clearList": "다운로드 후 URL 목록 지우기",
+      "enablePremium": "YouTube Music Premium 활성화",
+      "needPremium": "(YouTube Music Premium 구독 필요)",
+      "browser": "로그인할 브라우저 선택"
+    },
+    "button": {
+      "nothingSelected": "선택된 항목 없음"
+    },
+    "option": {
+      "videoAudio": "비디오 및 오디오",
+      "audioOnly": "오디오만",
+      "best": "최고",
+      "medium": "중간",
+      "bad": "나쁨"
+    }
+  },
+  "js": {
+    "noURL": "URL이 지정되지 않았습니다",
+    "noClipboard": "클립보드에 아무것도 없습니다",
+    "noValidURL": "유효한 URL이 지정되지 않았습니다",
+    "urlInList": "이 URL은 이미 목록에 있습니다",
+    "urlAdded": "URL이 목록에 추가되었습니다",
+    "urlsAdded": "URL이 목록에 추가되었습니다",
+    "noURLs": "입력된 URL이 없습니다",
+    "downloadMode": "설정에서 다운로드 모드가 선택되지 않았습니다",
+    "codec": "설정에서 코덱이 선택되지 않았습니다",
+    "quality": "설정에서 품질이 선택되지 않았습니다",
+    "storageLocation": "저장 위치가 지정되지 않았습니다",
+    "specificLocation": "특정 저장 위치가 설정되었습니다",
+    "success": "성공",
+    "error": "오류",
+    "permission": "쿠키에 접근하려면 브라우저를 닫으세요",
+    "network": "현재 인터넷에 연결되어 있지 않습니다",
+    "songsDownloaded": "모든 노래가 성공적으로 다운로드되었습니다",
+    "downloadAborted": "다운로드가 성공적으로 중단되었습니다",
+    "newVersion": "XXX 버전이 사용 가능하며 다운로드됩니다.",
+    "updateDownloaded": "업데이트가 다운로드되었습니다. 변경 사항을 적용하려면 응용 프로그램을 다시 시작하세요.",
+    "settingsSaved": "설정이 저장되었습니다",
+    "settingsAborted": "설정 저장이 중단되었습니다",
+    "saveLocationEnabled": "마지막 사용한 저장 위치가 자동으로 추가됩니다",
+    "saveLocationDisabled": "마지막 사용한 저장 위치가 추가되지 않습니다",
+    "closeToTrayEnabled": "응용 프로그램이 트레이로 최소화됩니다",
+    "closeToTrayDisabled": "응용 프로그램이 완전히 종료됩니다",
+    "autostartEnabled": "응용 프로그램이 시스템 시작 시 자동으로 시작됩니다",
+    "autostartDisabled": "응용 프로그램이 시스템 시작 시 자동으로 시작되지 않습니다",
+    "playlistContext": "재생 목록에 대한 설정 옵션이 없습니다",
+    "artistNameEnabled": "아티스트 이름이 노래 제목에 저장됩니다",
+    "artistNameDisabled": "아티스트 이름이 노래 제목에 저장되지 않습니다",
+    "clearListEnabled": "다운로드 후 URL 목록이 지워집니다",
+    "clearListDisabled": "다운로드 후 URL 목록이 지워지지 않습니다",
+    "premiumEnabled": "프리미엄 다운로드가 활성화되었습니다",
+    "premiumDisabled": "프리미엄 다운로드가 비활성화되었습니다",
+    "noBrowser": "프리미엄 다운로드가 활성화되었지만 브라우저가 선택되지 않았습니다",
+    "libUpdate": "라이브러리 업데이트가 확인되고 있습니다",
+    "libUptoDate": "모든 라이브러리가 최신 상태입니다",
+    "libUpdated": "라이브러리가 성공적으로 업데이트되었습니다",
+    "on": "켜짐",
+    "off": "꺼짐"
+  }
+}

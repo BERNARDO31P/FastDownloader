@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "Pembaruan baru!",
+    "changelog": "Lihat semua versi",
+    "close": "Tutup",
+    "restart": "Mulai ulang"
+  },
+  "tray": {
+    "hide": "Sembunyikan",
+    "addUrl": "Tambahkan URL",
+    "download": "Unduh",
+    "close": "Tutup",
+    "maximize": "Maksimalkan",
+    "abort": "Batalkan",
+    "location": "Lokasi",
+    "clear": "Bersihkan daftar"
+  },
+  "main": {
+    "button": {
+      "add": "Tambahkan",
+      "remove": "Hapus",
+      "browse": "Jelajahi",
+      "download": "Unduh",
+      "abort": "Batalkan",
+      "clear": "Bersihkan daftar",
+      "copy": "Salin"
+    },
+    "label": {
+      "progressTotal": "Kemajuan total",
+      "progress": "Kemajuan",
+      "storageLocation": "Lokasi penyimpanan",
+      "selected": "Terpilih"
+    }
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "label": {
+      "saveSettings": "Simpan pengaturan",
+      "saveLocation": "Simpan lokasi terakhir",
+      "closeToTray": "Tutup ke baki sistem",
+      "autostart": "Mulai otomatis saat sistem dinyalakan",
+      "downloadMode": "Mode unduh",
+      "quality": "Kualitas",
+      "codec": "Codec",
+      "language": "Bahasa",
+      "artistName": "Simpan nama artis di judul lagu",
+      "clearList": "Bersihkan daftar URL setelah diunduh",
+      "enablePremium": "Aktifkan YouTube Music Premium",
+      "needPremium": "(Membutuhkan langganan YouTube Music Premium)",
+      "browser": "Pilih browser untuk masuk"
+    },
+    "button": {
+      "nothingSelected": "Tidak ada yang dipilih"
+    },
+    "option": {
+      "videoAudio": "Video dan audio",
+      "audioOnly": "Hanya audio",
+      "best": "Terbaik",
+      "medium": "Sedang",
+      "bad": "Buruk"
+    }
+  },
+  "js": {
+    "noURL": "Tidak ada URL yang ditentukan",
+    "noClipboard": "Tidak ada yang ada di clipboard",
+    "noValidURL": "Tidak ada URL yang valid yang ditentukan",
+    "urlInList": "URL ini sudah ada di daftar",
+    "urlAdded": "URL ditambahkan ke daftar",
+    "urlsAdded": "URL ditambahkan ke daftar",
+    "noURLs": "Tidak ada URL yang dimasukkan",
+    "downloadMode": "Mode unduh tidak dipilih dalam pengaturan",
+    "codec": "Codec tidak dipilih dalam pengaturan",
+    "quality": "Kualitas tidak dipilih dalam pengaturan",
+    "storageLocation": "Lokasi penyimpanan tidak ditentukan",
+    "specificLocation": "Lokasi penyimpanan spesifik diatur",
+    "success": "Berhasil",
+    "error": "Kesalahan",
+    "permission": "Tutup browser untuk mengakses cookies",
+    "network": "Tidak ada koneksi internet saat ini",
+    "songsDownloaded": "Semua lagu berhasil diunduh",
+    "downloadAborted": "Pengunduhan berhasil dibatalkan",
+    "newVersion": "Versi XXX tersedia dan akan diunduh.",
+    "updateDownloaded": "Pembaruan telah diunduh. Mulai ulang aplikasi untuk menerapkan perubahan.",
+    "settingsSaved": "Pengaturan telah disimpan",
+    "settingsAborted": "Penyimpanan pengaturan dibatalkan",
+    "saveLocationEnabled": "Lokasi penyimpanan terakhir akan ditambahkan secara otomatis",
+    "saveLocationDisabled": "Lokasi penyimpanan terakhir tidak akan ditambahkan",
+    "closeToTrayEnabled": "Aplikasi akan diminimalkan ke baki sistem",
+    "closeToTrayDisabled": "Aplikasi akan sepenuhnya ditutup",
+    "autostartEnabled": "Aplikasi akan otomatis mulai saat sistem dinyalakan",
+    "autostartDisabled": "Aplikasi tidak akan otomatis mulai saat sistem dinyalakan",
+    "playlistContext": "Tidak ada opsi pengaturan untuk playlist",
+    "artistNameEnabled": "Nama artis akan disimpan di judul lagu",
+    "artistNameDisabled": "Nama artis tidak akan disimpan di judul lagu",
+    "clearListEnabled": "Daftar URL akan dibersihkan setelah diunduh",
+    "clearListDisabled": "Daftar URL tidak akan dibersihkan setelah diunduh",
+    "premiumEnabled": "Pengunduhan premium diaktifkan",
+    "premiumDisabled": "Pengunduhan premium dinonaktifkan",
+    "noBrowser": "Pengunduhan premium diaktifkan tetapi browser tidak dipilih",
+    "libUpdate": "Memeriksa pembaruan perpustakaan",
+    "libUptoDate": "Semua perpustakaan terbaru",
+    "libUpdated": "Perpustakaan berhasil diperbarui",
+    "on": "Hidup",
+    "off": "Mati"
+  }
+}

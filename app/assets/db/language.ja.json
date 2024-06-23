@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "新機能！",
+    "changelog": "すべてのバージョンの違いを見る",
+    "close": "閉じる",
+    "restart": "再起動"
+  },
+  "tray": {
+    "hide": "隠す",
+    "addUrl": "URLを追加",
+    "download": "ダウンロード",
+    "close": "閉じる",
+    "maximize": "最大化",
+    "abort": "中止",
+    "location": "保存場所",
+    "clear": "リストをクリア"
+  },
+  "main": {
+    "button": {
+      "add": "追加",
+      "remove": "削除",
+      "browse": "参照",
+      "download": "ダウンロード",
+      "abort": "中止",
+      "clear": "リストをクリア",
+      "copy": "コピー"
+    },
+    "label": {
+      "progressTotal": "全体の進行状況",
+      "progress": "進行状況",
+      "storageLocation": "保存場所",
+      "selected": "選択済み"
+    }
+  },
+  "settings": {
+    "title": "設定",
+    "label": {
+      "saveSettings": "設定を保存",
+      "saveLocation": "最後の保存場所を保存",
+      "closeToTray": "トレイに閉じる",
+      "autostart": "システム起動時に自動開始",
+      "downloadMode": "ダウンロードモード",
+      "quality": "品質",
+      "codec": "コーデック",
+      "language": "言語",
+      "artistName": "曲名にアーティスト名を保存",
+      "clearList": "ダウンロード後にURLリストをクリア",
+      "enablePremium": "YouTube Musicのプレミアムを有効にする",
+      "needPremium": "（YouTube Music Premiumサブスクリプションが必要です）",
+      "browser": "ログイン中のブラウザを選択"
+    },
+    "button": {
+      "nothingSelected": "何も選択されていません"
+    },
+    "option": {
+      "videoAudio": "ビデオとオーディオ",
+      "audioOnly": "オーディオのみ",
+      "best": "最高",
+      "medium": "中",
+      "bad": "低"
+    }
+  },
+  "js": {
+    "noURL": "リンクが指定されていません",
+    "noClipboard": "クリップボードに何もありません",
+    "noValidURL": "有効なリンクが指定されていません",
+    "urlInList": "このリンクは既にリストにあります",
+    "urlAdded": "リンクがリストに追加されました",
+    "urlsAdded": "リンクがリストに追加されました",
+    "noURLs": "リンクが入力されていません",
+    "downloadMode": "設定でダウンロードモードが選択されていません",
+    "codec": "設定でコーデックが選択されていません",
+    "quality": "設定で品質が選択されていません",
+    "storageLocation": "保存場所が指定されていません",
+    "specificLocation": "個別の保存場所が設定されました",
+    "success": "成功",
+    "error": "エラー",
+    "permission": "ブラウザを終了してください。そうしないとクッキーにアクセスできません",
+    "network": "現在インターネットに接続されていません",
+    "songsDownloaded": "すべての曲が正常にダウンロードされました",
+    "downloadAborted": "ダウンロードが正常に中止されました",
+    "newVersion": "バージョンXXXが利用可能で、ダウンロードされます。",
+    "updateDownloaded": "アップデートがダウンロードされました。変更を適用するにはアプリケーションを再起動してください。",
+    "settingsSaved": "設定が保存されました",
+    "settingsAborted": "設定の保存が中止されました",
+    "saveLocationEnabled": "最後に使用した保存場所が自動的に追加されます",
+    "saveLocationDisabled": "最後に使用した保存場所が追加されなくなります",
+    "closeToTrayEnabled": "アプリケーションはトレイに最小化されます",
+    "closeToTrayDisabled": "アプリケーションは完全に閉じられます",
+    "autostartEnabled": "アプリケーションはシステム起動時に自動的に開始されます",
+    "autostartDisabled": "アプリケーションはシステム起動時に自動的に開始されなくなります",
+    "playlistContext": "プレイリストに設定オプションがありません",
+    "artistNameEnabled": "曲名にアーティスト名が保存されます",
+    "artistNameDisabled": "曲名にアーティスト名が保存されなくなります",
+    "clearListEnabled": "ダウンロード後にURLリストがクリアされます",
+    "clearListDisabled": "ダウンロード後にURLリストがクリアされなくなります",
+    "premiumEnabled": "プレミアムダウンロードが有効になりました",
+    "premiumDisabled": "プレミアムダウンロードが無効になりました",
+    "noBrowser": "プレミアムダウンロードを有効にしましたが、ブラウザが選択されていません",
+    "libUpdate": "ライブラリの更新がチェックされます",
+    "libUptoDate": "ライブラリはすべて最新です",
+    "libUpdated": "ライブラリが正常に更新されました",
+    "on": "オン",
+    "off": "オフ"
+  }
+}

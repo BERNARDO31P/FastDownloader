@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "Nieuwe functies!",
+    "changelog": "Bekijk alle versieverschillen",
+    "close": "Sluiten",
+    "restart": "Herstarten"
+  },
+  "tray": {
+    "hide": "Verbergen",
+    "addUrl": "URL toevoegen",
+    "download": "Downloaden",
+    "close": "Sluiten",
+    "maximize": "Maximaliseren",
+    "abort": "Afbreken",
+    "location": "Locatie",
+    "clear": "Lijst wissen"
+  },
+  "main": {
+    "button": {
+      "add": "Toevoegen",
+      "remove": "Verwijderen",
+      "browse": "Bladeren",
+      "download": "Downloaden",
+      "abort": "Afbreken",
+      "clear": "Lijst wissen",
+      "copy": "Kopiëren"
+    },
+    "label": {
+      "progressTotal": "Totale voortgang",
+      "progress": "Voortgang",
+      "storageLocation": "Opslaglocatie",
+      "selected": "Geselecteerd"
+    }
+  },
+  "settings": {
+    "title": "Instellingen",
+    "label": {
+      "saveSettings": "Instellingen opslaan",
+      "saveLocation": "Laatste locatie opslaan",
+      "closeToTray": "Sluiten naar systeemvak",
+      "autostart": "Automatisch starten bij systeemopstart",
+      "downloadMode": "Downloadmodus",
+      "quality": "Kwaliteit",
+      "codec": "Codec",
+      "language": "Taal",
+      "artistName": "Artiestnaam opslaan in songtitel",
+      "clearList": "URL-lijst wissen na download",
+      "enablePremium": "YouTube Music Premium inschakelen",
+      "needPremium": "(YouTube Music Premium-abonnement vereist)",
+      "browser": "Selecteer browser om in te loggen"
+    },
+    "button": {
+      "nothingSelected": "Niets geselecteerd"
+    },
+    "option": {
+      "videoAudio": "Video en audio",
+      "audioOnly": "Alleen audio",
+      "best": "Beste",
+      "medium": "Middel",
+      "bad": "Slecht"
+    }
+  },
+  "js": {
+    "noURL": "Geen URL opgegeven",
+    "noClipboard": "Klembord is leeg",
+    "noValidURL": "Geen geldige URL opgegeven",
+    "urlInList": "Deze URL staat al in de lijst",
+    "urlAdded": "URL aan de lijst toegevoegd",
+    "urlsAdded": "URLs aan de lijst toegevoegd",
+    "noURLs": "Geen URLs ingevoerd",
+    "downloadMode": "Geen downloadmodus geselecteerd in instellingen",
+    "codec": "Geen codec geselecteerd in instellingen",
+    "quality": "Geen kwaliteit geselecteerd in instellingen",
+    "storageLocation": "Opslaglocatie niet opgegeven",
+    "specificLocation": "Specifieke opslaglocatie ingesteld",
+    "success": "Succes",
+    "error": "Fout",
+    "permission": "Sluit de browser om toegang te krijgen tot cookies",
+    "network": "Momenteel geen internetverbinding",
+    "songsDownloaded": "Alle nummers zijn succesvol gedownload",
+    "downloadAborted": "Download succesvol afgebroken",
+    "newVersion": "Versie XXX is beschikbaar en wordt gedownload.",
+    "updateDownloaded": "Update gedownload. Herstart de applicatie om de wijzigingen toe te passen.",
+    "settingsSaved": "Instellingen opgeslagen",
+    "settingsAborted": "Instellingen opslaan afgebroken",
+    "saveLocationEnabled": "Laatste gebruikte opslaglocatie wordt automatisch toegevoegd",
+    "saveLocationDisabled": "Laatste gebruikte opslaglocatie wordt niet toegevoegd",
+    "closeToTrayEnabled": "Applicatie wordt geminimaliseerd naar systeemvak",
+    "closeToTrayDisabled": "Applicatie wordt volledig afgesloten",
+    "autostartEnabled": "Applicatie start automatisch bij systeemopstart",
+    "autostartDisabled": "Applicatie start niet automatisch bij systeemopstart",
+    "playlistContext": "Geen instellingenopties voor afspeellijst",
+    "artistNameEnabled": "Artiestnaam wordt opgeslagen in songtitel",
+    "artistNameDisabled": "Artiestnaam wordt niet opgeslagen in songtitel",
+    "clearListEnabled": "URL-lijst wordt gewist na download",
+    "clearListDisabled": "URL-lijst wordt niet gewist na download",
+    "premiumEnabled": "Premium downloaden ingeschakeld",
+    "premiumDisabled": "Premium downloaden uitgeschakeld",
+    "noBrowser": "Premium downloaden ingeschakeld maar geen browser geselecteerd",
+    "libUpdate": "Controle op bibliotheekupdates",
+    "libUptoDate": "Alle bibliotheken zijn up-to-date",
+    "libUpdated": "Bibliotheken succesvol bijgewerkt",
+    "on": "Aan",
+    "off": "Uit"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "¡Nuevas funciones!",
+    "changelog": "Ver todas las diferencias de versiones",
+    "close": "Cerrar",
+    "restart": "Reiniciar"
+  },
+  "tray": {
+    "hide": "Ocultar",
+    "addUrl": "Agregar URL",
+    "download": "Descargar",
+    "close": "Cerrar",
+    "maximize": "Maximizar",
+    "abort": "Abortar",
+    "location": "Ubicación",
+    "clear": "Borrar lista"
+  },
+  "main": {
+    "button": {
+      "add": "Agregar",
+      "remove": "Eliminar",
+      "browse": "Explorar",
+      "download": "Descargar",
+      "abort": "Abortar",
+      "clear": "Borrar lista",
+      "copy": "Copiar"
+    },
+    "label": {
+      "progressTotal": "Progreso total",
+      "progress": "Progreso",
+      "storageLocation": "Ubicación de almacenamiento",
+      "selected": "Seleccionado"
+    }
+  },
+  "settings": {
+    "title": "Configuraciones",
+    "label": {
+      "saveSettings": "Guardar configuraciones",
+      "saveLocation": "Guardar última ubicación",
+      "closeToTray": "Cerrar a la bandeja",
+      "autostart": "Inicio automático al encender el sistema",
+      "downloadMode": "Modo de descarga",
+      "quality": "Calidad",
+      "codec": "Códec",
+      "language": "Idioma",
+      "artistName": "Guardar nombre del artista en el título de la canción",
+      "clearList": "Borrar lista de URL después de la descarga",
+      "enablePremium": "Habilitar YouTube Music Premium",
+      "needPremium": "(Se requiere suscripción a YouTube Music Premium)",
+      "browser": "Seleccionar navegador para iniciar sesión"
+    },
+    "button": {
+      "nothingSelected": "Nada seleccionado"
+    },
+    "option": {
+      "videoAudio": "Vídeo y audio",
+      "audioOnly": "Solo audio",
+      "best": "Mejor",
+      "medium": "Medio",
+      "bad": "Bajo"
+    }
+  },
+  "js": {
+    "noURL": "No se especificó URL",
+    "noClipboard": "El portapapeles está vacío",
+    "noValidURL": "No se especificó una URL válida",
+    "urlInList": "Esta URL ya está en la lista",
+    "urlAdded": "URL añadida a la lista",
+    "urlsAdded": "URLs añadidas a la lista",
+    "noURLs": "No se introdujeron URLs",
+    "downloadMode": "No se seleccionó el modo de descarga en las configuraciones",
+    "codec": "No se seleccionó un códec en las configuraciones",
+    "quality": "No se seleccionó la calidad en las configuraciones",
+    "storageLocation": "No se especificó la ubicación de almacenamiento",
+    "specificLocation": "Se estableció una ubicación de almacenamiento específica",
+    "success": "Éxito",
+    "error": "Error",
+    "permission": "Cierre el navegador para acceder a las cookies",
+    "network": "No hay conexión a internet",
+    "songsDownloaded": "Todas las canciones se descargaron correctamente",
+    "downloadAborted": "Descarga abortada correctamente",
+    "newVersion": "La versión XXX está disponible y se descargará.",
+    "updateDownloaded": "Actualización descargada. Reinicie la aplicación para aplicar los cambios.",
+    "settingsSaved": "Configuraciones guardadas",
+    "settingsAborted": "Guardado de configuraciones abortado",
+    "saveLocationEnabled": "Última ubicación usada será añadida automáticamente",
+    "saveLocationDisabled": "Última ubicación usada no será añadida",
+    "closeToTrayEnabled": "La aplicación se minimizará a la bandeja",
+    "closeToTrayDisabled": "La aplicación se cerrará completamente",
+    "autostartEnabled": "La aplicación se iniciará automáticamente al encender el sistema",
+    "autostartDisabled": "La aplicación no se iniciará automáticamente al encender el sistema",
+    "playlistContext": "No hay opciones de configuración para la lista de reproducción",
+    "artistNameEnabled": "El nombre del artista será guardado en el título de la canción",
+    "artistNameDisabled": "El nombre del artista no será guardado en el título de la canción",
+    "clearListEnabled": "La lista de URLs será borrada después de la descarga",
+    "clearListDisabled": "La lista de URLs no será borrada después de la descarga",
+    "premiumEnabled": "Descarga premium habilitada",
+    "premiumDisabled": "Descarga premium deshabilitada",
+    "noBrowser": "Descarga premium habilitada pero no se seleccionó navegador",
+    "libUpdate": "Verificando actualizaciones de la biblioteca",
+    "libUptoDate": "Todas las bibliotecas están actualizadas",
+    "libUpdated": "Bibliotecas actualizadas correctamente",
+    "on": "Encendido",
+    "off": "Apagado"
+  }
+}

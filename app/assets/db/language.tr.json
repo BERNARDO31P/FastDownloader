@@ -1,0 +1,106 @@
+{
+  "index": {
+    "update": "Yeni özellikler!",
+    "changelog": "Tüm sürümlerin farklarını görün",
+    "close": "Kapat",
+    "restart": "Yeniden başlat"
+  },
+  "tray": {
+    "hide": "Gizle",
+    "addUrl": "URL ekle",
+    "download": "İndir",
+    "close": "Kapat",
+    "maximize": "Maksimuma çıkar",
+    "abort": "İptal et",
+    "location": "Konum",
+    "clear": "Listeyi temizle"
+  },
+  "main": {
+    "button": {
+      "add": "Ekle",
+      "remove": "Kaldır",
+      "browse": "Gözat",
+      "download": "İndir",
+      "abort": "İptal et",
+      "clear": "Listeyi temizle",
+      "copy": "Kopyala"
+    },
+    "label": {
+      "progressTotal": "Toplam ilerleme",
+      "progress": "İlerleme",
+      "storageLocation": "Depolama konumu",
+      "selected": "Seçildi"
+    }
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "label": {
+      "saveSettings": "Ayarları kaydet",
+      "saveLocation": "Son konumu kaydet",
+      "closeToTray": "Tepsiye kapat",
+      "autostart": "Sistem başlatıldığında otomatik başlat",
+      "downloadMode": "İndirme modu",
+      "quality": "Kalite",
+      "codec": "Kodek",
+      "language": "Dil",
+      "artistName": "Sanatçı adını şarkı başlığına kaydet",
+      "clearList": "İndirdikten sonra URL listesini temizle",
+      "enablePremium": "YouTube Music Premium'u etkinleştir",
+      "needPremium": "(YouTube Music Premium aboneliği gereklidir)",
+      "browser": "Giriş yapmak için tarayıcı seç"
+    },
+    "button": {
+      "nothingSelected": "Hiçbir şey seçilmedi"
+    },
+    "option": {
+      "videoAudio": "Video ve ses",
+      "audioOnly": "Sadece ses",
+      "best": "En iyi",
+      "medium": "Orta",
+      "bad": "Kötü"
+    }
+  },
+  "js": {
+    "noURL": "Bağlantı belirtilmedi",
+    "noClipboard": "Panoda hiçbir şey yok",
+    "noValidURL": "Geçerli bir bağlantı belirtilmedi",
+    "urlInList": "Bu bağlantı zaten listede",
+    "urlAdded": "Bağlantı listeye eklendi",
+    "urlsAdded": "Bağlantılar listeye eklendi",
+    "noURLs": "Bağlantı girilmedi",
+    "downloadMode": "Ayarlar'da indirme modu seçilmedi",
+    "codec": "Ayarlar'da kodek seçilmedi",
+    "quality": "Ayarlar'da kalite seçilmedi",
+    "storageLocation": "Depolama konumu belirtilmedi",
+    "specificLocation": "Belirli bir depolama konumu ayarlandı",
+    "success": "Başarılı",
+    "error": "Hata",
+    "permission": "Çerezlere erişmek için tarayıcıyı kapatın",
+    "network": "Şu anda internete bağlı değil",
+    "songsDownloaded": "Tüm şarkılar başarıyla indirildi",
+    "downloadAborted": "İndirme başarıyla iptal edildi",
+    "newVersion": "XXX sürümü mevcut ve indirilecek.",
+    "updateDownloaded": "Güncelleme indirildi. Değişiklikleri uygulamak için uygulamayı yeniden başlatın.",
+    "settingsSaved": "Ayarlar kaydedildi",
+    "settingsAborted": "Ayarlar kaydetme iptal edildi",
+    "saveLocationEnabled": "Son kullanılan depolama konumu otomatik olarak eklenecek",
+    "saveLocationDisabled": "Son kullanılan depolama konumu eklenmeyecek",
+    "closeToTrayEnabled": "Uygulama tepsiye küçültülecek",
+    "closeToTrayDisabled": "Uygulama tamamen kapatılacak",
+    "autostartEnabled": "Uygulama sistem başlatıldığında otomatik olarak başlatılacak",
+    "autostartDisabled": "Uygulama sistem başlatıldığında otomatik olarak başlatılmayacak",
+    "playlistContext": "Oynatma listesi için ayar seçenekleri yok",
+    "artistNameEnabled": "Sanatçı adı şarkı başlığına kaydedilecek",
+    "artistNameDisabled": "Sanatçı adı şarkı başlığına kaydedilmeyecek",
+    "clearListEnabled": "İndirdikten sonra URL listesi temizlenecek",
+    "clearListDisabled": "İndirdikten sonra URL listesi temizlenmeyecek",
+    "premiumEnabled": "Premium indirme etkinleştirildi",
+    "premiumDisabled": "Premium indirme devre dışı bırakıldı",
+    "noBrowser": "Premium indirme etkinleştirildi ancak tarayıcı seçilmedi",
+    "libUpdate": "Kitaplık güncellemeleri kontrol ediliyor",
+    "libUptoDate": "Tüm kitaplıklar güncel",
+    "libUpdated": "Kitaplıklar başarıyla güncellendi",
+    "on": "Açık",
+    "off": "Kapalı"
+  }
+}
