@@ -664,7 +664,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 }
 
                 if (data.includes("winerror 3")) resolve("drive");
-                if (data.includes("permission")) resolve("permission");
+                if (data.includes("permission") || data.includes("cookie")) resolve("permission");
                 if (data.includes("getaddrinfo failed")) resolve("network");
                 if (data.includes("timed out")) resolve("network");
             }
