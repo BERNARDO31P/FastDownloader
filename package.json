@@ -1,7 +1,7 @@
 {
   "name": "fastdownloader",
-  "version": "1.0.0",
-  "description": "A fast video and audio downloader for YouTube",
+  "version": "0.5.19",
+  "description": "A fast YouTube video/audio downloader in electron.js (and many more websites)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
