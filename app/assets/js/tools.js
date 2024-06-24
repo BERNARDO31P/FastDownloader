@@ -33,12 +33,6 @@ let ytDl = "", ffmpeg = "";
 export let selectedLang = null;
 
 let extractors = [];
-let extendedExtractors = [
-    "netflix",
-    "youtu",
-];
-let extractorFilter = new RegExp(extendedExtractors.join("|"), 'gi');
-
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -261,29 +255,19 @@ async function download(data) {
     let percentage = parseFloat((100 / data.length).toFixed(2));
 
     downloading = true;
-    resolve = null;
 
     let i = 0;
     while (i < data.length) {
         const item = data[i];
-
-        let url = new URL(item.url.trim());
-        let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
-
-        if (!extendedExtractors.includes(host)) {
-            resolve = await downloadURL(
-                item.mode,
-                item.location,
-                item.url,
-                percentage,
-                item.codecAudio,
-                item.codecVideo,
-                item.quality
-            );
-        } else {
-            resolve = await downloadNFURL(
-            );
-        }
+        const resolve = await downloadURL(
+            item.mode,
+            item.location,
+            item.url,
+            percentage,
+            item.codecAudio,
+            item.codecVideo,
+            item.quality
+        );
 
         let exitLoop = false;
         switch (resolve) {
@@ -344,7 +328,7 @@ export function addUrlToList(url = "") {
 
         let valid = false;
         for (const domain of generateDomainVariations(url)) {
-            if (extractors.includes(domain) || match(domain, extractorFilter)) {
+            if (extractors.includes(domain)) {
                 valid = true;
                 break;
             }
@@ -591,11 +575,6 @@ export async function setExtractors() {
     }
 
     setCookie("extractors", JSON.stringify(extractors));
-}
-
-// TODO: Comment
-export function downloadNFURL() {
-
 }
 
 // TODO: Comment
