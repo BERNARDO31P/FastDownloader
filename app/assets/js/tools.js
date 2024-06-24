@@ -327,8 +327,18 @@ export function addUrlToList(url = "") {
             return false;
         }
 
+        let youtube = false;
+
         let valid = false;
         for (const domain of generateDomainVariations(url)) {
+            if (domain === "youtube") {
+                url = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
+
+                valid = true;
+                youtube = true;
+                break;
+            }
+
             if (extractors.includes(domain)) {
                 valid = true;
                 break;
@@ -342,18 +352,15 @@ export function addUrlToList(url = "") {
 
         if (urlList.indexOf(url.toString()) !== -1) {
             showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
+
             return false;
         }
 
-        url = url.toString();
-
-        let li = document.createElement("li"), found = null;
-        if ((found = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?")) !== null) {
-            url = found;
-
-            worker.postMessage({type: "checkPremium", url: found, mode: getCookie("mode")});
+        if (youtube) {
+            worker.postMessage({type: "checkPremium", url: url, mode: getCookie("mode")});
         }
 
+        const li = document.createElement("li");
         li.textContent = url;
         li.setAttribute("data-url", url);
 
@@ -459,7 +466,7 @@ function removeOpacityNotification(notification) {
 // TODO: Comment
 function match(string, regex) {
     let regExp = new RegExp(regex, "gi");
-    let found = string.match(regExp);
+    let found = string.toString().match(regExp);
 
     return (found) ? found[0] : null;
 }

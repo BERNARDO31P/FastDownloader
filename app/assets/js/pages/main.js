@@ -134,12 +134,15 @@ tools.bindEvent("click", ".listBox .clear-button:not([aria-disabled='true'])", (
 /**
  * Adds the clipboard text as a URL to the list.
  */
-tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", () => {
+tools.bindEvent("click", ".input .paste-button:not([aria-disabled='true'])", (e) => {
     let clipboardText = clipboard.readText();
 
     if (!clipboardText) {
         showNotification(tools.languageDB["js"]["noClipboard"], tools.languageDB["js"]["error"]);
     } else tools.addUrlToList(clipboardText);
+
+    let input = e.target.closest(".input").querySelector("input");
+    input.value = "";
 });
 
 /**
