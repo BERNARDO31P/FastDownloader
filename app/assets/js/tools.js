@@ -324,6 +324,7 @@ export function addUrlToList(url = "") {
             url = new URL(value.trim());
         } catch (e) {
             showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
+            showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
             return false;
         }
 
@@ -675,8 +676,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
                 if (data.includes("winerror 3")) resolve("drive");
                 if (data.includes("permission") || data.includes("cookie")) resolve("permission");
-                if (data.includes("getaddrinfo failed")) resolve("network");
-                if (data.includes("timed out")) resolve("network");
+                if (data.includes("getaddrinfo failed") || data.includes("timed out")) resolve("network");
             }
         });
 

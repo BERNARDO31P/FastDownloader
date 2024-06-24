@@ -28,8 +28,13 @@ const keywordsYt = [
 
 const keywordsErrors = [
     "winerror 10054",
+    "winerror 3",
+    "getaddrinfo failed",
+    "timed out",
     "aes-cbc",
-    "[youtube]"
+    "[youtube]",
+    "cookie",
+    "permission"
 ];
 
 const ytFilter = new RegExp(keywordsYt.join("|"), 'gi');
