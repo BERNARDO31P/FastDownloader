@@ -51,7 +51,7 @@ FastDownloader is a free and minimalistic tool to download videos and/or audios 
   - Allows you to get the best available quality
   - YouTube Music URLs only
 - Browser selection
-  - Allows the Fast Downloader to use your YouTube Premium cookie
+  - Allows FastDownloader to use your YouTube Premium cookie
   - Don't worry, every application on your system has the permission to read browser cookies
 - Clear list
   - Functionality to clear the URL list after a download

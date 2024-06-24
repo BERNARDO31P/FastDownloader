@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.5.18",
+  "version": "0.5.19",
   "description": "A fast video and audio downloader for YouTube",
   "main": "main.js",
   "scripts": {
@@ -41,7 +41,7 @@
   },
   "build": {
     "appId": "fm.bernardo.fastDownloader",
-    "productName": "Fast Downloader",
+    "productName": "FastDownloader",
     "directories": {
       "buildResources": "resources"
     },

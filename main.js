@@ -56,8 +56,8 @@ function createWindow() {
     win.center();
     win.loadFile("app" + path.sep + "index.html").then(() => {
         trayIcon = new Tray((iconDir) ? path.join(iconDir, "256x256.png") : null);
-        trayIcon.setTitle("Fast Downloader");
-        trayIcon.setToolTip("Fast Downloader");
+        trayIcon.setTitle("FastDownloader");
+        trayIcon.setToolTip("FastDownloader");
 
         ipcMain.on("lang", (event, selectedLanguage) => {
             language = selectedLanguage;
