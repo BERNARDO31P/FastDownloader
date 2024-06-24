@@ -28,16 +28,11 @@ const keywordsYt = [
 
 const keywordsErrors = [
     "winerror 10054",
-    "winerror 3",
-    "getaddrinfo failed",
-    "timed out",
     "aes-cbc",
     "[youtube]",
-    "cookie",
-    "permission"
 ];
 
 const ytFilter = new RegExp(keywordsYt.join("|"), 'gi');
-const errorFilter = new RegExp(keywordsErrors.join("|"), 'gi');
+const errorFilter = new RegExp(keywordsErrors.map(keyword => `\\b${keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`).join("|"), 'gi');
 
 export {ytFilter, errorFilter};

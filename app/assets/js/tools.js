@@ -324,7 +324,6 @@ export function addUrlToList(url = "") {
             url = new URL(value.trim());
         } catch (e) {
             showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
-            showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
             return false;
         }
 
