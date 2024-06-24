@@ -1,4 +1,4 @@
-FastDownloader is a free and minimalistic tool to download videos and/or audios from almost 1800 websites. Including YouTube, Facebook, Instagram, Twitter, Bandcamp, etc. Click [here](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) to check if the website in your mind is supported. 
+FastDownloader is a free and minimalistic tool to download videos and/or audios from over 1800 websites! Including YouTube, Facebook, Instagram, Twitter, Bandcamp, etc. Click [here](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) to check if the website in your mind is supported. 
 
 ## Features
 - Download multiple songs and playlists at once
@@ -18,7 +18,7 @@ FastDownloader is a free and minimalistic tool to download videos and/or audios 
   - Ubuntu/Debian (Beta)
   - CentOS/RedHat (Beta)
   - ArchLinux ([AUR](https://aur.archlinux.org/packages/fastdownloader-bin))
-- Download from [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
+- Download from over 1800 [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
 
 ## Settings
 - Close to tray
