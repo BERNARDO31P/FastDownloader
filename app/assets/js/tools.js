@@ -46,7 +46,8 @@ console.debug = (log) => {
     debug(log);
 
     // TODO: Add check if logs are enabled
-    logs.push(log);
+    // Implement logging to send for analytics if bugs are found
+    //logs.push(log);
 }
 
 /*
