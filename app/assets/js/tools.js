@@ -308,6 +308,22 @@ async function download(data) {
     }
 }
 
+function generateDomainVariations(url) {
+    const hostname = url.hostname;
+    const domainParts = hostname.split('.');
+
+    // Extract the main domain without the subdomain and TLD
+    const mainDomain = domainParts.slice(-2, -1)[0].toLowerCase();
+
+    return [
+        mainDomain, // main domain without subdomain and TLD
+        `${mainDomain}.${domainParts.slice(-1)[0]}`, // domain with TLD
+        `${mainDomain}${domainParts.slice(-1)[0]}`, // domain concatenated without dot
+        hostname, // full domain
+        hostname.replace(/\./g, '') // full domain without dots
+    ];
+}
+
 export function addUrlToList(url = "") {
     if (!url) {
         showNotification(languageDB["js"]["noURL"], languageDB["js"]["error"]);
@@ -326,8 +342,15 @@ export function addUrlToList(url = "") {
             return false;
         }
 
-        let host = url.hostname.split(".").slice(-2, -1)[0].toLowerCase();
-        if (!extractors.includes(host) && !match(host, extractorFilter)) {
+        let valid = false;
+        for (const domain of generateDomainVariations(url)) {
+            if (extractors.includes(domain) || match(domain, extractorFilter)) {
+                valid = true;
+                break;
+            }
+        }
+
+        if (!valid) {
             showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
             return false;
         }
