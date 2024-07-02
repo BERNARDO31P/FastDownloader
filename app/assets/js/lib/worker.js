@@ -4,37 +4,6 @@ const ytMusic = require("node-youtube-music");
 
 import {ytFilter} from "./filter.js";
 
-/*let keywords = [
-    "\\[.*\\]",
-    "\\{.*\\}",
-    "- official",
-    "official",
-    "video",
-    "musi(c|k)(\\s+)?video",
-    "original mix",
-    "no copyright",
-    "\\(",
-    "\\)",
-    "tdt #001",
-    "free unreleased wav download",
-    "free download",
-    "download",
-    "unreleased",
-    "ᴴᴰ",
-    "hd",
-    "(\\d+) bpm",
-    "(\\d+)bpm",
-    "\\/\\/(?<=\\/\\/).*",
-    "radio edit",
-    "lyrics",
-    "visuals",
-    "\"",
-    "'",
-    "\\(prod\\.(.+)?\\)",
-    "\\([A-Z]{2}\\)"
-];
-let ytFilter = new RegExp(keywords.join("|"), 'gi');*/
-
 let globalSettings = {};
 let globalMode, globalCodecAudio, globalCodecVideo, globalQuality;
 

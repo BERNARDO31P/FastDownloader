@@ -295,17 +295,16 @@ async function download(data) {
 
 function generateDomainVariations(url) {
     const hostname = url.hostname;
-    const domainParts = hostname.split('.');
+    const domainParts = hostname.split('.').map(part => part.toLowerCase());
 
     // Extract the main domain without the subdomain and TLD
-    const mainDomain = domainParts.slice(-2, -1)[0].toLowerCase();
-
+    const mainDomain = domainParts.slice(-2, -1)[0];
     return [
-        mainDomain, // main domain without subdomain and TLD
         `${mainDomain}.${domainParts.slice(-1)[0]}`, // domain with TLD
         `${mainDomain}${domainParts.slice(-1)[0]}`, // domain concatenated without dot
         hostname, // full domain
-        hostname.replace(/\./g, '') // full domain without dots
+        hostname.replace(/\./g, ''), // full domain without dots
+        ...domainParts, // domain parts
     ];
 }
 
@@ -328,6 +327,8 @@ export function addUrlToList(url = "") {
         }
 
         let youtube = false;
+
+        console.log(generateDomainVariations(url));
 
         let valid = false;
         for (const domain of generateDomainVariations(url)) {
@@ -577,7 +578,11 @@ export async function setExtractors() {
 
     let extractors = [];
     for (let i = 0; i < result.length; i++) {
-        let extractor = result[i].split(":")[0].toLowerCase();
+        let extractor = result[i].split(":")[0];
+        extractor = extractor.split("(")[0];
+        extractor = extractor.trim().toLowerCase();
+
+        //let extractor = result[i].split(":")[0].toLowerCase();
 
         if (!extractors.includes(extractor)) extractors.push(extractor);
     }

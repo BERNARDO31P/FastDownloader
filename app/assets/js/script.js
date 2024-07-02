@@ -22,8 +22,6 @@ window.onload = async () => {
     if (tools.getCookie("saveLocation")) location.value = tools.getCookie("lastLocation");
     if (tools.getCookie("cache") !== null) tools.loadAllData(location);
 
-    const selectedLang = tools.selectedLang ?? tools.getCookie("lang") ?? "en";
-
     const notification = document.getElementById("updateNotification");
     const message = notification.querySelector(".message");
     const restartButton = notification.querySelector('.restart-button');
