@@ -64,6 +64,7 @@
     "noURL": "Nenhum URL especificado",
     "noClipboard": "O clipboard está vazio",
     "noValidURL": "Nenhum URL válido especificado",
+    "brokenURL": "Este site é suportado, mas atualmente há um problema",
     "urlInList": "Este URL já está na lista",
     "urlAdded": "URL adicionado à lista",
     "urlsAdded": "URLs adicionados à lista",

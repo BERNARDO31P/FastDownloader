@@ -64,6 +64,7 @@
     "noURL": "Aucune URL spécifiée",
     "noClipboard": "Le presse-papiers est vide",
     "noValidURL": "Aucune URL valide spécifiée",
+    "brokenURL": "Ce site est pris en charge, mais il y a actuellement un problème",
     "urlInList": "Cette URL est déjà dans la liste",
     "urlAdded": "URL ajoutée à la liste",
     "urlsAdded": "URLs ajoutées à la liste",

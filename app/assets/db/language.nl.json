@@ -64,6 +64,7 @@
     "noURL": "Geen URL opgegeven",
     "noClipboard": "Klembord is leeg",
     "noValidURL": "Geen geldige URL opgegeven",
+    "brokenURL": "Deze website wordt ondersteund, maar er is momenteel een probleem",
     "urlInList": "Deze URL staat al in de lijst",
     "urlAdded": "URL aan de lijst toegevoegd",
     "urlsAdded": "URLs aan de lijst toegevoegd",

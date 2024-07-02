@@ -64,6 +64,7 @@
     "noURL": "You didn't enter a URL",
     "noClipboard": "Theres nothing in your clipboard",
     "noValidURL": "You didn't enter a valid URL",
+    "brokenURL": "This website is supported, but there is currently a problem",
     "urlInList": "This URL is already in the list",
     "urlAdded": "URL has been added to the list",
     "urlsAdded": "URLs have been added to the list",

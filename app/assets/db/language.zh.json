@@ -64,6 +64,7 @@
     "noURL": "未指定链接",
     "noClipboard": "剪贴板中没有任何内容",
     "noValidURL": "未指定有效链接",
+    "brokenURL": "这个网站受支持，但目前存在一个问题",
     "urlInList": "该链接已在列表中",
     "urlAdded": "链接已添加到列表",
     "urlsAdded": "链接已添加到列表",

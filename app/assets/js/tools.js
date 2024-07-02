@@ -33,6 +33,7 @@ let ytDl = "", ffmpeg = "";
 export let selectedLang = null;
 
 let extractors = [];
+let brokenExtractors = [];
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -149,12 +150,17 @@ function updateBinaryLocations() {
  * Autor: Bernardo de Oliveira
  * Argumente:
  *  name: (String) Cookie Name
+ *  def: (Any) Standard Wert, falls Cookie nicht existiert
  *
  * Holt den Wert aus dem Speicher
  * Gibt den Wert zurück
  */
-export function getCookie(name) {
+export function getCookie(name, def = null) {
     let cookie = localStorage.getItem(name);
+
+    if (cookie === null) {
+        return def;
+    }
 
     return cookie === "true" ? true :
         cookie === "false" ? false :
@@ -327,10 +333,8 @@ export function addUrlToList(url = "") {
         }
 
         let youtube = false;
-
-        console.log(generateDomainVariations(url));
-
         let valid = false;
+        let broken = false;
         for (const domain of generateDomainVariations(url)) {
             if (domain === "youtube") {
                 url = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
@@ -344,6 +348,16 @@ export function addUrlToList(url = "") {
                 valid = true;
                 break;
             }
+
+            if (brokenExtractors.includes(domain)) {
+                broken = true;
+                break;
+            }
+        }
+
+        if (broken) {
+            showNotification(languageDB["js"]["brokenURL"], languageDB["js"]["error"]);
+            return false;
         }
 
         if (!valid) {
@@ -353,7 +367,6 @@ export function addUrlToList(url = "") {
 
         if (urlList.indexOf(url.toString()) !== -1) {
             showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
-
             return false;
         }
 
@@ -567,27 +580,32 @@ export function hideSelect(element) {
 }
 
 // TODO: Comment
-export function loadExtractors(data) {
-    extractors = JSON.parse(data);
+export async function loadExtractors() {
+    extractors = JSON.parse(getCookie("extractors", "[]"));
+    brokenExtractors = JSON.parse(getCookie("brokenExtractors", "[]"));
 }
 
 // TODO: Comment
 export async function setExtractors() {
-    let result = spawnSync(ytDl + " --list-extractors", {shell: true}).stdout.toString();
+    let result = spawnSync(ytDl + " --list-extractors", {shell: true}).stdout.toString().trim();
+
     result = result.split("\n");
 
-    let extractors = [];
+    const extractors = [];
+    const brokenExtractors = [];
     for (let i = 0; i < result.length; i++) {
-        let extractor = result[i].split(":")[0];
-        extractor = extractor.split("(")[0];
-        extractor = extractor.trim().toLowerCase();
+        const extractor = result[i].split(":")[0].split("(")[0].trim().toLowerCase();
+        const isBroken = result[i].includes("CURRENTLY BROKEN");
 
-        //let extractor = result[i].split(":")[0].toLowerCase();
-
-        if (!extractors.includes(extractor)) extractors.push(extractor);
+        if (!extractors.includes(extractor) && !brokenExtractors.includes(extractor)) {
+            isBroken ? brokenExtractors.push(extractor) : extractors.push(extractor);
+        }
     }
 
-    setCookie("extractors", JSON.stringify(extractors));
+    if (extractors.length) {
+        setCookie("brokenExtractors", JSON.stringify(brokenExtractors));
+        setCookie("extractors", JSON.stringify(extractors));
+    }
 }
 
 // TODO: Comment
@@ -975,8 +993,7 @@ async function loadLanguage(language) {
 
 // TODO: Comment
 export async function initialize() {
-    let extractors = getCookie("extractors");
-    if (extractors && extractors.length) loadExtractors(extractors);
+    await loadExtractors();
 
     let cookie = getCookie("lang");
     if (cookie) {

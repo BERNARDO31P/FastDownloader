@@ -64,6 +64,7 @@
     "noURL": "Bağlantı belirtilmedi",
     "noClipboard": "Panoda hiçbir şey yok",
     "noValidURL": "Geçerli bir bağlantı belirtilmedi",
+    "brokenURL": "Bu web sitesi destekleniyor, ancak şu anda bir sorun var",
     "urlInList": "Bu bağlantı zaten listede",
     "urlAdded": "Bağlantı listeye eklendi",
     "urlsAdded": "Bağlantılar listeye eklendi",

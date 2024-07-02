@@ -64,6 +64,7 @@
     "noURL": "Tidak ada URL yang ditentukan",
     "noClipboard": "Tidak ada yang ada di clipboard",
     "noValidURL": "Tidak ada URL yang valid yang ditentukan",
+    "brokenURL": "Situs web ini didukung, tetapi saat ini ada masalah",
     "urlInList": "URL ini sudah ada di daftar",
     "urlAdded": "URL ditambahkan ke daftar",
     "urlsAdded": "URL ditambahkan ke daftar",

@@ -64,6 +64,7 @@
     "noURL": "No se especificó URL",
     "noClipboard": "El portapapeles está vacío",
     "noValidURL": "No se especificó una URL válida",
+    "brokenURL": "Este sitio web está soportado, pero actualmente hay un problema",
     "urlInList": "Esta URL ya está en la lista",
     "urlAdded": "URL añadida a la lista",
     "urlsAdded": "URLs añadidas a la lista",
