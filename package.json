@@ -112,8 +112,8 @@
           "to": "icons/64x64.png"
         },
         {
-          "from": "resources/yt-dlp-plugins/seproDev/postprocessor/chrome_cookie_unlock.py",
-          "to": "yt-dlp-plugins/seproDev/postprocessor/chrome_cookie_unlock.py"
+          "from": "resources/yt-dlp-plugins/seproDev/yt_dlp_plugins/postprocessor/chrome_cookie_unlock.py",
+          "to": "yt-dlp-plugins/seproDev/yt_dlp_plugins/postprocessor/chrome_cookie_unlock.py"
         }
       ]
     }
