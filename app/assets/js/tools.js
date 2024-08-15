@@ -266,7 +266,8 @@ async function download(data) {
     let i = 0;
     while (i < data.length) {
         const item = data[i];
-        const resolve = await downloadURL(
+
+        resolve = await downloadURL(
             item.mode,
             item.location,
             item.url,
@@ -719,6 +720,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 progressSongInfo.textContent = "0%";
 
                 ipcRenderer.send("set_percentage", percentageDecimal);
+
+                console.debug("No errors occurred!");
 
                 if (!aborted) resolve("success");
                 else resolve("aborted");
