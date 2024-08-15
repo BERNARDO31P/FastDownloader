@@ -692,6 +692,10 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             if (!aborted) {
                 data = data.toLowerCase();
 
+                if (data.includes("attempting to unlock cookies")) {
+                    return;
+                }
+
                 if (!data.match(errorFilter)) {
                     error = true;
                 }
