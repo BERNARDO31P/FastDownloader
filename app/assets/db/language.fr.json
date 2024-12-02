@@ -65,6 +65,7 @@
     "noClipboard": "Le presse-papiers est vide",
     "noValidURL": "Aucune URL valide spécifiée",
     "brokenURL": "Ce site est pris en charge, mais il y a actuellement un problème",
+    "login": "Veuillez ouvrir votre navigateur et vous connecter à YouTube",
     "urlInList": "Cette URL est déjà dans la liste",
     "urlAdded": "URL ajoutée à la liste",
     "urlsAdded": "URLs ajoutées à la liste",

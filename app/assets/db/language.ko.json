@@ -65,6 +65,7 @@
     "noClipboard": "클립보드에 아무것도 없습니다",
     "noValidURL": "유효한 URL이 지정되지 않았습니다",
     "brokenURL": "이 웹사이트는 지원되지만 현재 문제가 있습니다",
+    "login": "브라우저를 열고 YouTube에 로그인하세요",
     "urlInList": "이 URL은 이미 목록에 있습니다",
     "urlAdded": "URL이 목록에 추가되었습니다",
     "urlsAdded": "URL이 목록에 추가되었습니다",

@@ -283,15 +283,19 @@ async function download(data) {
                 i++;
                 break;
             case "permission":
-                showNotification(languageDB["js"]["permission"], languageDB["js"]["error"], 10000);
+                showNotification(languageDB["js"]["permission"], languageDB["js"]["error"], 8000);
                 await sleep(10000);
                 break;
             case "network":
-                showNotification(languageDB["js"]["network"], languageDB["js"]["error"], 10000);
+                showNotification(languageDB["js"]["network"], languageDB["js"]["error"], 8000);
                 await sleep(10000);
                 break;
             case "drive":
                 await sleep(1000);
+                break;
+            case "login":
+                showNotification(languageDB["js"]["login"], languageDB["js"]["error"], 8000);
+                await sleep(10000);
                 break;
             default:
                 exitLoop = true;
@@ -618,22 +622,30 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressTotalInfo = document.querySelector(".progress-total .info p");
         const progressSong = document.querySelector(".progress-song progress");
         const progressSongInfo = document.querySelector(".progress-song .info p");
+
+        let songInfoError = "";
         let songInfo = {};
+        let title = "";
         try {
             const output = spawnSync(ytDl + " --print artist,title --skip-download --no-call-home " + url, {
                 shell: true
-            }).stdout.toString().split("\n");
-            songInfo = {artist: output[0], title: output[1]};
+            });
+
+            songInfoError = output.stderr.toString().toLowerCase();
+
+            const outputString = output.stdout.toString().split("\n");
+
+            songInfo = {artist: outputString[0], title: outputString[1]};
+            title = clearTitle(songInfo, mode);
         } catch (error) {
-            error = error.toString().toLowerCase();
-            if (error.includes("getaddrinfo failed")) resolve("network");
+            if (songInfoError.includes("getaddrinfo failed")) resolve("network");
+            if (songInfoError.includes("sign in")) resolve("login");
 
             return;
         }
 
         if (aborted) resolve("aborted");
 
-        const title = clearTitle(songInfo, mode);
         console.debug(title);
 
         let config = [
@@ -662,7 +674,11 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         let premium = JSON.parse(getCookie("premium"));
         if (premium && premium.check) {
             if (premium.browser && premium.browser.length) {
-                config.push("--cookies-from-browser " + premium.browser);
+                if (process.platform !== "win32" || premium.browser !== "chrome") {
+                    config.push("--cookies-from-browser " + premium.browser);
+                } else {
+                    console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
+                }
             } else {
                 showNotification(languageDB["js"]["noBrowser"]);
                 resolve(null);
@@ -704,6 +720,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
                 if (data.includes("winerror 3")) resolve("drive");
                 if (data.includes("permission") || data.includes("cookie")) resolve("permission");
                 if (data.includes("getaddrinfo failed") || data.includes("timed out")) resolve("network");
+                if (data.includes("sign in")) resolve("login");
             }
         });
 
