@@ -1,6 +1,6 @@
 {
   "name": "fastdownloader",
-  "version": "0.5.23",
+  "version": "0.6.0",
   "description": "A fast YouTube video/audio downloader in electron.js (and many more websites)",
   "main": "main.js",
   "scripts": {
@@ -26,13 +26,13 @@
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@electron/asar": "3.2.17",
-    "electron": "33.2.1",
-    "electron-builder": "25.1.8"
+    "@electron/asar": "3.4.1",
+    "electron": "33.4.11",
+    "electron-builder": "26.0.12"
   },
   "dependencies": {
     "auto-launch": "5.0.6",
-    "electron-updater": "6.3.9",
+    "electron-updater": "6.6.2",
     "fastest-levenshtein": "1.0.16",
     "node-youtube-music": "0.8.3",
     "terminate": "2.8.0",

@@ -102,6 +102,8 @@
     "libUpdate": "Verificando atualizações da biblioteca",
     "libUptoDate": "Todas as bibliotecas estão atualizadas",
     "libUpdated": "Bibliotecas atualizadas com sucesso",
+    "adminPermission": "Não foi possível instalar a atualização, por favor inicie o aplicativo como administrador",
+    "unexpectedError": "Erro inesperado, por favor entre em contato com o desenvolvedor",
     "on": "Ligado",
     "off": "Desligado"
   }

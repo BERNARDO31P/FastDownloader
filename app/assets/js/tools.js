@@ -29,7 +29,7 @@ export let workers = 0;
 export let downloading = false, resolve = null, aborted = false, childProcess = null, lastLi = null;
 export let languageDB = {};
 
-let ytDl = "", ffmpeg = "";
+let ytDl = "", ffmpeg = "", elevate = "";
 export let selectedLang = null;
 
 let extractors = [];
@@ -143,6 +143,7 @@ export function setRealDir(dirname) {
 function updateBinaryLocations() {
     ytDl = "\"" + __realDir + path.sep + "yt-dlp" + fileEnding + "\"";
     ffmpeg = "\"" + __realDir + path.sep + "ffmpeg" + fileEnding + "\"";
+    elevate = "\"" + __realDir + path.sep + "elevate" + fileEnding + "\"";
 }
 
 /*
@@ -300,7 +301,7 @@ async function download(data) {
             default:
                 exitLoop = true;
         }
-        if (exitLoop) break;
+        if (exitLoop || aborted) break;
     }
 }
 
@@ -434,9 +435,9 @@ export function removeActiveListItems() {
  * Animiert eine Benachrichtigung in die Anzeige
  * Wenn der Player angezeigt wird, wird die Benachrichtigung darüber angezeigt, sonst ganz unten
  */
-export function showNotification(message, type = "Info", time = 3000) {
+export function showNotification(message, title = "Info", time = 3000) {
     if (document.hidden) {
-        ipcRenderer.send("show_notification", type, message);
+        ipcRenderer.send("show_notification", title, message);
         return;
     }
 
@@ -706,22 +707,24 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             console.debug(data);
             console.debug("Error end!");
 
-            if (!aborted) {
-                data = data.toLowerCase();
-
-                if (data.includes("attempting to unlock cookies")) {
-                    return;
-                }
-
-                if (!data.match(errorFilter)) {
-                    error = true;
-                }
-
-                if (data.includes("winerror 3")) resolve("drive");
-                if (data.includes("permission") || data.includes("cookie")) resolve("permission");
-                if (data.includes("getaddrinfo failed") || data.includes("timed out")) resolve("network");
-                if (data.includes("sign in")) resolve("login");
+            if (aborted) {
+                return
             }
+
+            data = data.toLowerCase();
+
+            if (data.includes("attempting to unlock cookies")) {
+                return;
+            }
+
+            if (!data.match(errorFilter)) {
+                error = true;
+            }
+
+            if (data.includes("winerror 3")) resolve("drive");
+            if (data.includes("permission") || data.includes("cookie")) resolve("permission");
+            if (data.includes("getaddrinfo failed") || data.includes("timed out")) resolve("network");
+            if (data.includes("sign in")) resolve("login");
         });
 
         childProcess.on("close", (num) => {
@@ -970,7 +973,7 @@ export function loadSettings() {
     }
 
     const savingLocation = document.querySelector("settings .saveLocation");
-    if(saveLocation) {
+    if (saveLocation) {
         savingLocation.querySelector("#saveLocation").classList.add("active");
         savingLocation.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
@@ -1051,22 +1054,56 @@ export async function initialize() {
 }
 
 // TODO: Comment
-export function updateYtDl() {
+export function updateYtDl(administrator = false) {
     let update = true;
+    let error = false;
+
+    console.debug("Checking for yt-dlp update");
 
     showNotification(languageDB["js"]["libUpdate"]);
     setDisabled();
 
-    childProcess = exec(ytDl + " -U");
+    if (administrator) {
+        childProcess = exec(elevate + " " + ytDl + " -U");
+    } else {
+        childProcess = exec(ytDl + " -U");
+    }
 
     childProcess.stdout.on("data", (data) => {
+        console.debug(data);
+
         if (data.includes("yt-dlp is up to date")) {
             update = false;
             terminate(childProcess.pid);
         }
     });
 
+    childProcess.stderr.on("data", (data) => {
+        error = true;
+
+        console.debug("Error start:");
+        console.debug(data);
+        console.debug("Error end!");
+
+        if (data.includes("administrator") && !administrator) {
+            updateYtDl(true);
+            return;
+        }
+
+        if (administrator) {
+            showNotification(languageDB["js"]["adminPermission"], languageDB["js"]["error"]);
+            return;
+        }
+
+        showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
+        setEnabled();
+    });
+
     childProcess.on("close", () => {
+        if (error) {
+            return;
+        }
+
         if (update || !extractors || !extractors.length) {
             setExtractors().then(() => {
                 setEnabled();

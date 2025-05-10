@@ -102,6 +102,8 @@
     "libUpdate": "ライブラリの更新がチェックされます",
     "libUptoDate": "ライブラリはすべて最新です",
     "libUpdated": "ライブラリが正常に更新されました",
+    "adminPermission": "管理者としてアプリケーションを起動してください",
+    "unexpectedError": "予期しないエラーが発生しました",
     "on": "オン",
     "off": "オフ"
   }

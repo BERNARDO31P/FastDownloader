@@ -102,6 +102,8 @@
     "libUpdate": "Kitaplık güncellemeleri kontrol ediliyor",
     "libUptoDate": "Tüm kitaplıklar güncel",
     "libUpdated": "Kitaplıklar başarıyla güncellendi",
+    "adminPermission": "Güncelleme yüklenemedi, lütfen uygulamayı yönetici olarak başlatın",
+    "unexpectedError": "Beklenmeyen bir hata oluştu",
     "on": "Açık",
     "off": "Kapalı"
   }

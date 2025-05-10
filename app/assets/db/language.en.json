@@ -101,6 +101,8 @@
     "libUpdate": "Libraries are being checked for updates",
     "libUptoDate": "Libraries are upto date",
     "libUpdated": "Successfully updated all libraries",
+    "adminPermission": "Update could not be installed, please start the application as administrator",
+    "unexpectedError": "An unexpected error occurred",
     "on": "On",
     "off": "Off"
   }

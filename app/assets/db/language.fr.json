@@ -102,6 +102,8 @@
     "libUpdate": "Vérification des mises à jour de la bibliothèque",
     "libUptoDate": "Toutes les bibliothèques sont à jour",
     "libUpdated": "Bibliothèques mises à jour avec succès",
+    "adminPermission": "La mise à jour n'a pas pu être installée, veuillez démarrer l'application en tant qu'administrateur",
+    "unexpectedError": "Une erreur inattendue s'est produite",
     "on": "Activé",
     "off": "Désactivé"
   }

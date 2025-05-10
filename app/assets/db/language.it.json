@@ -102,6 +102,8 @@
     "libUpdate": "Verifica degli aggiornamenti della libreria",
     "libUptoDate": "Tutte le librerie sono aggiornate",
     "libUpdated": "Librerie aggiornate con successo",
+    "adminPermission": "Non è stato possibile installare l'aggiornamento, si prega di avviare l'applicazione come amministratore",
+    "unexpectedError": "Errore imprevisto",
     "on": "Acceso",
     "off": "Spento"
   }

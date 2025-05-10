@@ -102,6 +102,8 @@
     "libUpdate": "Controle op bibliotheekupdates",
     "libUptoDate": "Alle bibliotheken zijn up-to-date",
     "libUpdated": "Bibliotheken succesvol bijgewerkt",
+    "adminPermission": "Update kon niet worden geïnstalleerd, start de applicatie als administrator",
+    "unexpectedError": "Er is een onverwachte fout opgetreden",
     "on": "Aan",
     "off": "Uit"
   }

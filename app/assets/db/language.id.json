@@ -102,6 +102,8 @@
     "libUpdate": "Memeriksa pembaruan perpustakaan",
     "libUptoDate": "Semua perpustakaan terbaru",
     "libUpdated": "Perpustakaan berhasil diperbarui",
+    "adminPermission": "Tidak dapat menginstal pembaruan, silakan jalankan aplikasi sebagai administrator",
+    "unexpectedError": "Kesalahan tak terduga terjadi",
     "on": "Hidup",
     "off": "Mati"
   }
