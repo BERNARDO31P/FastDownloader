@@ -677,6 +677,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             if (premium.browser && premium.browser.length) {
                 if (process.platform !== "win32" || premium.browser !== "chrome") {
                     config.push("--cookies-from-browser " + premium.browser);
+                    config.push("--extractor-args \"youtube:formats=missing_pot\"")
                 } else {
                     console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
                 }
