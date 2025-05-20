@@ -714,7 +714,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
             data = data.toLowerCase();
 
-            if (data.includes("attempting to unlock cookies")) {
+            if (data.includes("attempting to unlock cookies") || data.includes("po token")) {
                 return;
             }
 
