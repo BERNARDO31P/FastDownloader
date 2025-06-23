@@ -37,7 +37,7 @@
     "node-youtube-music": "0.8.3",
     "terminate": "2.8.0",
     "youtube-sr": "4.3.11",
-    "ytpl": "2.3.0"
+    "@distube/ytpl": "1.2.3"
   },
   "build": {
     "appId": "fm.bernardo.fastDownloader",

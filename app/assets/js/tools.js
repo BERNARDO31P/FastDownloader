@@ -3,7 +3,7 @@ import {errorFilter, ytFilter} from "./lib/filter.js";
 
 const terminate = require("terminate");
 const path = require("path");
-const ytpl = require("ytpl");
+const ytpl = require("@distube/ytpl");
 const {ipcRenderer, clipboard} = require("electron");
 const {exec, spawnSync} = require("child_process");
 
