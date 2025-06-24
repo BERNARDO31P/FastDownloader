@@ -297,6 +297,9 @@ async function download(data) {
                 showNotification(languageDB["js"]["login"], languageDB["js"]["error"], 8000);
                 await sleep(10000);
                 break;
+            case "sleep":
+                await sleep(10000);
+                break;
             default:
                 exitLoop = true;
         }
@@ -725,6 +728,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             if (data.includes("permission") || data.includes("cookie")) resolve("permission");
             if (data.includes("getaddrinfo failed") || data.includes("timed out")) resolve("network");
             if (data.includes("sign in")) resolve("login");
+            if (data.includes("http error 403")) resolve("sleep");
         });
 
         childProcess.on("close", (num) => {
