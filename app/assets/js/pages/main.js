@@ -1,5 +1,6 @@
 import * as tools from "../tools.js";
 import {showNotification, specificSettings} from "../tools.js";
+const {spawnSync} = require("child_process");
 
 const terminate = require("terminate");
 const {clipboard, ipcRenderer, shell} = require("electron");
@@ -276,9 +277,17 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled='true'])"
         let allUrls = [];
         for (let item of items) {
             if (item.textContent.includes("playlist?list=")) {
-                let urls = await tools.getPlaylistUrls(item.textContent);
-                count += urls.length;
-                allUrls = [...allUrls, ...urls];
+                const result = spawnSync(tools.ytDl + " --print \"%(url)s\" --flat-playlist " + item.textContent, {shell: true}).stdout.toString().trim();
+                if (!result) {
+                    continue;
+                }
+
+                result.split("\n").forEach((url) => {
+                    if (url) {
+                        count++;
+                        allUrls.push(url);
+                    }
+                });
 
                 if (typeof specificSettings[item.textContent] !== "undefined") {
                     for (let url of urls) {

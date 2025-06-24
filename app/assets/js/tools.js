@@ -3,7 +3,6 @@ import {errorFilter, ytFilter} from "./lib/filter.js";
 
 const terminate = require("terminate");
 const path = require("path");
-const ytpl = require("@distube/ytpl");
 const {ipcRenderer, clipboard} = require("electron");
 const {exec, spawnSync} = require("child_process");
 
@@ -29,7 +28,7 @@ export let workers = 0;
 export let downloading = false, resolve = null, aborted = false, childProcess = null, lastLi = null;
 export let languageDB = {};
 
-let ytDl = "", ffmpeg = "", elevate = "";
+export let ytDl = "", ffmpeg = "", elevate = "";
 export let selectedLang = null;
 
 let extractors = [];
@@ -753,21 +752,6 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
             resolve(null);
         });
     });
-}
-
-// TODO: Comment
-export async function getPlaylistUrls(url) {
-    let playlist = await ytpl(url, {
-        limit: Infinity,
-        pages: Infinity
-    });
-
-    let items = [];
-
-    for (let item of playlist["items"])
-        items.push(item["shortUrl"]);
-
-    return items;
 }
 
 // TODO: Comment
