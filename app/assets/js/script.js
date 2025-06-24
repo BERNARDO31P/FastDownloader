@@ -1,3 +1,5 @@
+import {setCookie} from "./tools.js";
+
 const {ipcRenderer, shell} = require('electron');
 
 import * as tools from "./tools.js";
@@ -21,6 +23,10 @@ window.onload = async () => {
     const location = document.getElementById("location")
     if (tools.getCookie("saveLocation")) location.value = tools.getCookie("lastLocation");
     if (tools.getCookie("cache") !== null) tools.loadAllData(location);
+
+    if (tools.getCookie("closeToTray")) {
+        ipcRenderer.send("enableCloseToTray");
+    }
 
     const notification = document.getElementById("updateNotification");
     const message = notification.querySelector(".message");
