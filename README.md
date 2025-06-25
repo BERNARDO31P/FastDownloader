@@ -95,14 +95,14 @@ If your system isn't directly supported, try the `AppImage`.
 ![Main window - dark theme](https://raw.githubusercontent.com/BERNARDO31P/FastDownloader/master/resources/screenshot/main_dark.png)
 
 ## Libraries
-- [electron](https://www.npmjs.com/package/electron) -> ^26.2.1
-- [auto-launch](https://www.npmjs.com/package/auto-launch) -> ^5.0.6
-- [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.4
-- [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
-- [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
-- [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> ^1.0.16
-- [terminate](https://www.npmjs.com/package/terminate) -> ^2.6.1
+- [electron](https://www.npmjs.com/package/electron) -> 33.4.11
+- [auto-launch](https://www.npmjs.com/package/auto-launch) -> 5.0.6
+- [electron-updater](https://www.npmjs.com/package/electron-updater) -> 6.6.2
+- [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> 1.0.16
+- [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> 0.8.3
+- [terminate](https://www.npmjs.com/package/terminate) -> 2.8.0
+- [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> 4.3.11
 
 ## Binaries
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 20230706
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 20250609
 - [ffmpeg](https://ffmpeg.org) -> 202309
