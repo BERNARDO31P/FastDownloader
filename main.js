@@ -73,6 +73,15 @@ function createWindow() {
 
             trayIcon.setContextMenu(trayMenu);
 
+            if (!win.isVisible()) {
+                hidden = true;
+
+                removeTrayItem("hide");
+                addTrayItem("maximize", language["maximize"], "normal", maximize);
+
+                trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+            }
+
             win.on("hide", () => {
                 hidden = true;
 
@@ -80,7 +89,6 @@ function createWindow() {
                 addTrayItem("maximize", language["maximize"], "normal", maximize);
 
                 trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
-
             });
 
             win.on("show", () => {
@@ -160,6 +168,10 @@ ipcMain.on("remove_abort", () => {
 
 ipcMain.on("enableCloseToTray", () => {
     win.on("close", closeToTray);
+});
+
+ipcMain.on("startMinimized", () => {
+    win.hide();
 });
 
 ipcMain.on("disableCloseToTray", () => {

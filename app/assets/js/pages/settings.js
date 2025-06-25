@@ -48,6 +48,24 @@ tools.bindEvent("click", "settings .save .checkbox", function () {
     }
 });
 
+tools.bindEvent("click", "settings .startMinimized .checkbox", function () {
+    let startMinimized = this.closest(".startMinimized");
+
+    if (this.classList.contains("active")) {
+        this.classList.remove("active");
+        startMinimized.querySelector("span").textContent = tools.languageDB["js"]["off"];
+
+        showNotification(tools.languageDB["js"]["startMinimizedDisabled"]);
+    } else {
+        this.classList.add("active");
+        startMinimized.querySelector("span").textContent = tools.languageDB["js"]["on"];7
+
+        showNotification(tools.languageDB["js"]["startMinimizedEnabled"]);
+    }
+
+    tools.saveSettings();
+});
+
 // TODO: Comment
 tools.bindEvent("click", "settings .closeToTray .checkbox", function () {
     let closingToTray = this.closest(".closeToTray");

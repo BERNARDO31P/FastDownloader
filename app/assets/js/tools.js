@@ -847,6 +847,7 @@ export function saveSettings() {
         const codecAudio = document.querySelector("settings .codecAudio .select");
         const codecVideo = document.querySelector("settings .codecVideo .select");
         const closeToTray = document.querySelector("settings #closeToTray");
+        const startMinimized = document.querySelector("settings #startMinimized");
         const autostart = document.querySelector("settings #autostart");
         const clearList = document.querySelector("settings #clearList");
         const premiumCheck = document.querySelector("settings #premium");
@@ -859,6 +860,7 @@ export function saveSettings() {
         setCookie("codecVideo", codecVideo.getAttribute("data-value"));
         setCookie("save", true);
         setCookie("closeToTray", closeToTray.classList.contains("active"));
+        setCookie("startMinimized", startMinimized.classList.contains("active"));
         setCookie("autostart", autostart.classList.contains("active"));
         setCookie("clearList", clearList.classList.contains("active"));
         setCookie("saveLocation", saveLocation.classList.contains("active"));
@@ -877,6 +879,7 @@ export function deleteSettings() {
     setCookie("codecVideo", "");
     setCookie("save", false);
     setCookie("closeToTray", false);
+    setCookie("startMinimized", false);
     setCookie("autostart", false);
     setCookie("premium", JSON.stringify({"browser": null, "check": false}));
     setCookie("clearList", false);
@@ -898,6 +901,7 @@ export function loadSettings() {
     const langValue = getCookie("lang");
     const save = getCookie("save");
     const closeToTray = getCookie("closeToTray");
+    const startMinimized = getCookie("startMinimized");
     const autostart = getCookie("autostart");
     const premium = JSON.parse(getCookie("premium"));
     const clearList = getCookie("clearList");
@@ -943,6 +947,14 @@ export function loadSettings() {
         closingToTray.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
         closingToTray.querySelector("span").textContent = languageDB["js"]["off"];
+    }
+
+    const startingMinimized = document.querySelector("settings .startMinimized");
+    if (startMinimized) {
+        startingMinimized.querySelector("#startMinimized").classList.add("active");
+        startingMinimized.querySelector("span").textContent = languageDB["js"]["on"];
+    } else {
+        startingMinimized.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     const autostarting = document.querySelector("settings .autostart");

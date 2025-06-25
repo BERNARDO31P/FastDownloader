@@ -28,6 +28,10 @@ window.onload = async () => {
         ipcRenderer.send("enableCloseToTray");
     }
 
+    if (tools.getCookie("startMinimized")) {
+        ipcRenderer.send("startMinimized");
+    }
+
     const notification = document.getElementById("updateNotification");
     const message = notification.querySelector(".message");
     const restartButton = notification.querySelector('.restart-button');
