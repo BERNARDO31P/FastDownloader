@@ -98,7 +98,6 @@ If your system isn't directly supported, try the `AppImage`.
 - [electron](https://www.npmjs.com/package/electron) -> ^26.2.1
 - [auto-launch](https://www.npmjs.com/package/auto-launch) -> ^5.0.6
 - [electron-updater](https://www.npmjs.com/package/electron-updater) -> ^6.1.4
-- [ytpl](https://www.npmjs.com/package/ytpl) -> ^2.3.0
 - [node-youtube-music](https://www.npmjs.com/package/node-youtube-music) -> ^0.8.3
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> ^4.3.4
 - [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) -> ^1.0.16
