@@ -104,5 +104,5 @@ If your system isn't directly supported, try the `AppImage`.
 - [youtube-sr](https://www.npmjs.com/package/youtube-sr) -> 4.3.11
 
 ## Binaries
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 20250609
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> 20250626
 - [ffmpeg](https://ffmpeg.org) -> 202309
