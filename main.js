@@ -73,6 +73,17 @@ function createWindow() {
 
             trayIcon.setContextMenu(trayMenu);
 
+            let clickTimeout = null;
+            trayIcon.on("click", () => {
+                clickTimeout = setTimeout(() => {
+                    trayIcon.popUpContextMenu();
+                }, 300);
+            });
+            trayIcon.on("double-click", () => {
+                clearTimeout(clickTimeout);
+                maximize();
+            });
+
             if (!win.isVisible()) {
                 hidden = true;
 
