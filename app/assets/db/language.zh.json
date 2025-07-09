@@ -81,6 +81,7 @@
     "permission": "关闭浏览器以访问Cookies",
     "network": "当前没有互联网连接",
     "songsDownloaded": "所有歌曲已成功下载",
+    "videosDownloaded": "所有视频已成功下载",
     "downloadAborted": "下载已成功中止",
     "newVersion": "版本XXX可用，将被下载。",
     "updateDownloaded": "更新已下载。重启应用程序以应用更改。",

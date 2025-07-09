@@ -104,7 +104,11 @@ worker.addEventListener("message", (event) => {
                         showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
                         break;
                     case "success":
-                        showNotification(languageDB["js"]["songsDownloaded"], languageDB["js"]["success"]);
+                        if (getCookie("mode") === "audio") {
+                            showNotification(languageDB["js"]["songsDownloaded"], languageDB["js"]["success"]);
+                        } else {
+                            showNotification(languageDB["js"]["videosDownloaded"], languageDB["js"]["success"]);
+                        }
 
                         if (getCookie("clearList")) clearList();
                         break;
@@ -800,6 +804,10 @@ export function setEnabled() {
 
 // TODO: Comment
 export function selectOption(option) {
+    if (!option) {
+        return;
+    }
+
     let select = option.closest(".select");
     let button = select.querySelector("div");
 
@@ -1016,6 +1024,8 @@ export async function showChangelog(update = false) {
 }
 
 async function loadLanguage(language) {
+    language = language.toLowerCase().split("-")[0];
+
     return fetch("assets/db/language." + language + ".json").then(response => {
         return response.json();
     }).then(jsonData => languageDB = jsonData);

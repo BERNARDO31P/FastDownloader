@@ -81,6 +81,7 @@
     "permission": "쿠키에 접근하려면 브라우저를 닫으세요",
     "network": "현재 인터넷에 연결되어 있지 않습니다",
     "songsDownloaded": "모든 노래가 성공적으로 다운로드되었습니다",
+    "videosDownloaded": "모든 비디오가 성공적으로 다운로드되었습니다",
     "downloadAborted": "다운로드가 성공적으로 중단되었습니다",
     "newVersion": "XXX 버전이 사용 가능하며 다운로드됩니다.",
     "updateDownloaded": "업데이트가 다운로드되었습니다. 변경 사항을 적용하려면 응용 프로그램을 다시 시작하세요.",

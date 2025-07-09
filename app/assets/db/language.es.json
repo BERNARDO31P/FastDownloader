@@ -81,6 +81,7 @@
     "permission": "Cierre el navegador para acceder a las cookies",
     "network": "No hay conexión a internet",
     "songsDownloaded": "Todas las canciones se descargaron correctamente",
+    "videoDownloaded": "Vídeo descargado correctamente",
     "downloadAborted": "Descarga abortada correctamente",
     "newVersion": "La versión XXX está disponible y se descargará.",
     "updateDownloaded": "Actualización descargada. Reinicie la aplicación para aplicar los cambios.",

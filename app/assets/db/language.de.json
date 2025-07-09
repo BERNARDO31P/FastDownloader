@@ -81,6 +81,7 @@
     "permission": "Bitte beenden Sie den Browser, da ansonsten kein Zugriff auf die Cookies möglich ist",
     "network": "Sie sind zurzeit nicht mit dem Internet verbunden",
     "songsDownloaded": "Alle Lieder wurden erfolgreich heruntergeladen",
+    "videosDownloaded": "Alle Videos wurden erfolgreich heruntergeladen",
     "downloadAborted": "Das Herunterladen wurde erfolgreich abgebrochen",
     "newVersion": "Version XXX ist verfügbar und wird heruntergeladen..",
     "updateDownloaded": "Aktualisierung heruntergeladen. Applikation jetzt neu starten, um die Änderungen zu übernehmen.",

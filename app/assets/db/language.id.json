@@ -81,6 +81,7 @@
     "permission": "Tutup browser untuk mengakses cookies",
     "network": "Tidak ada koneksi internet saat ini",
     "songsDownloaded": "Semua lagu berhasil diunduh",
+    "videosDownloaded": "Semua video berhasil diunduh",
     "downloadAborted": "Pengunduhan berhasil dibatalkan",
     "newVersion": "Versi XXX tersedia dan akan diunduh.",
     "updateDownloaded": "Pembaruan telah diunduh. Mulai ulang aplikasi untuk menerapkan perubahan.",

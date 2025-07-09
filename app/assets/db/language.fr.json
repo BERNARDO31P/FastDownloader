@@ -81,6 +81,7 @@
     "permission": "Fermez le navigateur pour accéder aux cookies",
     "network": "Pas de connexion Internet",
     "songsDownloaded": "Toutes les chansons ont été téléchargées avec succès",
+    "videosDownloaded": "Toutes les vidéos ont été téléchargées avec succès",
     "downloadAborted": "Téléchargement annulé avec succès",
     "newVersion": "La version XXX est disponible et sera téléchargée.",
     "updateDownloaded": "Mise à jour téléchargée. Redémarrez l'application pour appliquer les changements.",

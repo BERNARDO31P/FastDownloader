@@ -81,6 +81,7 @@
     "permission": "Sluit de browser om toegang te krijgen tot cookies",
     "network": "Momenteel geen internetverbinding",
     "songsDownloaded": "Alle nummers zijn succesvol gedownload",
+    "videosDownloaded": "Alle video's zijn succesvol gedownload",
     "downloadAborted": "Download succesvol afgebroken",
     "newVersion": "Versie XXX is beschikbaar en wordt gedownload.",
     "updateDownloaded": "Update gedownload. Herstart de applicatie om de wijzigingen toe te passen.",

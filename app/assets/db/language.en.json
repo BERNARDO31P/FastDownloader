@@ -80,6 +80,7 @@
     "permission": "Please close the browser, as otherwise access to the cookies cannot be obtained",
     "network": "You are currently not connected to the Internet",
     "songsDownloaded": "All songs have been successfully downloaded",
+    "videosDownloaded": "All videos have been successfully downloaded",
     "downloadAborted": "The download has been successfully aborted",
     "newVersion": "Version XXX is available and is being downloaded..",
     "updateDownloaded": "Update downloaded. Restart the application now to apply the changes.",
