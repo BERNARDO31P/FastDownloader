@@ -15,9 +15,10 @@ FastDownloader is a free and minimalistic tool to download videos and/or audios 
 - Auto update
   - Windows
   - AppImage
-  - Ubuntu/Debian (Beta)
-  - CentOS/RedHat (Beta)
+  - Ubuntu/Debian
+  - CentOS/RedHat
   - ArchLinux ([AUR](https://aur.archlinux.org/packages/fastdownloader-bin))
+    - or over the pacman file (beta)
 - Download from over 1800 [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
 
 ## Settings
