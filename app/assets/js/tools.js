@@ -591,6 +591,8 @@ export function hideSelect(element) {
 export async function loadExtractors() {
     extractors = JSON.parse(getCookie("extractors", "[]"));
     brokenExtractors = JSON.parse(getCookie("brokenExtractors", "[]"));
+
+    extractors.push("x.com");
 }
 
 // TODO: Comment
