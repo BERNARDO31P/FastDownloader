@@ -691,19 +691,18 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressSongInfo = document.querySelector(".progress-song .info p");
 
         let songInfoError = "";
-        let songInfo = {};
         let title = "";
         try {
-            const output = spawnSync(ytDl + " --print artist,title --skip-download --no-call-home " + url, {
+            const output = spawnSync(ytDl + " --print channel,artist,title --skip-download --no-call-home " + url, {
                 shell: true
             });
 
             songInfoError = output.stderr.toString().toLowerCase();
 
             const outputString = output.stdout.toString().split("\n");
+            const URLInfo = {channel: outputString[0], artist: outputString[1], title: outputString[2]};
 
-            songInfo = {artist: outputString[0], title: outputString[1]};
-            title = clearTitle(songInfo, mode);
+            title = clearTitle(URLInfo, mode);
         } catch (error) {
             if (songInfoError.includes("getaddrinfo failed")) resolve("network");
             if (songInfoError.includes("sign in")) resolve("login");
@@ -1240,10 +1239,21 @@ function getNumber(string) {
 }
 
 // TODO: Comment
-function clearTitle(songInfo, mode) {
-    const artist = ("artist" in songInfo && songInfo["artist"] !== null && mode === "audio");
+function clearTitle(URLInfo, mode) {
+    const hasArtist = ("artist" in URLInfo && URLInfo["artist"] !== null && mode === "audio");
 
-    let title = ((artist) ? songInfo["artist"] + " - " + songInfo["title"] : songInfo["title"]).replace(ytFilter, "").trim();
+    if (hasArtist && URLInfo["artist"] === "NA") {
+        if (URLInfo["title"].includes(" - ")) {
+            const songInfo = URLInfo["title"].split(" - ");
+
+            URLInfo["artist"] = songInfo[0];
+            URLInfo["title"] = songInfo[1];
+        } else {
+            URLInfo["artist"] = URLInfo["channel"];
+        }
+    }
+
+    let title = ((hasArtist) ? URLInfo["artist"] + " - " + URLInfo["title"] : URLInfo["title"]).replace(ytFilter, "").trim();
     title = title.replace(/[\\/|:*"?<>]/g, "_");
     title = title.replace(/\s{2,}/g, " ");
     title = title.replace(/\(\)/g, "");
