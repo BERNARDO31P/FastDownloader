@@ -1240,7 +1240,7 @@ function getNumber(string) {
 
 // TODO: Comment
 function clearTitle(URLInfo, mode) {
-    const hasArtist = ("artist" in URLInfo && URLInfo["artist"] !== null && mode === "audio");
+    let hasArtist = ("artist" in URLInfo && URLInfo["artist"] !== null && mode === "audio");
 
     if (hasArtist && URLInfo["artist"] === "NA") {
         if (URLInfo["title"].includes(" - ")) {
@@ -1248,8 +1248,10 @@ function clearTitle(URLInfo, mode) {
 
             URLInfo["artist"] = songInfo[0];
             URLInfo["title"] = songInfo[1];
-        } else {
+        } else if ("channel" in URLInfo && URLInfo["channel"] !== null) {
             URLInfo["artist"] = URLInfo["channel"];
+        } else {
+            hasArtist = false;
         }
     }
 
