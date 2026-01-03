@@ -333,6 +333,10 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled='true'])"
     if (tools.childProcess && tools.childProcess.pid)
         terminate(tools.childProcess.pid);
 
+    tools.worker.postMessage({
+        "type": "abort"
+    })
+
     tools.setEnabled();
 });
 

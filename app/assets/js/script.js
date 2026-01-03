@@ -1,5 +1,3 @@
-import {setCookie} from "./tools.js";
-
 const {ipcRenderer, shell} = require('electron');
 
 import * as tools from "./tools.js";

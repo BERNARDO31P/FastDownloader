@@ -1,17 +1,32 @@
 const yt = require("youtube-sr").default;
 const levenshtein = require("fastest-levenshtein");
 
+const urlSkip = {};
+
 import {ytFilter} from "./filter.js";
 
 let globalSettings = {};
 let globalMode, globalCodecAudio, globalCodecVideo, globalQuality;
 
+let aborted = false;
+
 addEventListener('message', (event) => {
     const msg = event.data;
 
     switch (msg.type) {
+        case "abort":
+            aborted = true;
+            break;
         case "checkPremiumAndAdd":
+            if (aborted) {
+                return;
+            }
+
             checkPremiumAndConvert(msg.url).then((url) => {
+                if (aborted) {
+                    return;
+                }
+
                 let data = getUrlData(url, msg.location);
                 postMessage({type: "checkPremiumAndAdd", data: data});
             });
@@ -24,6 +39,7 @@ addEventListener('message', (event) => {
             });
             break;
         case "loadData":
+            aborted = false;
             loadData(msg.mode, msg.codecAudio, msg.codecVideo, msg.quality, msg.settings);
             break;
     }
@@ -45,11 +61,18 @@ function loadData(mode, codecAudio, codecVideo, quality, settings) {
 
 // TODO: Comment
 async function checkPremiumAndConvert(url) {
-    if (globalMode === "audio")
-        if (!url.includes("music.youtube") && !url.includes("playlist")) {
-            let musicUrl = await getYoutubeMusic(url);
-            if (musicUrl) url = musicUrl;
+    if (globalMode !== "audio") {
+        return url;
+    }
+
+    if (!url.includes("music.youtube") && !url.includes("playlist")) {
+        let musicUrl = await getYoutubeMusic(url);
+        if (musicUrl && musicUrl !== url) {
+            url = musicUrl;
+        } else {
+            urlSkip[url] = true;
         }
+    }
 
     return url;
 }
@@ -119,6 +142,10 @@ async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
 
 // TODO: Comment
 async function getYoutubeMusic(url) {
+    if (typeof urlSkip[url] !== "undefined") {
+        return url;
+    }
+
     return await yt.getVideo(url).then(async (result) => {
         const channelName = result.channel.name;
 

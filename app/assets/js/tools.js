@@ -78,6 +78,24 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getTitle(url, mode) {
+    let title;
+    try {
+        const output = spawnSync(ytDl + " --print channel,artist,title --skip-download --no-call-home " + url, {
+            shell: true
+        });
+
+        const outputString = output.stdout.toString().split("\n");
+        const URLInfo = {channel: outputString[0], artist: outputString[1], title: outputString[2]};
+
+        title = clearTitle(URLInfo, mode);
+    } catch (error) {
+        title = url;
+    }
+
+    return title;
+}
+
 // TODO: Comment
 worker.addEventListener("message", (event) => {
     const msg = event.data;
@@ -86,8 +104,14 @@ worker.addEventListener("message", (event) => {
             ipcRenderer.send("yt-search", msg.search);
             break;
         case "checkPremiumAndAdd":
+            if (aborted) {
+                return;
+            }
+
             processedUrls.push(msg.data);
             workers--;
+
+            console.debug("Added to processedUrls, remaining workers: " + workers);
 
             if (!workers) download(processedUrls).then(() => {
                 let progressTotal = document.querySelector(".progress-total progress");
@@ -266,6 +290,10 @@ export function getAllData() {
 
 // TODO: Comment
 async function download(data) {
+    if (aborted) {
+        return;
+    }
+
     let percentage = parseFloat((100 / data.length).toFixed(2));
 
     downloading = true;
@@ -689,26 +717,7 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
         const progressTotalInfo = document.querySelector(".progress-total .info p");
         const progressSong = document.querySelector(".progress-song progress");
         const progressSongInfo = document.querySelector(".progress-song .info p");
-
-        let songInfoError = "";
-        let title = "";
-        try {
-            const output = spawnSync(ytDl + " --print channel,artist,title --skip-download --no-call-home " + url, {
-                shell: true
-            });
-
-            songInfoError = output.stderr.toString().toLowerCase();
-
-            const outputString = output.stdout.toString().split("\n");
-            const URLInfo = {channel: outputString[0], artist: outputString[1], title: outputString[2]};
-
-            title = clearTitle(URLInfo, mode);
-        } catch (error) {
-            if (songInfoError.includes("getaddrinfo failed")) resolve("network");
-            if (songInfoError.includes("sign in")) resolve("login");
-
-            return;
-        }
+        const title = getTitle(url, mode)
 
         if (aborted) resolve("aborted");
 
@@ -1241,6 +1250,7 @@ function getNumber(string) {
 // TODO: Comment
 function clearTitle(URLInfo, mode) {
     let hasArtist = ("artist" in URLInfo && URLInfo["artist"] !== null && mode === "audio");
+    let hasChannel = ("channel" in URLInfo && URLInfo["channel"] !== null);
 
     if (hasArtist && URLInfo["artist"] === "NA") {
         if (URLInfo["title"].includes(" - ")) {
@@ -1248,7 +1258,7 @@ function clearTitle(URLInfo, mode) {
 
             URLInfo["artist"] = songInfo[0];
             URLInfo["title"] = songInfo[1];
-        } else if ("channel" in URLInfo && URLInfo["channel"] !== null) {
+        } else if (hasChannel && URLInfo["channel"] !== "NA") {
             URLInfo["artist"] = URLInfo["channel"];
         } else {
             hasArtist = false;
