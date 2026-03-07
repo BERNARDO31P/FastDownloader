@@ -1175,6 +1175,11 @@ export function updateYtDl(administrator = false) {
     showNotification(languageDB["js"]["libUpdate"]);
     setDisabled();
 
+    const denoPath = installDeno();
+    if (denoPath && denoPath.length) {
+        upgradeDeno(denoPath);
+    }
+
     if (administrator) {
         childProcess = exec(elevate + " " + ytDl + " -U");
     } else {
