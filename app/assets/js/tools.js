@@ -653,6 +653,31 @@ export async function setExtractors() {
     }
 }
 
+function upgradeDeno(denoPath) {
+    const result = spawnSync(
+        denoPath,
+        ["upgrade"],
+        {
+            input: "y\n",
+            stdio: ["pipe", "pipe", "pipe"]
+        }
+    );
+
+    const stdout = result.stdout?.toString() ?? "";
+    const stderr = result.stderr?.toString() ?? "";
+
+    console.log("stdout:\n", stdout);
+    console.log("stderr:\n", stderr);
+
+    if (result.status === 0) {
+        console.log("Deno upgraded successfully.");
+        return true;
+    }
+
+    console.warn("Deno upgrade failed.");
+    return false;
+}
+
 function installDeno() {
     const denoInstallation = getCookie("deno");
     if (denoInstallation && denoInstallation.length) {
@@ -762,6 +787,8 @@ function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, qu
 
         const denoPath = installDeno();
         if (denoPath && denoPath.length) {
+            upgradeDeno(denoPath);
+
             config.push("--js-runtimes deno:\"" + denoPath + "\"");
         } else {
             console.warn("Couldn't find not install Deno, some YouTube formats may not work properly.");
