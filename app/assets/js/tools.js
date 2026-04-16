@@ -1172,17 +1172,17 @@ export function updateYtDl(administrator = false) {
 
     console.debug("Checking for yt-dlp update");
 
-    showNotification(languageDB["js"]["libUpdate"]);
-    setDisabled();
-
-    const denoPath = installDeno();
-    if (denoPath && denoPath.length) {
-        upgradeDeno(denoPath);
-    }
-
     if (administrator) {
         childProcess = exec(elevate + " " + ytDl + " -U");
     } else {
+        showNotification(languageDB["js"]["libUpdate"]);
+        setDisabled();
+
+        const denoPath = installDeno();
+        if (denoPath && denoPath.length) {
+            upgradeDeno(denoPath);
+        }
+
         childProcess = exec(ytDl + " -U");
     }
 
