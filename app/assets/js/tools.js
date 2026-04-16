@@ -1189,6 +1189,8 @@ export function updateYtDl(administrator = false) {
     childProcess.stdout.on("data", (data) => {
         console.debug(data);
 
+        data = data.toLowerCase();
+
         if (data.includes("yt-dlp is up to date")) {
             update = false;
             terminate(childProcess.pid);
@@ -1202,7 +1204,14 @@ export function updateYtDl(administrator = false) {
         console.debug(data);
         console.debug("Error end!");
 
+        data = data.toLowerCase();
+
         if (data.includes("administrator") && !administrator) {
+            updateYtDl(true);
+            return;
+        }
+
+        if (data.includes("to remove") && !administrator) {
             updateYtDl(true);
             return;
         }
