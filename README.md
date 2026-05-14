@@ -108,3 +108,5 @@ If your system isn't directly supported, try the `AppImage`.
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) -> latest (automatic updates)
 - [ffmpeg windows](https://ffmpeg.org) -> 5.1.2
 - [ffmpeg linux](https://ffmpeg.org) -> 202309
+
+On Linux, installed system binaries are used automatically when available
