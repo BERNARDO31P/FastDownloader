@@ -1,6 +1,7 @@
 import mustache from "./lib/mustache.min.js";
 import {errorFilter, ytFilter} from "./lib/filter.js";
 
+const fs = require("fs");
 const terminate = require("terminate");
 const path = require("path");
 const {ipcRenderer, clipboard} = require("electron");
@@ -170,10 +171,71 @@ export function setRealDir(dirname) {
 }
 
 // TODO: Comment
+function findSystemBinary(binaryName) {
+    const command = process.platform === "win32"
+        ? "where"
+        : "which";
+
+    try {
+        const result = spawnSync(command, [binaryName], {
+            encoding: "utf8",
+            shell: false
+        });
+
+        if (result.status !== 0) {
+            return null;
+        }
+
+        const output = result.stdout
+            .split("\n")[0]
+            .trim();
+
+        return output.length ? output : null;
+    } catch (error) {
+        console.warn("Failed to locate binary:", binaryName, error);
+
+        return null;
+    }
+}
+
+function getBundledBinary(binaryName) {
+    const bundledPath = path.join(__realDir, binaryName + fileEnding);
+
+    return fs.existsSync(bundledPath)
+        ? bundledPath
+        : null;
+}
+
+function quoteBinary(binaryPath) {
+    return binaryPath
+        ? `"${binaryPath}"`
+        : null;
+}
+
 function updateBinaryLocations() {
-    ytDl = "\"" + __realDir + path.sep + "yt-dlp" + fileEnding + "\"";
-    ffmpeg = "\"" + __realDir + path.sep + "ffmpeg" + fileEnding + "\"";
-    elevate = "\"" + __realDir + path.sep + "elevate" + fileEnding + "\"";
+    const preferSystem =
+        process.platform === "linux" ||
+        process.platform === "darwin";
+
+    const ytDlPath = preferSystem
+        ? findSystemBinary("yt-dlp") || getBundledBinary("yt-dlp")
+        : getBundledBinary("yt-dlp") || findSystemBinary("yt-dlp");
+
+    const ffmpegPath = preferSystem
+        ? findSystemBinary("ffmpeg") || getBundledBinary("ffmpeg")
+        : getBundledBinary("ffmpeg") || findSystemBinary("ffmpeg");
+
+    const elevatePath =
+        getBundledBinary("elevate") ||
+        findSystemBinary("elevate");
+
+    ytDl = quoteBinary(ytDlPath);
+    ffmpeg = quoteBinary(ffmpegPath);
+    elevate = quoteBinary(elevatePath);
+
+    console.debug("yt-dlp: " + ytDl);
+    console.debug("ffmpeg: " + ffmpeg);
+    console.debug("elevate: " + elevate);
 }
 
 /*
