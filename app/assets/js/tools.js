@@ -1,11 +1,14 @@
 import mustache from "./lib/mustache.min.js";
-import {errorFilter, ytFilter} from "./lib/filter.js";
+import {ytFilter} from "./lib/filter.js";
 
 const fs = require("fs");
 const terminate = require("terminate");
 const path = require("path");
 const {ipcRenderer, clipboard} = require("electron");
-const {exec, spawnSync} = require("child_process");
+const {exec, spawn, spawnSync} = require("child_process");
+
+// Number of simultaneous track jobs, including metadata and conversion.
+const DOWNLOAD_CONCURRENCY = 2;
 
 let theme = getCookie("theme");
 if (!theme) theme = "light";
@@ -14,33 +17,50 @@ setCookie("theme", theme);
 document.getElementsByTagName("html")[0].setAttribute("data-theme", theme);
 
 let fileEnding = "";
-if (process.platform === "win32") fileEnding = ".exe";
-else if (process.platform === "linux") fileEnding = "_linux";
-else if (process.platform === "darwin") fileEnding = "_macos";
+if (process.platform === "win32") fileEnding = ".exe"; else if (process.platform === "linux") fileEnding = "_linux"; else if (process.platform === "darwin") fileEnding = "_macos";
 
-let __realDir = null, debug = console.debug;
-let hiddenElements = [], urlList = [], processedUrls = [], logs = [];
+let __realDir = null;
+let debug = console.debug;
+
+let hiddenElements = [];
+let urlList = [];
+let processedUrls = [];
+let logs = [];
+
+let denoPath = null;
+let denoInitialized = false;
+
+let activeDownloadBatch = null;
+
+let extractors = [];
+let brokenExtractors = [];
 
 export let specificSettings = {};
 
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
 export let workers = 0;
 
-export let downloading = false, resolve = null, aborted = false, childProcess = null, lastLi = null;
+export let downloading = false;
+export let resolve = null;
+export let aborted = false;
+export let childProcess = null;
+export const childProcesses = new Set();
+export let lastLi = null;
+
 export let languageDB = {};
 
-export let ytDl = "", ffmpeg = "", elevate = "";
-export let selectedLang = null;
+export let ytDl = "";
+export let ffmpeg = "";
+export let elevate = "";
 
-let extractors = [];
-let brokenExtractors = [];
+export let selectedLang = null;
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
     let animation = this.animate(keyframes, options);
 
     animation.onfinish = () => callback();
-}
+};
 
 // TODO: Comment
 console.debug = (log) => {
@@ -48,8 +68,8 @@ console.debug = (log) => {
 
     // TODO: Add check if logs are enabled
     // Implement logging to send for analytics if bugs are found
-    //logs.push(log);
-}
+    // logs.push(log);
+};
 
 /*
  * Funktion: bindEvent()
@@ -75,35 +95,210 @@ export function bindEvent(eventNames, selectors, handler) {
 }
 
 // TODO: Comment
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function sleep(ms, batch) {
+    return new Promise((finish) => {
+        if (aborted || batch.stopped) {
+            finish();
+            return;
+        }
+
+        const wake = () => {
+            clearTimeout(timer);
+            batch.retryWaits.delete(wake);
+            finish();
+        };
+
+        const timer = setTimeout(wake, ms);
+        batch.retryWaits.add(wake);
+    });
 }
 
-function getTitle(url, mode) {
-    let title;
+function executablePath(binary) {
+    // Existing exported binary paths include quotes for the legacy exec calls.
+    // spawn receives the executable and arguments separately.
+    return binary && binary.replace(/^"(.*)"$/, "$1");
+}
+
+function isYouTubeUrl(url) {
     try {
-        const output = spawnSync(ytDl + " --print channel,artist,title --skip-download --no-call-home " + url, {
-            shell: true
-        });
+        const hostname = new URL(url).hostname.toLowerCase();
 
-        const outputString = output.stdout.toString().split("\n");
-        const URLInfo = {channel: outputString[0], artist: outputString[1], title: outputString[2]};
-
-        title = clearTitle(URLInfo, mode);
+        return hostname === "youtube.com" || hostname.endsWith(".youtube.com") || hostname === "youtu.be" || hostname.endsWith(".youtu.be");
     } catch (error) {
-        title = url;
+        return false;
+    }
+}
+
+function stopDownloadBatch(batch) {
+    if (!batch || batch.stopped) {
+        return;
     }
 
-    return title;
+    batch.stopped = true;
+
+    // Wake retry delays immediately. Keep processes registered until close.
+    for (const wake of Array.from(batch.retryWaits)) {
+        wake();
+    }
+
+    for (const currentProcess of batch.processes) {
+        if (!currentProcess.pid) {
+            continue;
+        }
+
+        try {
+            // terminate also stops descendants such as Deno and ffmpeg.
+            terminate(currentProcess.pid, (error) => {
+                if (error && batch.processes.has(currentProcess)) {
+                    console.warn("Could not terminate download process:", error);
+                }
+            });
+        } catch (error) {
+            console.warn("Could not terminate download process:", error);
+        }
+    }
+}
+
+function getDownloadFailure(stderr) {
+    // Prefer error lines so unrelated warnings do not choose the retry reason.
+    const errorLines = stderr.split(/\r?\n/).filter((line) => /^error:/i.test(line));
+    const message = (errorLines.length ? errorLines.join("\n") : stderr).toLowerCase();
+
+    if (message.includes("winerror 3")) return "drive";
+    if (message.includes("permission") || message.includes("cookie")) return "permission";
+    if (message.includes("getaddrinfo failed") || message.includes("timed out")) return "network";
+    if (message.includes("sign in")) return "login";
+    if (message.includes("http error 403")) return "sleep";
+
+    return null;
+}
+
+function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
+    return new Promise((finish) => {
+        if (aborted || batch.stopped) {
+            finish({status: "aborted", stdout: ""});
+            return;
+        }
+
+        let currentProcess;
+
+        try {
+            currentProcess = spawn(executablePath(ytDl), args, {
+                shell: false, windowsHide: true, stdio: ["ignore", "pipe", "pipe"]
+            });
+        } catch (error) {
+            console.warn("Could not start yt-dlp:", error);
+            finish({status: null, stdout: ""});
+            return;
+        }
+
+        childProcess = currentProcess;
+        childProcesses.add(currentProcess);
+        batch.processes.add(currentProcess);
+
+        let stdout = "";
+        let stderr = "";
+        let processError = null;
+        const buffers = ["", ""];
+
+        const readProgress = (line) => {
+            if (!onProgress || aborted || batch.stopped) {
+                return;
+            }
+
+            const found = line.match(/\[download\]\s+(\d+(?:\.\d+)?)%/);
+
+            if (found) {
+                onProgress(Math.min(1, Number(found[1]) / 100));
+            }
+        };
+
+        const readOutput = (data, streamIndex) => {
+            console.debug(data);
+
+            if (streamIndex === 0 && captureOutput) {
+                stdout = (stdout + data).slice(0, 1024 * 1024);
+            } else if (streamIndex === 1) {
+                stderr = (stderr + data).slice(-65536);
+            }
+
+            const lines = (buffers[streamIndex] + data).split(/\r\n|\r|\n/);
+            buffers[streamIndex] = lines.pop().slice(-65536);
+
+            for (const line of lines) {
+                readProgress(line);
+            }
+        };
+
+        currentProcess.stdout.setEncoding("utf8");
+        currentProcess.stderr.setEncoding("utf8");
+        currentProcess.stdout.on("data", (data) => readOutput(data, 0));
+        currentProcess.stderr.on("data", (data) => readOutput(data, 1));
+
+        currentProcess.on("error", (error) => {
+            processError = error;
+            console.warn("yt-dlp process error:", error);
+        });
+
+        currentProcess.on("close", (code) => {
+            readProgress(buffers[0]);
+            readProgress(buffers[1]);
+
+            childProcesses.delete(currentProcess);
+            batch.processes.delete(currentProcess);
+
+            if (childProcess === currentProcess) {
+                const remaining = Array.from(childProcesses);
+                childProcess = remaining.length ? remaining[remaining.length - 1] : null;
+            }
+
+            console.debug("Closing status code: " + code);
+
+            // Settle only after close: a retry must not overlap its old process.
+            // Warnings and progress on stderr do not turn exit code 0 into failure.
+            const status = aborted || batch.stopped ? "aborted" : code === 0 && !processError ? "success" : getDownloadFailure(stderr);
+
+            finish({status, stdout});
+        });
+    });
+}
+
+async function getTitle(url, mode, batch, commonArgs) {
+    const result = await runYtDlp([...commonArgs, "--print", "channel,artist,title", "--skip-download", "--no-call-home", "--", url], batch, null, true);
+
+    if (result.status !== "success") {
+        return {status: result.status, title: null};
+    }
+
+    try {
+        const outputString = result.stdout.split(/\r?\n/);
+
+        if (!outputString[2] || !outputString[2].trim()) {
+            return {status: null, title: null};
+        }
+
+        const URLInfo = {
+            channel: outputString[0].trim() || "NA",
+            artist: outputString[1].trim() || "NA",
+            title: outputString[2].trim()
+        };
+
+        return {status: "success", title: clearTitle(URLInfo, mode)};
+    } catch (error) {
+        console.warn("Could not read the download title:", error);
+        return {status: null, title: null};
+    }
 }
 
 // TODO: Comment
 worker.addEventListener("message", (event) => {
     const msg = event.data;
+
     switch (msg.type) {
         case "getYouTubeMusicSearch":
             ipcRenderer.send("yt-search", msg.search);
             break;
+
         case "checkPremiumAndAdd":
             if (aborted) {
                 return;
@@ -114,40 +309,53 @@ worker.addEventListener("message", (event) => {
 
             console.debug("Added to processedUrls, remaining workers: " + workers);
 
-            if (!workers) download(processedUrls).then(() => {
-                let progressTotal = document.querySelector(".progress-total progress");
-                let infoTotal = document.querySelector(".progress-total .info p");
+            if (!workers) {
+                download(processedUrls).then(() => {
+                    let progressTotal = document.querySelector(".progress-total progress");
+                    let infoTotal = document.querySelector(".progress-total .info p");
 
-                infoTotal.textContent = "100%";
-                progressTotal.value = 1;
-                ipcRenderer.send("set_percentage", 1);
+                    if (resolve === "success") {
+                        infoTotal.textContent = "100%";
+                        progressTotal.value = 1;
 
-                setEnabled();
+                        ipcRenderer.send("set_percentage", 1);
+                    }
 
-                downloading = false;
-                processedUrls = [];
+                    setEnabled();
 
-                switch (resolve) {
-                    case "aborted":
-                        showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
-                        break;
-                    case "success":
-                        if (getCookie("mode") === "audio") {
-                            showNotification(languageDB["js"]["songsDownloaded"], languageDB["js"]["success"]);
-                        } else {
-                            showNotification(languageDB["js"]["videosDownloaded"], languageDB["js"]["success"]);
-                        }
+                    downloading = false;
+                    processedUrls = [];
 
-                        if (getCookie("clearList")) clearList();
-                        break;
-                }
+                    switch (resolve) {
+                        case "aborted":
+                            showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
+                            break;
 
-                ipcRenderer.send("remove_abort");
-            });
+                        case "success":
+                            if (getCookie("mode") === "audio") {
+                                showNotification(languageDB["js"]["songsDownloaded"], languageDB["js"]["success"]);
+                            } else {
+                                showNotification(languageDB["js"]["videosDownloaded"], languageDB["js"]["success"]);
+                            }
+
+                            if (getCookie("clearList")) clearList();
+                            break;
+
+                        default:
+                            showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
+                            break;
+                    }
+
+                    ipcRenderer.send("remove_abort");
+                });
+            }
+
             break;
+
         case "checkPremium":
             if (urlList.indexOf(msg.url) !== -1) {
                 showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
+
                 lastLi.remove();
 
                 return;
@@ -163,7 +371,10 @@ worker.addEventListener("message", (event) => {
 // TODO: Comment
 export function setRealDir(dirname) {
     dirname = dirname.replaceAll(path.sep + "app.asar", "");
-    if (!dirname.includes(path.sep + "resources")) dirname = dirname + path.sep + "resources";
+
+    if (!dirname.includes(path.sep + "resources")) {
+        dirname = dirname + path.sep + "resources";
+    }
 
     __realDir = dirname;
 
@@ -172,14 +383,11 @@ export function setRealDir(dirname) {
 
 // TODO: Comment
 function findSystemBinary(binaryName) {
-    const command = process.platform === "win32"
-        ? "where"
-        : "which";
+    const command = process.platform === "win32" ? "where" : "which";
 
     try {
         const result = spawnSync(command, [binaryName], {
-            encoding: "utf8",
-            shell: false
+            encoding: "utf8", shell: false
         });
 
         if (result.status !== 0) {
@@ -201,33 +409,21 @@ function findSystemBinary(binaryName) {
 function getBundledBinary(binaryName) {
     const bundledPath = path.join(__realDir, binaryName + fileEnding);
 
-    return fs.existsSync(bundledPath)
-        ? bundledPath
-        : null;
+    return fs.existsSync(bundledPath) ? bundledPath : null;
 }
 
 function quoteBinary(binaryPath) {
-    return binaryPath
-        ? `"${binaryPath}"`
-        : null;
+    return binaryPath ? `"${binaryPath}"` : null;
 }
 
 function updateBinaryLocations() {
-    const preferSystem =
-        process.platform === "linux" ||
-        process.platform === "darwin";
+    const preferSystem = process.platform === "linux" || process.platform === "darwin";
 
-    const ytDlPath = preferSystem
-        ? findSystemBinary("yt-dlp") || getBundledBinary("yt-dlp")
-        : getBundledBinary("yt-dlp") || findSystemBinary("yt-dlp");
+    const ytDlPath = preferSystem ? findSystemBinary("yt-dlp") || getBundledBinary("yt-dlp") : getBundledBinary("yt-dlp") || findSystemBinary("yt-dlp");
 
-    const ffmpegPath = preferSystem
-        ? findSystemBinary("ffmpeg") || getBundledBinary("ffmpeg")
-        : getBundledBinary("ffmpeg") || findSystemBinary("ffmpeg");
+    const ffmpegPath = preferSystem ? findSystemBinary("ffmpeg") || getBundledBinary("ffmpeg") : getBundledBinary("ffmpeg") || findSystemBinary("ffmpeg");
 
-    const elevatePath =
-        getBundledBinary("elevate") ||
-        findSystemBinary("elevate");
+    const elevatePath = getBundledBinary("elevate") || findSystemBinary("elevate");
 
     ytDl = quoteBinary(ytDlPath);
     ffmpeg = quoteBinary(ffmpegPath);
@@ -255,9 +451,7 @@ export function getCookie(name, def = null) {
         return def;
     }
 
-    return cookie === "true" ? true :
-        cookie === "false" ? false :
-            cookie === "null" ? null : cookie;
+    return cookie === "true" ? true : cookie === "false" ? false : cookie === "null" ? null : cookie;
 }
 
 /*
@@ -276,6 +470,10 @@ export function setCookie(name, value) {
 
 export function setAborted(bool) {
     aborted = bool;
+
+    if (bool) {
+        stopDownloadBatch(activeDownloadBatch);
+    }
 }
 
 export function setWorkerCount(count) {
@@ -284,14 +482,15 @@ export function setWorkerCount(count) {
 
 export function clearList() {
     let ul = document.querySelector(".listBox ul");
-    ul.innerHTML = "";
 
+    ul.innerHTML = "";
     urlList = [];
 }
 
 // TODO: Comment
 export function removeActives(element) {
     let actives = element.querySelectorAll(".active");
+
     for (let active of actives) {
         active.classList.remove("active");
     }
@@ -305,7 +504,9 @@ export function updateSelected() {
     if (actives.length) {
         linkCount.style.opacity = "1";
         linkCount.querySelector("a").textContent = actives.length.toString();
-    } else linkCount.style.opacity = "0";
+    } else {
+        linkCount.style.opacity = "0";
+    }
 }
 
 // TODO: Comment
@@ -313,8 +514,9 @@ export function activeToClipboard() {
     let actives = document.querySelectorAll(".listBox li.active");
     let clipText = "";
 
-    for (let active of actives)
+    for (let active of actives) {
         clipText += active.textContent + "\n";
+    }
 
     clipboard.writeText(clipText);
 }
@@ -322,15 +524,17 @@ export function activeToClipboard() {
 // TODO: Comment
 export function loadAllData(location) {
     let data = JSON.parse(getCookie("cache"));
+
     setCookie("cache", null);
 
     location.value = data["location"];
 
     let listBox = document.querySelector(".listBox ul");
+
     for (let listItem of data["listItems"]) {
         let li = document.createElement("li");
-        li.textContent = listItem;
 
+        li.textContent = listItem;
         listBox.appendChild(li);
     }
 }
@@ -341,6 +545,7 @@ export function getAllData() {
     let listItems = document.querySelectorAll(".listBox ul li");
 
     data["listItems"] = [];
+
     for (let listItem of listItems) {
         data["listItems"].push(listItem.textContent);
     }
@@ -351,82 +556,161 @@ export function getAllData() {
 }
 
 // TODO: Comment
-async function download(data) {
-    if (aborted) {
+function updateDownloadProgress(batch) {
+    if (activeDownloadBatch !== batch) {
         return;
     }
 
-    let percentage = parseFloat((100 / data.length).toFixed(2));
+    // Count completed jobs exactly; rounding each individual share loses precision.
+    const total = batch.total ? batch.completed / batch.total : 0;
+    const values = Array.from(batch.progress.values());
+    const active = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
 
-    downloading = true;
+    const progressTotal = document.querySelector(".progress-total progress");
+    const progressTotalInfo = document.querySelector(".progress-total .info p");
+    const progressSong = document.querySelector(".progress-song progress");
+    const progressSongInfo = document.querySelector(".progress-song .info p");
 
-    let i = 0;
-    while (i < data.length) {
-        const item = data[i];
+    if (progressTotal) progressTotal.value = total;
+    if (progressTotalInfo) progressTotalInfo.textContent = (total * 100).toFixed(2) + "%";
 
-        resolve = await downloadURL(
-            item.mode,
-            item.location,
-            item.url,
-            percentage,
-            item.codecAudio,
-            item.codecVideo,
-            item.quality
-        );
+    // The existing single song bar shows the average of currently active jobs.
+    if (progressSong) progressSong.value = active;
+    if (progressSongInfo) progressSongInfo.textContent = (active * 100).toFixed(2) + "%";
 
-        let exitLoop = false;
-        switch (resolve) {
-            case "success":
-                i++;
-                break;
-            case "permission":
-                showNotification(languageDB["js"]["permission"], languageDB["js"]["error"], 8000);
-                await sleep(10000);
-                break;
-            case "network":
-                showNotification(languageDB["js"]["network"], languageDB["js"]["error"], 8000);
-                await sleep(10000);
-                break;
-            case "drive":
-                await sleep(1000);
-                break;
-            case "login":
-                showNotification(languageDB["js"]["login"], languageDB["js"]["error"], 8000);
-                await sleep(10000);
-                break;
-            case "sleep":
-                await sleep(10000);
-                break;
-            default:
-                exitLoop = true;
+    ipcRenderer.send("set_percentage", total);
+}
+
+async function downloadItem(item, index, batch) {
+    const job = {title: null};
+
+    while (!aborted && !batch.stopped) {
+        batch.progress.set(index, 0);
+        updateDownloadProgress(batch);
+
+        const result = await downloadURL(item, index, batch, job);
+
+        if (aborted || batch.stopped) {
+            return "aborted";
         }
-        if (exitLoop || aborted) break;
+
+        if (result === "success") {
+            return "success";
+        }
+
+        switch (result) {
+            case "permission":
+            case "network":
+            case "login":
+                showNotification(languageDB["js"][result], languageDB["js"]["error"], 8000);
+                break;
+
+            case "drive":
+            case "sleep":
+                break;
+
+            default:
+                return result;
+        }
+
+        batch.progress.delete(index);
+        updateDownloadProgress(batch);
+        await sleep(result === "drive" ? 1000 : 10000, batch);
     }
+
+    return "aborted";
+}
+
+async function download(data) {
+    if (aborted) {
+        resolve = "aborted";
+        return;
+    }
+
+    const batch = {
+        total: data.length,
+        completed: 0,
+        nextIndex: 0,
+        stopped: false,
+        result: "success",
+        processes: new Set(),
+        retryWaits: new Set(),
+        progress: new Map(),
+        outputLocks: new Map()
+    };
+
+    activeDownloadBatch = batch;
+    downloading = true;
+    resolve = null;
+    updateDownloadProgress(batch);
+
+    async function runWorker() {
+        while (!aborted && !batch.stopped) {
+            const index = batch.nextIndex++;
+
+            if (index >= data.length) {
+                return;
+            }
+
+            let result;
+
+            try {
+                result = await downloadItem(data[index], index, batch);
+            } catch (error) {
+                console.warn("Download failed:", error);
+                result = null;
+            }
+
+            batch.progress.delete(index);
+
+            if (result === "success") {
+                batch.completed++;
+            } else if (!batch.stopped) {
+                batch.result = result;
+                stopDownloadBatch(batch);
+            }
+
+            updateDownloadProgress(batch);
+        }
+    }
+
+    const downloadWorkers = [];
+    const workerCount = Math.min(DOWNLOAD_CONCURRENCY, data.length);
+
+    for (let i = 0; i < workerCount; i++) {
+        downloadWorkers.push(runWorker());
+    }
+
+    // Each worker owns a slot until metadata, download and postprocessing close.
+    await Promise.all(downloadWorkers);
+
+    resolve = aborted || (batch.stopped && batch.result === "success") ? "aborted" : batch.result;
+
+    activeDownloadBatch = null;
 }
 
 function generateDomainVariations(url) {
     const hostname = url.hostname;
-    const domainParts = hostname.split('.').map(part => part.toLowerCase());
+    const domainParts = hostname
+        .split(".")
+        .map(part => part.toLowerCase());
 
     // Extract the main domain without the subdomain and TLD
     const mainDomain = domainParts.slice(-2, -1)[0];
-    return [
-        `${mainDomain}.${domainParts.slice(-1)[0]}`, // domain with TLD
-        `${mainDomain}${domainParts.slice(-1)[0]}`, // domain concatenated without dot
-        hostname, // full domain
-        hostname.replace(/\./g, ''), // full domain without dots
-        ...domainParts, // domain parts
-    ];
+
+    return [`${mainDomain}.${domainParts.slice(-1)[0]}`, `${mainDomain}${domainParts.slice(-1)[0]}`, hostname, hostname.replace(/\./g, ""), ...domainParts];
 }
 
 export function addUrlToList(url = "") {
     if (!url) {
         showNotification(languageDB["js"]["noURL"], languageDB["js"]["error"]);
+
         return false;
     }
 
     let values = url.trim().split(/[\n\s]+/);
     let ul = document.querySelector(".listBox ul");
+
     for (let value of values) {
         let url = null;
 
@@ -434,18 +718,21 @@ export function addUrlToList(url = "") {
             url = new URL(value.trim());
         } catch (e) {
             showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
+
             return false;
         }
 
         let youtube = false;
         let valid = false;
         let broken = false;
+
         for (const domain of generateDomainVariations(url)) {
             if (domain === "youtube") {
                 url = match(url, "http(?:s?):\\/\\/(?:www\\.|music\\.)?youtu(?:be\\.com\\/watch\\?v=|be\\.com\\/playlist\\?list=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?‌​[\\w\\?‌​=]*)?");
 
                 valid = true;
                 youtube = true;
+
                 break;
             }
 
@@ -462,42 +749,47 @@ export function addUrlToList(url = "") {
 
         if (broken) {
             showNotification(languageDB["js"]["brokenURL"], languageDB["js"]["error"]);
+
             return false;
         }
 
         if (!valid) {
             showNotification(languageDB["js"]["noValidURL"], languageDB["js"]["error"]);
+
             return false;
         }
 
         if (urlList.indexOf(url.toString()) !== -1) {
             showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
+
             return false;
         }
 
         if (youtube) {
-            worker.postMessage({type: "checkPremium", url: url, mode: getCookie("mode")});
+            worker.postMessage({
+                type: "checkPremium", url: url, mode: getCookie("mode")
+            });
         }
 
         const li = document.createElement("li");
+
         li.textContent = url;
         li.setAttribute("data-url", url);
 
         ul.appendChild(li);
+
         lastLi = li;
     }
 
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
+    if (ul.scrollHeight > ul.clientHeight) {
+        ul.style.width = "calc(100% + 10px)";
+    } else {
+        ul.style.width = "100%";
+    }
 
     ul.scrollTop = ul.scrollHeight;
 
-    showNotification(
-        (values.length === 1)
-            ? languageDB["js"]["urlAdded"]
-            : languageDB["js"]["urlsAdded"],
-        languageDB["js"]["success"]
-    );
+    showNotification(values.length === 1 ? languageDB["js"]["urlAdded"] : languageDB["js"]["urlsAdded"], languageDB["js"]["success"]);
 
     return true;
 }
@@ -506,9 +798,11 @@ export function addUrlToList(url = "") {
 export function removeActiveListItems() {
     let ul = document.querySelector(".listBox ul");
     let actives = ul.querySelectorAll("li.active");
+
     if (actives) {
         for (let active of actives) {
             let url = active.getAttribute("data-url");
+
             delete specificSettings[url];
 
             let index = urlList.indexOf(active.textContent);
@@ -518,8 +812,11 @@ export function removeActiveListItems() {
         }
     }
 
-    if (ul.scrollHeight > ul.clientHeight) ul.style.width = "calc(100% + 10px)";
-    else ul.style.width = "100%";
+    if (ul.scrollHeight > ul.clientHeight) {
+        ul.style.width = "calc(100% + 10px)";
+    } else {
+        ul.style.width = "100%";
+    }
 
     updateSelected();
 }
@@ -541,15 +838,18 @@ export function showNotification(message, title = "Info", time = 3000) {
     }
 
     let notifications = document.getElementsByClassName("notification");
+
     for (let notification of notifications) {
         let notificationStyle = window.getComputedStyle(notification);
         let notificationPosition = notification.getBoundingClientRect();
 
         let bottom = Number(notificationStyle.bottom.replaceAll("px", ""));
+
         notification.style.bottom = bottom + notificationPosition.height + 5 + "px";
     }
 
     let notification = document.createElement("div");
+
     notification.classList.add("notification");
 
     notification.textContent = message;
@@ -561,7 +861,9 @@ export function showNotification(message, title = "Info", time = 3000) {
 
     notification.animateCallback([{opacity: 0}, {opacity: 1}], {
         duration: 100, fill: "forwards"
-    }, () => timeoutOpacity = setTimeout(() => removeOpacityNotification(notification), time));
+    }, () => {
+        timeoutOpacity = setTimeout(() => removeOpacityNotification(notification), time);
+    });
 
     notification.onmouseover = () => clearTimeout(timeoutOpacity);
     notification.onmouseout = () => removeOpacityNotification(notification);
@@ -587,7 +889,7 @@ function match(string, regex) {
     let regExp = new RegExp(regex, "gi");
     let found = string.toString().match(regExp);
 
-    return (found) ? found[0] : null;
+    return found ? found[0] : null;
 }
 
 // TODO: Comment
@@ -608,7 +910,6 @@ export function selectClick(element) {
             label.classList.remove("hidden");
         }
 
-
         for (let element of hiddenElements) {
             element.classList.remove("hidden");
         }
@@ -619,10 +920,12 @@ export function selectClick(element) {
         let option = options[0];
 
         let computedStyle = window.getComputedStyle(option, null);
+
         let optionHeight = getNumber(computedStyle.height) + getNumber(computedStyle.padding) * 2;
 
         let optionCount = options.length;
         let optionsHeight = optionHeight * optionCount;
+
         optionsHeight = optionsHeight > 100 ? 100 : optionsHeight;
 
         let clientRectSelect = select.getClientRects()[0];
@@ -638,7 +941,10 @@ export function selectClick(element) {
 
         let interval = setInterval(() => {
             let row = nextElement.closest(".row");
-            if (row) nextElement = row;
+
+            if (row) {
+                nextElement = row;
+            }
 
             if (select.classList.contains("top")) {
                 nextElement = nextElement.previousElementSibling;
@@ -652,17 +958,20 @@ export function selectClick(element) {
 
                 height += rect.height;
 
-                if (style.opacity !== "0")
+                if (style.opacity !== "0") {
                     hiddenElements.push(nextElement);
+                }
 
                 if (height > 60) {
                     clearInterval(interval);
+
                     for (let element of hiddenElements) {
                         element.classList.add("hidden");
                     }
                 }
             } else {
                 clearInterval(interval);
+
                 for (let element of hiddenElements) {
                     element.classList.add("hidden");
                 }
@@ -676,6 +985,7 @@ export function selectClick(element) {
 // TODO: Comment
 export function hideSelect(element) {
     let select = element;
+
     if (!element.classList.contains("select")) {
         select = element.closest(".select");
     }
@@ -694,14 +1004,22 @@ export async function loadExtractors() {
 
 // TODO: Comment
 export async function setExtractors() {
-    let result = spawnSync(ytDl + " --list-extractors", {shell: true}).stdout.toString().trim();
+    let result = spawnSync(ytDl + " --list-extractors", {
+        shell: true
+    }).stdout.toString().trim();
 
     result = result.split("\n");
 
     const extractors = [];
     const brokenExtractors = [];
+
     for (let i = 0; i < result.length; i++) {
-        const extractor = result[i].split(":")[0].split("(")[0].trim().toLowerCase();
+        const extractor = result[i]
+            .split(":")[0]
+            .split("(")[0]
+            .trim()
+            .toLowerCase();
+
         const isBroken = result[i].includes("CURRENTLY BROKEN");
 
         if (!extractors.includes(extractor) && !brokenExtractors.includes(extractor)) {
@@ -711,19 +1029,15 @@ export async function setExtractors() {
 
     if (extractors.length) {
         setCookie("brokenExtractors", JSON.stringify(brokenExtractors));
+
         setCookie("extractors", JSON.stringify(extractors));
     }
 }
 
 function upgradeDeno(denoPath) {
-    const result = spawnSync(
-        denoPath,
-        ["upgrade"],
-        {
-            input: "y\n",
-            stdio: ["pipe", "pipe", "pipe"]
-        }
-    );
+    const result = spawnSync(denoPath, ["upgrade"], {
+        input: "y\n", stdio: ["pipe", "pipe", "pipe"]
+    });
 
     const stdout = result.stdout?.toString() ?? "";
     const stderr = result.stderr?.toString() ?? "";
@@ -737,11 +1051,13 @@ function upgradeDeno(denoPath) {
     }
 
     console.warn("Deno upgrade failed.");
+
     return false;
 }
 
 function installDeno() {
     const denoInstallation = getCookie("deno");
+
     if (denoInstallation && denoInstallation.length) {
         return denoInstallation;
     }
@@ -752,22 +1068,17 @@ function installDeno() {
 
     if (platform === "win32") {
         // Windows PowerShell installer
-        result = spawnSync(
-            "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-            ["-Command", "irm https://deno.land/install.ps1 | iex"],
-            { stdio: "pipe" }
-        );
-    }
-    else if (platform === "linux" || platform === "darwin") {
+        result = spawnSync("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", ["-Command", "irm https://deno.land/install.ps1 | iex"], {
+            stdio: "pipe"
+        });
+    } else if (platform === "linux" || platform === "darwin") {
         // Linux / macOS installer (curl | sh)
-        result = spawnSync(
-            "/bin/sh",
-            ["-c", "curl -fsSL https://deno.land/install.sh | sh"],
-            { stdio: "pipe" }
-        );
-    }
-    else {
+        result = spawnSync("/bin/sh", ["-c", "curl -fsSL https://deno.land/install.sh | sh"], {
+            stdio: "pipe"
+        });
+    } else {
         console.warn("Unsupported platform:", platform);
+
         return null;
     }
 
@@ -784,6 +1095,7 @@ function installDeno() {
 
     if (match && match[1]) {
         const denoPath = match[1].trim();
+
         console.log("Deno installed at:", denoPath);
 
         setCookie("deno", denoPath);
@@ -792,154 +1104,154 @@ function installDeno() {
     }
 
     console.warn("Deno installation output did not contain a path.");
+
     return null;
 }
 
+function initializeDeno() {
+    if (denoInitialized) {
+        return;
+    }
+
+    denoInitialized = true;
+
+    denoPath = installDeno();
+
+    if (denoPath && denoPath.length) {
+        upgradeDeno(denoPath);
+    } else {
+        console.warn("Couldn't find or install Deno, some YouTube formats may not work properly.");
+    }
+}
+
 // TODO: Comment
-function downloadURL(mode, location, url, percentage, codecAudio, codecVideo, quality) {
-    return new Promise(async (resolve) => {
-        let error = false;
+async function downloadURL(item, index, batch, job) {
+    if (aborted || batch.stopped) {
+        return "aborted";
+    }
 
-        const progressTotal = document.querySelector(".progress-total progress");
-        const progressTotalInfo = document.querySelector(".progress-total .info p");
-        const progressSong = document.querySelector(".progress-song progress");
-        const progressSongInfo = document.querySelector(".progress-song .info p");
-        const title = getTitle(url, mode)
+    const {mode, location, url, codecAudio, codecVideo, quality} = item;
+    const commonArgs = ["--no-check-formats", "--no-check-certificates", "--extractor-args", "youtube:player_client=default,web_safari;player_js_version=actual"];
 
-        if (aborted) resolve("aborted");
+    const premium = JSON.parse(getCookie("premium"));
 
-        console.debug(title);
+    if (isYouTubeUrl(url) && premium && premium.check) {
+        if (premium.browser && premium.browser.length) {
+            if (process.platform !== "win32" || premium.browser !== "chrome") {
+                commonArgs.push("--cookies-from-browser", premium.browser);
+            } else {
+                console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
+            }
+        } else {
+            showNotification(languageDB["js"]["noBrowser"]);
+            return null;
+        }
+    }
 
-        let config = [
-            "--ffmpeg-location " + ffmpeg,
-            "-o \"" + location + path.sep + title + ".%(ext)s\"",
-            "--no-check-formats",
-            "--no-check-certificates",
-            "-N 2",
-            "--extractor-args \"youtube:player_client=default,web_safari;player_js_version=actual\""
-        ];
+    /*
+     * Deno is installed/found and updated once during startup.
+     * Downloads only reuse the already resolved executable path.
+     */
+    if (denoPath && denoPath.length) {
+        commonArgs.push("--js-runtimes", "deno:" + denoPath);
+    }
+
+    // A successful title lookup is reused if the actual download needs a retry.
+    if (job.title === null) {
+        const metadata = await getTitle(url, mode, batch, commonArgs);
+
+        if (metadata.status !== "success") {
+            return metadata.status;
+        }
+
+        job.title = metadata.title;
+    }
+
+    if (aborted || batch.stopped) {
+        return "aborted";
+    }
+
+    console.debug(job.title);
+
+    const outputPath = path.resolve(location, job.title);
+    const outputKey = process.platform === "linux" ? outputPath : outputPath.toLowerCase();
+
+    // Two different URLs can produce the same title. Serialize those outputs
+    // so concurrent yt-dlp/ffmpeg processes never write the same partial file.
+    const previousOutput = batch.outputLocks.get(outputKey) || Promise.resolve();
+    let releaseOutput;
+    const outputLock = new Promise((finish) => {
+        releaseOutput = finish;
+    });
+
+    batch.outputLocks.set(outputKey, outputLock);
+    await previousOutput;
+
+    try {
+        if (aborted || batch.stopped) {
+            return "aborted";
+        }
+
+        // Arguments are passed directly, preserving spaces and URL ampersands.
+        // Literal percent characters must still be escaped for yt-dlp templates.
+        const config = [...commonArgs, "-o", outputPath.replace(/%/g, "%%") + ".%(ext)s", "-N", "2", "--newline", "--progress"];
+
+        if (ffmpeg) {
+            config.push("--ffmpeg-location", executablePath(ffmpeg));
+        }
 
         if (mode === "audio") {
             config.push("--extract-audio");
-            config.push("--audio-format " + codecAudio);
-            config.push("--audio-quality " + quality);
+            config.push("--audio-format", codecAudio);
+            config.push("--audio-quality", String(quality));
 
-            if (["mp3", "aac", "flac"].includes(codecAudio)) config.push("--embed-thumbnail");
+            if (["mp3", "aac", "flac"].includes(codecAudio)) {
+                config.push("--embed-thumbnail");
+            }
         } else {
-            config.push("-S vcodec:" + codecVideo);
+            config.push("-S", "vcodec:" + codecVideo);
             config.push("--embed-thumbnail");
-            config.push("--audio-format mp3");
-            config.push("--audio-quality 9");
-            config.push("--merge-output-format mp4");
+            config.push("--audio-format", "mp3");
+            config.push("--audio-quality", "9");
+            config.push("--merge-output-format", "mp4");
         }
 
-        let premium = JSON.parse(getCookie("premium"));
-        if (premium && premium.check) {
-            if (premium.browser && premium.browser.length) {
-                if (process.platform !== "win32" || premium.browser !== "chrome") {
-                    config.push("--cookies-from-browser " + premium.browser);
-                } else {
-                    console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
-                }
-            } else {
-                showNotification(languageDB["js"]["noBrowser"]);
-                resolve(null);
-            }
+        config.push("--", url);
+
+        const result = await runYtDlp(config, batch, (progress) => {
+            batch.progress.set(index, Math.max(batch.progress.get(index) || 0, progress));
+            updateDownloadProgress(batch);
+        });
+
+        return result.status;
+    } finally {
+        releaseOutput();
+
+        if (batch.outputLocks.get(outputKey) === outputLock) {
+            batch.outputLocks.delete(outputKey);
         }
-
-        const denoPath = installDeno();
-        if (denoPath && denoPath.length) {
-            upgradeDeno(denoPath);
-
-            config.push("--js-runtimes deno:\"" + denoPath + "\"");
-        } else {
-            console.warn("Couldn't find not install Deno, some YouTube formats may not work properly.");
-        }
-
-        let command = (ytDl + " " + config.join(" ")) + " " + url;
-        console.debug(command);
-
-        childProcess = exec(command);
-
-        let found;
-        childProcess.stdout.on("data", (data) => {
-            console.debug(data);
-
-            found = data.match("(?<=\\[download\\])(?:\\s+)(\\d+(\\.\\d+)?%)");
-            if (found) {
-                const percentageDecimal = Number(found[1].replaceAll("%", "")) / 100;
-
-                if (percentageDecimal > progressSong.value) {
-                    progressSong.value = percentageDecimal;
-                    progressSongInfo.textContent = found[1];
-                }
-            }
-        });
-
-        childProcess.stderr.on("data", (data) => {
-            console.debug("Error start:");
-            console.debug(data);
-            console.debug("Error end!");
-
-            if (aborted) {
-                return
-            }
-
-            data = data.toLowerCase();
-
-            if (!data.match(errorFilter)) {
-                error = true;
-            }
-
-            if (data.includes("winerror 3")) resolve("drive");
-            if (data.includes("permission") || data.includes("cookie")) resolve("permission");
-            if (data.includes("getaddrinfo failed") || data.includes("timed out")) resolve("network");
-            if (data.includes("sign in")) resolve("login");
-            if (data.includes("http error 403")) resolve("sleep");
-        });
-
-        childProcess.on("close", (num) => {
-            console.debug("Closing status code: " + num);
-            if (!error) {
-                let percentageTotal = progressTotal.value * 100 + percentage;
-                let percentageDecimal = percentageTotal / 100;
-
-                progressTotal.value = percentageDecimal;
-                progressTotalInfo.textContent = percentageTotal.toFixed(2) + "%";
-
-                progressSong.value = 0;
-                progressSongInfo.textContent = "0%";
-
-                ipcRenderer.send("set_percentage", percentageDecimal);
-
-                console.debug("No errors occurred!");
-
-                if (!aborted) resolve("success");
-                else resolve("aborted");
-
-                return;
-            }
-
-            resolve(null);
-        });
-    });
+    }
 }
 
 // TODO: Comment
 export function setDisabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
     let location = document.querySelector(".location #location");
+
     let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler)");
+
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
 
     listBox.ariaDisabled = "true";
     location.ariaDisabled = "true";
+
     input.ariaDisabled = "true";
     input.setAttribute("readonly", "readonly");
 
-    for (let button of buttons)
+    for (let button of buttons) {
         button.ariaDisabled = "true";
+    }
 
     abortButton.ariaDisabled = "false";
 }
@@ -948,17 +1260,21 @@ export function setDisabled() {
 export function setEnabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
     let location = document.querySelector(".location #location");
+
     let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler)");
+
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
 
     listBox.ariaDisabled = "false";
     location.ariaDisabled = "false";
+
     input.ariaDisabled = "false";
     input.removeAttribute("readonly");
 
-    for (let button of buttons)
+    for (let button of buttons) {
         button.ariaDisabled = "false";
+    }
 
     abortButton.ariaDisabled = "true";
 }
@@ -972,11 +1288,13 @@ export function selectOption(option) {
     let select = option.closest(".select");
     let button = select.querySelector("div");
 
-    let selected = select.querySelector("[aria-selected='true']");
+    let selected = select.querySelector("[aria-selected=\"true\"]");
+
     selected.ariaSelected = "false";
     option.ariaSelected = "true";
 
     button.textContent = option.textContent;
+
     select.setAttribute("data-value", option.getAttribute("data-value"));
 
     toggleVisibility();
@@ -988,6 +1306,7 @@ function toggleVisibility() {
     let value = mode.getAttribute("data-value");
 
     let audioSettings = document.querySelectorAll("settings .audioSettings");
+
     let videoSettings = document.querySelectorAll("settings .videoSettings");
 
     if (value === "audio") {
@@ -1002,6 +1321,7 @@ function toggleVisibility() {
         audioSettings.forEach((element) => {
             element.classList.remove("visible");
         });
+
         videoSettings.forEach((element) => {
             element.classList.add("visible");
         });
@@ -1014,30 +1334,49 @@ export function saveSettings() {
 
     if (save.classList.contains("active")) {
         const mode = document.querySelector("settings .mode .select");
+
         const quality = document.querySelector("settings .quality .select");
+
         const codecAudio = document.querySelector("settings .codecAudio .select");
+
         const codecVideo = document.querySelector("settings .codecVideo .select");
+
         const closeToTray = document.querySelector("settings #closeToTray");
+
         const startMinimized = document.querySelector("settings #startMinimized");
+
         const autostart = document.querySelector("settings #autostart");
+
         const clearList = document.querySelector("settings #clearList");
+
         const premiumCheck = document.querySelector("settings #premium");
+
         const saveLocation = document.querySelector("settings #saveLocation");
+
         const premiumBrowser = document.querySelector("settings #browser");
 
         setCookie("mode", mode.getAttribute("data-value"));
+
         setCookie("quality", quality.getAttribute("data-value"));
+
         setCookie("codecAudio", codecAudio.getAttribute("data-value"));
+
         setCookie("codecVideo", codecVideo.getAttribute("data-value"));
+
         setCookie("save", true);
+
         setCookie("closeToTray", closeToTray.classList.contains("active"));
+
         setCookie("startMinimized", startMinimized.classList.contains("active"));
+
         setCookie("autostart", autostart.classList.contains("active"));
+
         setCookie("clearList", clearList.classList.contains("active"));
+
         setCookie("saveLocation", saveLocation.classList.contains("active"));
+
         setCookie("premium", JSON.stringify({
-            "browser": premiumBrowser.getAttribute("data-value"),
-            "check": premiumCheck.classList.contains("active")
+            browser: premiumBrowser.getAttribute("data-value"), check: premiumCheck.classList.contains("active")
         }));
     }
 }
@@ -1048,11 +1387,16 @@ export function deleteSettings() {
     setCookie("quality", "");
     setCookie("codecAudio", "");
     setCookie("codecVideo", "");
+
     setCookie("save", false);
     setCookie("closeToTray", false);
     setCookie("startMinimized", false);
     setCookie("autostart", false);
-    setCookie("premium", JSON.stringify({"browser": null, "check": false}));
+
+    setCookie("premium", JSON.stringify({
+        browser: null, check: false
+    }));
+
     setCookie("clearList", false);
     setCookie("saveLocation", false);
 }
@@ -1060,9 +1404,13 @@ export function deleteSettings() {
 // TODO: Comment
 export function loadSettings() {
     const mode = document.querySelector("settings .mode .select");
+
     const quality = document.querySelector("settings .quality .select");
+
     const codecAudio = document.querySelector("settings .codecAudio .select");
+
     const codecVideo = document.querySelector("settings .codecVideo .select");
+
     const lang = document.querySelector("settings .lang .select");
 
     const modeValue = getCookie("mode");
@@ -1070,41 +1418,51 @@ export function loadSettings() {
     const codecAudioValue = getCookie("codecAudio");
     const codecVideoValue = getCookie("codecVideo");
     const langValue = getCookie("lang");
+
     const save = getCookie("save");
     const closeToTray = getCookie("closeToTray");
     const startMinimized = getCookie("startMinimized");
     const autostart = getCookie("autostart");
+
     const premium = JSON.parse(getCookie("premium"));
+
     const clearList = getCookie("clearList");
     const saveLocation = getCookie("saveLocation");
 
     let option;
+
     if (modeValue) {
-        option = mode.querySelector("[data-value='" + modeValue + "']");
+        option = mode.querySelector("[data-value=\"" + modeValue + "\"]");
+
         selectOption(option);
     }
 
     if (qualityValue) {
-        option = quality.querySelector("[data-value='" + qualityValue + "']");
+        option = quality.querySelector("[data-value=\"" + qualityValue + "\"]");
+
         selectOption(option);
     }
 
     if (codecAudioValue) {
-        option = codecAudio.querySelector("[data-value='" + codecAudioValue + "']");
+        option = codecAudio.querySelector("[data-value=\"" + codecAudioValue + "\"]");
+
         selectOption(option);
     }
 
     if (codecVideoValue) {
-        option = codecVideo.querySelector("[data-value='" + codecVideoValue + "']");
+        option = codecVideo.querySelector("[data-value=\"" + codecVideoValue + "\"]");
+
         selectOption(option);
     }
 
     if (langValue) {
-        option = lang.querySelector("[data-value='" + langValue + "']");
+        option = lang.querySelector("[data-value=\"" + langValue + "\"]");
+
         selectOption(option);
     }
 
     const saving = document.querySelector("settings .save");
+
     if (save) {
         saving.querySelector("#save").classList.add("active");
         saving.querySelector("span").textContent = languageDB["js"]["on"];
@@ -1113,54 +1471,79 @@ export function loadSettings() {
     }
 
     const closingToTray = document.querySelector("settings .closeToTray");
+
     if (closeToTray) {
-        closingToTray.querySelector("#closeToTray").classList.add("active");
+        closingToTray
+            .querySelector("#closeToTray")
+            .classList.add("active");
+
         closingToTray.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
         closingToTray.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     const startingMinimized = document.querySelector("settings .startMinimized");
+
     if (startMinimized) {
-        startingMinimized.querySelector("#startMinimized").classList.add("active");
+        startingMinimized
+            .querySelector("#startMinimized")
+            .classList.add("active");
+
         startingMinimized.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
         startingMinimized.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     const autostarting = document.querySelector("settings .autostart");
+
     if (autostart) {
-        autostarting.querySelector("#autostart").classList.add("active");
+        autostarting
+            .querySelector("#autostart")
+            .classList.add("active");
+
         autostarting.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
         autostarting.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     const clearListing = document.querySelector("settings .clearList");
+
     if (clearList) {
-        clearListing.querySelector("#clearList").classList.add("active");
+        clearListing
+            .querySelector("#clearList")
+            .classList.add("active");
+
         clearListing.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
         clearListing.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     const savingLocation = document.querySelector("settings .saveLocation");
+
     if (saveLocation) {
-        savingLocation.querySelector("#saveLocation").classList.add("active");
+        savingLocation
+            .querySelector("#saveLocation")
+            .classList.add("active");
+
         savingLocation.querySelector("span").textContent = languageDB["js"]["on"];
     } else {
         savingLocation.querySelector("span").textContent = languageDB["js"]["off"];
     }
 
     const premiumCheck = document.querySelector("settings .premium");
+
     const premiumBrowser = document.querySelector("settings .browser");
 
     if (premium && typeof premium != "undefined" && (premium["check"] ?? false)) {
-        premiumCheck.querySelector("#premium").classList.add("active");
+        premiumCheck
+            .querySelector("#premium")
+            .classList.add("active");
+
         premiumCheck.querySelector("span").textContent = languageDB["js"]["on"];
 
         if (typeof premium["browser"] != "undefined" && premium["browser"] != null) {
-            option = premiumBrowser.querySelector("[data-value='" + premium["browser"] + "']");
+            option = premiumBrowser.querySelector("[data-value=\"" + premium["browser"] + "\"]");
+
             selectOption(option);
         }
     } else {
@@ -1173,7 +1556,9 @@ export async function showChangelog(update = false) {
     let info = document.getElementById("info");
     let dynamic = info.querySelector("#dynamic");
 
-    if (dynamic.innerHTML === "") await loadInfo();
+    if (dynamic.innerHTML === "") {
+        await loadInfo();
+    }
 
     if (update) {
         let title = info.querySelector("#title");
@@ -1185,18 +1570,33 @@ export async function showChangelog(update = false) {
 }
 
 async function loadLanguage(language) {
-    language = language.toLowerCase().split("-")[0];
+    language = language
+        .toLowerCase()
+        .split("-")[0];
 
-    return fetch("assets/db/language." + language + ".json").then(response => {
-        return response.json();
-    }).then(jsonData => languageDB = jsonData);
+    return fetch("assets/db/language." + language + ".json")
+        .then(response => {
+            return response.json();
+        })
+        .then(jsonData => {
+            languageDB = jsonData;
+
+            return languageDB;
+        });
 }
 
 // TODO: Comment
 export async function initialize() {
+    /*
+     * Resolve/install Deno and run its update check once when the
+     * application starts. Downloads reuse the cached path afterwards.
+     */
+    initializeDeno();
+
     await loadExtractors();
 
     let cookie = getCookie("lang");
+
     if (cookie) {
         selectedLang = cookie;
 
@@ -1207,16 +1607,20 @@ export async function initialize() {
                 .then(() => selectedLang = language)
                 .catch(() => null);
         }
+
         if (!selectedLang) {
             selectedLang = "en";
+
             await loadLanguage(selectedLang);
         }
+
         setCookie("lang", selectedLang);
     }
 
     document.body.innerHTML = mustache.render(document.body.innerHTML, languageDB);
 
     let main = document.getElementsByTagName("main")[0];
+
     await loadPage("assets/template/main.html", main, () => {
         setThemeIcon();
 
@@ -1238,12 +1642,8 @@ export function updateYtDl(administrator = false) {
         childProcess = exec(elevate + " " + ytDl + " -U");
     } else {
         showNotification(languageDB["js"]["libUpdate"]);
-        setDisabled();
 
-        const denoPath = installDeno();
-        if (denoPath && denoPath.length) {
-            upgradeDeno(denoPath);
-        }
+        setDisabled();
 
         childProcess = exec(ytDl + " -U");
     }
@@ -1280,10 +1680,12 @@ export function updateYtDl(administrator = false) {
 
         if (administrator) {
             showNotification(languageDB["js"]["adminPermission"], languageDB["js"]["error"]);
+
             return;
         }
 
         showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
+
         setEnabled();
     });
 
@@ -1295,10 +1697,12 @@ export function updateYtDl(administrator = false) {
         if (update || !extractors || !extractors.length) {
             setExtractors().then(() => {
                 setEnabled();
+
                 showNotification(languageDB["js"]["libUpdated"]);
             });
         } else {
             showNotification(languageDB["js"]["libUptoDate"]);
+
             setEnabled();
         }
     });
@@ -1307,39 +1711,49 @@ export function updateYtDl(administrator = false) {
 // TODO: Comment
 export async function loadPage(pageURL, element, callback = () => {
 }) {
-    await fetch(pageURL).then(response => {
-        return response.text();
-    }).then(htmlData => {
-        let template = new DOMParser().parseFromString(htmlData, "text/html").body;
+    await fetch(pageURL)
+        .then(response => {
+            return response.text();
+        })
+        .then(htmlData => {
+            let template = new DOMParser()
+                .parseFromString(htmlData, "text/html").body;
 
-        let scripts = template.getElementsByTagName("script");
-        scripts = Object.assign([], scripts);
+            let scripts = template.getElementsByTagName("script");
 
-        for (let script of scripts) {
-            let scriptTag = document.createElement("script");
-            scriptTag.type = "module";
-            scriptTag.src = script.src;
+            scripts = Object.assign([], scripts);
 
-            element.appendChild(scriptTag);
+            for (let script of scripts) {
+                let scriptTag = document.createElement("script");
 
-            script.parentElement.removeChild(script);
-        }
+                scriptTag.type = "module";
+                scriptTag.src = script.src;
 
-        element.innerHTML += mustache.render(template.innerHTML, languageDB);
-        callback();
-    });
+                element.appendChild(scriptTag);
+
+                script.parentElement.removeChild(script);
+            }
+
+            element.innerHTML += mustache.render(template.innerHTML, languageDB);
+
+            callback();
+        });
 }
 
 // TODO: Comment
 export function setThemeIcon() {
     let themeInterval = setInterval(() => {
         let icons = document.querySelectorAll(".theme-toggler svg");
+
         if (icons.length) {
             clearInterval(themeInterval);
 
             for (let icon of icons) {
-                if (theme === "light") icon.classList.add("fa-moon");
-                else icon.classList.add("fa-sun");
+                if (theme === "light") {
+                    icon.classList.add("fa-moon");
+                } else {
+                    icon.classList.add("fa-sun");
+                }
             }
         }
     }, 50);
@@ -1347,13 +1761,14 @@ export function setThemeIcon() {
 
 // TODO: Comment
 function getNumber(string) {
-    return Number((string).match(/\d+/));
+    return Number(string.match(/\d+/));
 }
 
 // TODO: Comment
 function clearTitle(URLInfo, mode) {
-    let hasArtist = ("artist" in URLInfo && URLInfo["artist"] !== null && mode === "audio");
-    let hasChannel = ("channel" in URLInfo && URLInfo["channel"] !== null);
+    let hasArtist = "artist" in URLInfo && URLInfo["artist"] !== null && mode === "audio";
+
+    let hasChannel = "channel" in URLInfo && URLInfo["channel"] !== null;
 
     if (hasArtist && URLInfo["artist"] === "NA") {
         if (URLInfo["title"].includes(" - ")) {
@@ -1368,9 +1783,14 @@ function clearTitle(URLInfo, mode) {
         }
     }
 
-    let title = ((hasArtist) ? URLInfo["artist"] + " - " + URLInfo["title"] : URLInfo["title"]).replace(ytFilter, "").trim();
+    let title = (hasArtist ? URLInfo["artist"] + " - " + URLInfo["title"] : URLInfo["title"])
+        .replace(ytFilter, "")
+        .trim();
+
     title = title.replace(/[\\/|:*"?<>]/g, "_");
+
     title = title.replace(/\s{2,}/g, " ");
+
     title = title.replace(/\(\)/g, "");
 
     return title.trim();
@@ -1379,6 +1799,7 @@ function clearTitle(URLInfo, mode) {
 // TODO: Comment
 export function setTheme(themeSet) {
     theme = themeSet;
+
     setCookie("theme", themeSet);
 }
 
@@ -1386,8 +1807,9 @@ export function setTheme(themeSet) {
 function addLeadingZero(string, size) {
     let count = Number(size) - string.toString().length;
 
-    for (let i = 0; i < count; i++)
+    for (let i = 0; i < count; i++) {
         string = "0" + string;
+    }
 
     return string;
 }
@@ -1396,33 +1818,42 @@ function addLeadingZero(string, size) {
 async function loadInfo() {
     let dynamic = document.querySelector("#info #dynamic");
 
-    await fetch("https://api.github.com/repos/BERNARDO31P/FastDownloader/releases?per_page=10").then(response => {
-        return response.json();
-    }).then(htmlData => {
-        for (let tag of htmlData) {
-            let date = new Date(tag.published_at);
-            let day = addLeadingZero(date.getUTCDate(), 2);
-            let month = addLeadingZero(date.getUTCMonth() + 1, 2);
-            let year = addLeadingZero(date.getUTCFullYear(), 4);
+    await fetch("https://api.github.com/repos/BERNARDO31P/FastDownloader/releases?per_page=10")
+        .then(response => {
+            return response.json();
+        })
+        .then(htmlData => {
+            for (let tag of htmlData) {
+                let date = new Date(tag.published_at);
 
-            let title = document.createElement("h3");
-            title.textContent = tag.tag_name + " - " + day + "." + month + "." + year;
+                let day = addLeadingZero(date.getUTCDate(), 2);
 
-            dynamic.appendChild(title);
+                let month = addLeadingZero(date.getUTCMonth() + 1, 2);
 
-            let infos = tag.body.split("\r\n");
-            infos = infos.filter(n => n);
-            infos.shift();
+                let year = addLeadingZero(date.getUTCFullYear(), 4);
 
-            let infoBox = document.createElement("div");
-            for (let info of infos) {
-                let infoText = document.createElement("p");
-                infoText.innerHTML = info;
+                let title = document.createElement("h3");
 
-                infoBox.appendChild(infoText);
+                title.textContent = tag.tag_name + " - " + day + "." + month + "." + year;
+
+                dynamic.appendChild(title);
+
+                let infos = tag.body.split("\r\n");
+
+                infos = infos.filter(n => n);
+                infos.shift();
+
+                let infoBox = document.createElement("div");
+
+                for (let info of infos) {
+                    let infoText = document.createElement("p");
+
+                    infoText.innerHTML = info;
+
+                    infoBox.appendChild(infoText);
+                }
+
+                dynamic.appendChild(infoBox);
             }
-
-            dynamic.appendChild(infoBox);
-        }
-    });
+        });
 }

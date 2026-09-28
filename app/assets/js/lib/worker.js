@@ -1,46 +1,63 @@
+import {ytFilter} from "./filter.js";
+
 const yt = require("youtube-sr").default;
 const levenshtein = require("fastest-levenshtein");
 
 const urlSkip = {};
 
-import {ytFilter} from "./filter.js";
+const TITLE_DELIMITER = / - | – /gi;
+const MATCH_DEVIATION = 65;
+const SETTING_FIELDS = ["quality", "mode", "codecAudio", "codecVideo", "location"];
 
 let globalSettings = {};
 let globalMode, globalCodecAudio, globalCodecVideo, globalQuality;
 
 let aborted = false;
 
-addEventListener('message', (event) => {
+addEventListener("message", (event) => {
     const msg = event.data;
 
     switch (msg.type) {
         case "abort":
             aborted = true;
             break;
+
         case "checkPremiumAndAdd":
             if (aborted) {
                 return;
             }
 
-            checkPremiumAndConvert(msg.url).then((url) => {
+            // TODO: Handle converted case
+            checkPremiumAndConvert(msg.url).then(({url, converted}) => {
                 if (aborted) {
                     return;
                 }
 
-                let data = getUrlData(url, msg.location);
-                postMessage({type: "checkPremiumAndAdd", data: data});
+                const data = getUrlData(url, msg.location);
+
+                postMessage({type: "checkPremiumAndAdd", data});
             });
             break;
+
         case "checkPremium":
             globalMode = msg.mode;
 
-            checkPremiumAndConvert(msg.url).then((url) => {
-                postMessage({type: "checkPremium", url: url, old: msg.url});
+            // TODO: Handle converted case
+            checkPremiumAndConvert(msg.url).then(({url, converted}) => {
+                postMessage({type: "checkPremium", url, old: msg.url});
             });
             break;
+
         case "loadData":
             aborted = false;
-            loadData(msg.mode, msg.codecAudio, msg.codecVideo, msg.quality, msg.settings);
+
+            loadData(
+                msg.mode,
+                msg.codecAudio,
+                msg.codecVideo,
+                msg.quality,
+                msg.settings
+            );
             break;
     }
 });
@@ -61,79 +78,93 @@ function loadData(mode, codecAudio, codecVideo, quality, settings) {
 
 // TODO: Comment
 async function checkPremiumAndConvert(url) {
-    if (globalMode !== "audio") {
-        return url;
+    if (
+        globalMode !== "audio" ||
+        url.includes("music.youtube") ||
+        url.includes("playlist")
+    ) {
+        return {url, converted: false};
     }
 
-    if (!url.includes("music.youtube") && !url.includes("playlist")) {
-        let musicUrl = await getYoutubeMusic(url);
-        if (musicUrl && musicUrl !== url) {
-            url = musicUrl;
-        } else {
-            urlSkip[url] = true;
-        }
+    const musicUrl = await getYoutubeMusic(url);
+
+    if (musicUrl && musicUrl !== url) {
+        return {url: musicUrl, converted: true};
     }
 
-    return url;
+    urlSkip[url] = true;
+
+    return {url, converted: false};
 }
 
 // TODO: Comment
 function matchCount(string, regex) {
-    let regExp = new RegExp(regex, "gi");
+    const regExp = new RegExp(regex, "gi");
 
     return string?.match(regExp)?.length ?? 0;
 }
 
 // TODO: Comment
 function contains(string, regex) {
-    let regExp = new RegExp(regex, "gi");
+    // Only the first match is needed; avoid collecting every matching substring.
+    const regExp = new RegExp(regex, "i");
 
-    return !!string.match(regExp);
+    return string.search(regExp) !== -1;
 }
 
 // TODO: Comment
 function escapeRegExp(text) {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
 // TODO: Comment
 function subtractSmallerNumber(num1, num2) {
-    return (num1 < num2) ? num2 - num1 : num1 - num2;
+    return Math.abs(num1 - num2);
 }
 
 // TODO: Comment
 function getBiggerLength(string1, string2) {
-    return (string1.length > string2.length) ? string1.length : string2.length;
+    return Math.max(string1.length, string2.length);
 }
 
 // TODO: Comment
 function getSortedLength(string1, string2) {
-    return (string1.length > string2.length) ? [string1, string2] : [string2, string1];
+    return string1.length > string2.length
+        ? [string1, string2]
+        : [string2, string1];
 }
 
 // TODO: Comment
 async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
     try {
-        const results = await new Promise((resolve, reject) => {
+        const results = await new Promise((resolve) => {
             const listener = (event) => {
                 const msg = event.data;
 
-                if (msg.type === "youTubeMusicSearchResults") {
-                    removeEventListener("message", listener);
-                    resolve(msg.results);
+                if (msg.type !== "youTubeMusicSearchResults") {
+                    return;
                 }
+
+                removeEventListener("message", listener);
+                resolve(msg.results);
             };
-            addEventListener('message', listener);
+
+            addEventListener("message", listener);
 
             postMessage({type: "getYouTubeMusicSearch", search: ytFullTitle});
         });
 
         //    const results = await window.electron.invoke("yt-search", ytFullTitle);
-        if (results && results.length) return results[0];
-    } catch (e) {
-        if (run === retry) return [];
+        if (results && results.length) {
+            return results[0];
+        }
+    } catch (error) {
+        if (run === retry) {
+            return [];
+        }
 
         await sleep(2000);
+
         return getYouTubeMusicSearch(ytFullTitle, run + 1, retry);
     }
 
@@ -149,155 +180,158 @@ async function getYoutubeMusic(url) {
     return await yt.getVideo(url).then(async (result) => {
         const channelName = result.channel.name;
 
-        if (contains(channelName, "(various artists)|(- topic)"))
+        if (contains(channelName, "(various artists)|(- topic)")) {
             return "https://music.youtube.com/watch?v=" + result.id;
+        }
 
-        let ytTitle = result.title.replace(ytFilter, "").trim();
-        ytTitle = ytTitle.replace(/\s{2,}/g, " ");
+        let ytTitle = result.title
+            .replace(ytFilter, "")
+            .trim()
+            .replace(/\s{2,}/g, " ");
 
-        let ytFullTitle, ytArtist;
-        const delimiter = new RegExp(" - | – ", "gi");
-        const deviation = 65;
+        let ytFullTitle;
+        let ytArtist;
 
-        if (!contains(ytTitle, delimiter)) {
+        if (!contains(ytTitle, TITLE_DELIMITER)) {
             ytArtist = channelName;
             ytFullTitle = ytArtist + " - " + ytTitle;
         } else {
             ytFullTitle = ytTitle;
 
-            const splitTitle = ytTitle.split(delimiter);
+            const splitTitle = ytTitle.split(TITLE_DELIMITER);
 
             ytArtist = splitTitle[0].replace(channelName, "");
             ytTitle = splitTitle[1].replace(channelName, "");
         }
 
-        let music = await getYouTubeMusicSearch(ytFullTitle);
-        let artists = null, found = false;
+        const music = await getYouTubeMusicSearch(ytFullTitle);
 
-        find: {
-            if (music && Object.keys(music).length) {
-                music.name = music.name.replace(ytFilter, "").trim();
+        if (!music || !Object.keys(music).length) {
+            return null;
+        }
 
-                let duration = result.duration / 1000;
-                if (contains(ytTitle, "(remix)")) {
-                    if (!contains(music.name, "(remix)")) {
-                        if (subtractSmallerNumber(music.duration, duration) > 2) {
-                            break find;
-                        }
+        music.name = music.name.replace(ytFilter, "").trim();
 
-                        music.name = music.name += " remix";
-                    }
-                }
+        const duration = result.duration / 1000;
 
-                const min = Math.min(music.duration, duration);
-                const max = Math.max(music.duration, duration);
+        if (contains(ytTitle, "(remix)") && !contains(music.name, "(remix)")) {
+            if (subtractSmallerNumber(music.duration, duration) > 2) {
+                return null;
+            }
 
-                if ((max - min) / max * 100 > 6) {
-                    break find;
-                }
+            music.name += " remix";
+        }
 
-                if (contains(music.name, delimiter)) {
-                    let temp = music.name.split(delimiter);
+        const min = Math.min(music.duration, duration);
+        const max = Math.max(music.duration, duration);
 
-                    music.artist.name = temp[0];
-                    music.name = temp[1];
-                }
+        if ((max - min) / max * 100 > 6) {
+            return null;
+        }
 
-                let sorted = getSortedLength(ytTitle, music.name);
-                let regexEscaped = escapeRegExp(sorted[1]);
+        if (contains(music.name, TITLE_DELIMITER)) {
+            const splitTitle = music.name.split(TITLE_DELIMITER);
 
-                let split = regexEscaped.split("\\ ");
-                let join = split.join("|");
+            music.artist.name = splitTitle[0];
+            music.name = splitTitle[1];
+        }
 
-                let count = matchCount(sorted[0], join);
-                if (!contains(sorted[0], join) || 100 / split.length * count < deviation) {
-                    let length = getBiggerLength(ytTitle, music.name);
+        const sorted = getSortedLength(ytTitle, music.name);
+        const regexEscaped = escapeRegExp(sorted[1]);
+        const words = regexEscaped.split("\\ ");
+        const wordPattern = words.join("|");
+        const count = matchCount(sorted[0], wordPattern);
 
-                    if (100 / length * (length - levenshtein.distance(ytTitle, music.name)) < deviation) {
-                        break find;
-                    }
-                }
+        // The count already tells us whether any word matched.
+        if (count === 0 || 100 / words.length * count < MATCH_DEVIATION) {
+            const length = getBiggerLength(ytTitle, music.name);
 
-                artists = music.artist.name.replace(/\(.*\)/gi, "");
-
-                const totalArtists = artists.split(/,&/).length;
-                let foundArtists = 0;
-                for (let artist of artists.split(/,&/)) {
-                    artist = artist.name;
-
-                    if (contains(ytFullTitle, artist))
-                        foundArtists++;
-                }
-
-                let probability = 100 / totalArtists * foundArtists;
-                if (probability < deviation) {
-                    if (totalArtists > 2 && probability < 50) {
-                        let length = getBiggerLength(ytArtist, artists);
-
-                        if (ytArtist && 100 / length * (length - levenshtein.distance(ytArtist, artists)) < deviation) {
-                            break find;
-                        }
-                    }
-                }
-
-                found = true;
+            if (
+                100 / length *
+                (length - levenshtein.distance(ytTitle, music.name)) < MATCH_DEVIATION
+            ) {
+                return null;
             }
         }
 
-        if (found) return "https://music.youtube.com/watch?v=" + music.videoId;
-        else return null;
+        const artists = music.artist.name.replace(/\(.*\)/gi, "");
+        const artistList = artists.split(/,&/);
+        const totalArtists = artistList.length;
+        let foundArtists = 0;
+
+        for (let artist of artistList) {
+            // Preserve the existing matching behaviour. These entries are
+            // strings, so changing this lookup would change accepted matches.
+            artist = artist.name;
+
+            if (contains(ytFullTitle, artist)) {
+                foundArtists++;
+            }
+        }
+
+        const probability = 100 / totalArtists * foundArtists;
+
+        if (
+            probability < MATCH_DEVIATION &&
+            totalArtists > 2 &&
+            probability < 50
+        ) {
+            const length = getBiggerLength(ytArtist, artists);
+
+            if (
+                ytArtist &&
+                100 / length *
+                (length - levenshtein.distance(ytArtist, artists)) < MATCH_DEVIATION
+            ) {
+                return null;
+            }
+        }
+
+        return "https://music.youtube.com/watch?v=" + music.videoId;
     }).catch(() => null);
 }
 
 // TODO: Comment
 function getUrlData(url, location) {
-    let individualLocation = location;
-    let individualQuality = globalQuality;
-    let individualMode = globalMode;
-    let individualCodecAudio = globalCodecAudio;
-    let individualCodecVideo = globalCodecVideo;
-    let item = {};
+    if (url.includes("netflix")) {
+        return {url};
+    }
 
-    if (!url.includes("netflix")) {
-        if (typeof globalSettings[url] !== 'undefined') {
-            if (typeof globalSettings[url]["quality"] !== 'undefined')
-                individualQuality = globalSettings[url]["quality"];
+    const item = {
+        url,
+        quality: globalQuality,
+        mode: globalMode,
+        codecAudio: globalCodecAudio,
+        codecVideo: globalCodecVideo,
+        location
+    };
 
-            if (typeof globalSettings[url]["mode"] !== 'undefined')
-                individualMode = globalSettings[url]["mode"];
+    const settings = globalSettings[url];
 
-            if (typeof globalSettings[url]["codecAudio"] !== 'undefined')
-                individualCodecAudio = globalSettings[url]["codecAudio"];
-
-            if (typeof globalSettings[url]["codecVideo"] !== 'undefined')
-                individualCodecVideo = globalSettings[url]["codecVideo"];
-
-            if (typeof globalSettings[url]["location"] !== 'undefined')
-                individualLocation = globalSettings[url]["location"];
+    if (typeof settings !== "undefined") {
+        for (const field of SETTING_FIELDS) {
+            // Only undefined falls back to the global setting.
+            // Explicit null, false, 0 and empty strings remain valid overrides.
+            if (typeof settings[field] !== "undefined") {
+                item[field] = settings[field];
+            }
         }
+    }
 
-        let qualityInt = 0;
-        switch (individualQuality) {
-            case "best":
-                qualityInt = 0;
-                break;
-            case "medium":
-                qualityInt = 5;
-                break;
-            case "bad":
-                qualityInt = 9;
-                break;
-        }
+    switch (item.quality) {
+        case "medium":
+            item.quality = 5;
+            break;
 
-        item = {
-            "url": url,
-            "quality": qualityInt,
-            "mode": individualMode,
-            "codecAudio": individualCodecAudio,
-            "codecVideo": individualCodecVideo,
-            "location": individualLocation
-        }
-    } else item.url = url;
+        case "bad":
+            item.quality = 9;
+            break;
+
+        case "best":
+        default:
+            item.quality = 0;
+            break;
+    }
 
     return item;
 }
