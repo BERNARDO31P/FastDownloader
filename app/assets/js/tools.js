@@ -1,5 +1,5 @@
 import mustache from "./lib/mustache.min.js";
-import {ytFilter} from "./lib/filter.js";
+import {errorFilter, ytFilter} from "./lib/filter.js";
 
 const fs = require("fs");
 const terminate = require("terminate");
@@ -159,19 +159,46 @@ function stopDownloadBatch(batch) {
     }
 }
 
-// TODO: FIX USAGE OF errorFilter
-function getDownloadFailure(stderr) {
-    // Prefer error lines so unrelated warnings do not choose the retry reason.
-    const errorLines = stderr.split(/\r?\n/).filter((line) => /^error:/i.test(line));
-    const message = (errorLines.length ? errorLines.join("\n") : stderr).toLowerCase();
+function matchesErrorFilter(line) {
+    // errorFilter is global, so reset lastIndex before every test.
+    errorFilter.lastIndex = 0;
 
+    return errorFilter.test(line);
+}
+
+function getDownloadFailure(stderr) {
+    const lines = stderr
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+    // Prefer actual error lines for retry classification so unrelated warnings
+    // do not choose the retry reason.
+    const errorLines = lines.filter((line) => /^error:/i.test(line));
+    const message = (errorLines.length ? errorLines.join("\n") : lines.join("\n")).toLowerCase();
+
+    // Keep the old retry behaviour. These checks must happen before errorFilter,
+    // because an actual error can also contain an ignored token such as [youtube].
     if (message.includes("winerror 3")) return "drive";
     if (message.includes("permission") || message.includes("cookie")) return "permission";
     if (message.includes("getaddrinfo failed") || message.includes("timed out")) return "network";
     if (message.includes("sign in")) return "login";
     if (message.includes("http error 403")) return "sleep";
 
-    return null;
+    // Restore the old errorFilter behaviour: known stderr noise is ignored,
+    // while every other stderr line is treated as an unexpected failure.
+    //
+    // Explicit ERROR lines are never hidden solely because they contain a
+    // filtered token.
+    const hasUnexpectedStderr = lines.some((line) => {
+        if (/^error:/i.test(line)) {
+            return true;
+        }
+
+        return !matchesErrorFilter(line);
+    });
+
+    return hasUnexpectedStderr ? null : "ignored";
 }
 
 function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
@@ -257,7 +284,20 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
 
             // Settle only after close: a retry must not overlap its old process.
             // Warnings and progress on stderr do not turn exit code 0 into failure.
-            const status = aborted || batch.stopped ? "aborted" : code === 0 && !processError ? "success" : getDownloadFailure(stderr);
+            const failure = getDownloadFailure(stderr);
+            let status;
+
+            if (aborted || batch.stopped) {
+                status = "aborted";
+            } else if (failure !== "ignored") {
+                status = failure;
+            } else if (code === 0 && !processError) {
+                status = "success";
+            } else {
+                // Never convert a real non-zero exit into success merely because all
+                // stderr output happened to match errorFilter.
+                status = null;
+            }
 
             finish({status, stdout});
         });
