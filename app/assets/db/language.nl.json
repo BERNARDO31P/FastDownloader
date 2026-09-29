@@ -109,6 +109,7 @@
     "adminPermission": "Update kon niet worden geïnstalleerd, start de applicatie als administrator",
     "unexpectedError": "Er is een onverwachte fout opgetreden",
     "on": "Aan",
-    "off": "Uit"
+    "off": "Uit",
+    "done": "Klaar"
   }
 }

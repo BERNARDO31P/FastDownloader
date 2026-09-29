@@ -15,9 +15,24 @@ function showError(key) {
 }
 
 function resetProgress() {
-    for (const selector of [".progress-total", ".progress-song"]) {
-        document.querySelector(selector + " progress").value = 0;
-        document.querySelector(selector + " .info p").textContent = "0%";
+    const progressTotal = document.querySelector(".progress-total");
+
+    if (progressTotal) {
+        progressTotal.querySelector("progress").value = 0;
+        progressTotal.querySelector(".info p").textContent = "0%";
+    }
+
+    for (const item of document.querySelectorAll(".listBox li")) {
+        const progress = item.querySelector(".url-progress");
+        const info = item.querySelector(".url-progress-info");
+
+        if (progress) {
+            progress.value = 0;
+        }
+
+        if (info) {
+            info.textContent = "0%";
+        }
     }
 }
 
@@ -337,7 +352,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
         const allUrls = [];
 
         for (const item of items) {
-            const itemUrl = item.textContent;
+            const itemUrl = item.getAttribute("data-url");
 
             if (itemUrl.includes("playlist?list=")) {
                 const result = await readPlaylist(itemUrl, currentPreparation);

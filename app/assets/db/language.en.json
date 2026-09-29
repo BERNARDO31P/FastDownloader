@@ -108,6 +108,7 @@
     "adminPermission": "Update could not be installed, please start the application as administrator",
     "unexpectedError": "An unexpected error occurred",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "done": "Done"
   }
 }

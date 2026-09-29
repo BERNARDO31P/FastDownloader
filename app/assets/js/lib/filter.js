@@ -34,7 +34,8 @@ const keywordsErrors = [
     "po token",
     "formats may be missing",
     "formats have been skipped",
-    "ffprobe"
+    "ffprobe",
+    "deprecated"
 ];
 
 const ytFilter = new RegExp(keywordsYt.join("|"), 'gi');

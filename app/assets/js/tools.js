@@ -289,14 +289,14 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
 
             if (aborted || batch.stopped) {
                 status = "aborted";
-            } else if (failure !== "ignored") {
-                status = failure;
             } else if (code === 0 && !processError) {
+                // yt-dlp frequently writes warnings and informational messages to stderr.
+                // A successful exit code always means the command succeeded.
                 status = "success";
             } else {
-                // Never convert a real non-zero exit into success merely because all
-                // stderr output happened to match errorFilter.
-                status = null;
+                const failure = getDownloadFailure(stderr);
+
+                status = failure === "ignored" ? null : failure;
             }
 
             finish({status, stdout});
@@ -305,7 +305,7 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
 }
 
 async function getTitle(url, mode, batch, commonArgs) {
-    const result = await runYtDlp([...commonArgs, "--print", "channel,artist,title", "--skip-download", "--no-call-home", "--", url], batch, null, true);
+    const result = await runYtDlp([...commonArgs, "--print", "channel,artist,title", "--skip-download", "--", url], batch, null, true);
 
     if (result.status !== "success") {
         return {status: result.status, title: null};
@@ -356,7 +356,7 @@ worker.addEventListener("message", (event) => {
                     let infoTotal = document.querySelector(".progress-total .info p");
 
                     if (resolve === "success") {
-                        infoTotal.textContent = "100%";
+                        infoTotal.textContent = languageDB["js"]["done"];
                         progressTotal.value = 1;
 
                         ipcRenderer.send("set_percentage", 1);
@@ -402,7 +402,14 @@ worker.addEventListener("message", (event) => {
                 return;
             }
 
-            lastLi.textContent = msg.url;
+            lastLi.setAttribute("data-url", msg.url);
+
+            const urlText = lastLi.querySelector(".url-text");
+
+            if (urlText) {
+                urlText.textContent = msg.url;
+            }
+
             urlList.push(msg.url);
 
             break;
@@ -556,7 +563,7 @@ export function activeToClipboard() {
     let clipText = "";
 
     for (let active of actives) {
-        clipText += active.textContent + "\n";
+        clipText += active.getAttribute("data-url") + "\n";
     }
 
     clipboard.writeText(clipText);
@@ -572,11 +579,13 @@ export function loadAllData(location) {
 
     let listBox = document.querySelector(".listBox ul");
 
-    for (let listItem of data["listItems"]) {
-        let li = document.createElement("li");
+    urlList = [];
 
-        li.textContent = listItem;
+    for (let listItem of data["listItems"]) {
+        const li = createUrlListItem(listItem);
+
         listBox.appendChild(li);
+        urlList.push(listItem);
     }
 }
 
@@ -588,7 +597,7 @@ export function getAllData() {
     data["listItems"] = [];
 
     for (let listItem of listItems) {
-        data["listItems"].push(listItem.textContent);
+        data["listItems"].push(listItem.getAttribute("data-url"));
     }
 
     data["location"] = document.getElementById("location").value;
@@ -602,22 +611,26 @@ function updateDownloadProgress(batch) {
         return;
     }
 
-    // Count completed jobs exactly; rounding each individual share loses precision.
     const total = batch.total ? batch.completed / batch.total : 0;
-    const values = Array.from(batch.progress.values());
-    const active = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
 
     const progressTotal = document.querySelector(".progress-total progress");
     const progressTotalInfo = document.querySelector(".progress-total .info p");
-    const progressSong = document.querySelector(".progress-song progress");
-    const progressSongInfo = document.querySelector(".progress-song .info p");
 
-    if (progressTotal) progressTotal.value = total;
-    if (progressTotalInfo) progressTotalInfo.textContent = (total * 100).toFixed(2) + "%";
+    if (progressTotal) {
+        progressTotal.value = total;
+    }
 
-    // The existing single song bar shows the average of currently active jobs.
-    if (progressSong) progressSong.value = active;
-    if (progressSongInfo) progressSongInfo.textContent = (active * 100).toFixed(2) + "%";
+    if (progressTotalInfo) {
+        progressTotalInfo.textContent = (total * 100).toFixed(2) + "%";
+
+        if (total * 100 === 100) {
+            progressTotalInfo.textContent = languageDB["js"]["done"];
+        }
+    }
+
+    for (const [url, progress] of batch.progress) {
+        setUrlProgress(url, progress);
+    }
 
     ipcRenderer.send("set_percentage", total);
 }
@@ -626,7 +639,7 @@ async function downloadItem(item, index, batch) {
     const job = {title: null};
 
     while (!aborted && !batch.stopped) {
-        batch.progress.set(index, 0);
+        batch.progress.set(item.url, 0);
         updateDownloadProgress(batch);
 
         const result = await downloadURL(item, index, batch, job);
@@ -636,6 +649,9 @@ async function downloadItem(item, index, batch) {
         }
 
         if (result === "success") {
+            batch.progress.set(item.url, 1);
+            updateDownloadProgress(batch);
+
             return "success";
         }
 
@@ -654,8 +670,9 @@ async function downloadItem(item, index, batch) {
                 return result;
         }
 
-        batch.progress.delete(index);
+        batch.progress.set(item.url, 0);
         updateDownloadProgress(batch);
+
         await sleep(result === "drive" ? 1000 : 10000, batch);
     }
 
@@ -702,9 +719,8 @@ async function download(data) {
                 result = null;
             }
 
-            batch.progress.delete(index);
-
             if (result === "success") {
+                batch.progress.set(data[index].url, 1);
                 batch.completed++;
             } else if (!batch.stopped) {
                 batch.result = result;
@@ -740,6 +756,73 @@ function generateDomainVariations(url) {
     const mainDomain = domainParts.slice(-2, -1)[0];
 
     return [`${mainDomain}.${domainParts.slice(-1)[0]}`, `${mainDomain}${domainParts.slice(-1)[0]}`, hostname, hostname.replace(/\./g, ""), ...domainParts];
+}
+
+function createUrlListItem(url) {
+    const li = document.createElement("li");
+
+    li.setAttribute("data-url", url);
+
+    const header = document.createElement("div");
+    header.classList.add("url-progress-header");
+
+    const text = document.createElement("span");
+    text.classList.add("url-text");
+    text.textContent = url;
+
+    const info = document.createElement("span");
+    info.classList.add("url-progress-info");
+    info.textContent = "0.00%";
+
+    const progress = document.createElement("progress");
+    progress.classList.add("url-progress");
+    progress.max = 1;
+    progress.value = 0;
+
+    header.appendChild(text);
+    header.appendChild(info);
+
+    li.appendChild(header);
+    li.appendChild(progress);
+
+    return li;
+}
+
+function getUrlListItem(url) {
+    const items = document.querySelectorAll(".listBox li");
+
+    for (const item of items) {
+        if (item.getAttribute("data-url") === String(url)) {
+            return item;
+        }
+    }
+
+    return null;
+}
+
+function setUrlProgress(url, value) {
+    const li = getUrlListItem(url);
+
+    if (!li) {
+        return;
+    }
+
+    const progress = li.querySelector(".url-progress");
+    const info = li.querySelector(".url-progress-info");
+
+    value = Math.max(0, Math.min(1, value));
+
+    if (progress) {
+        progress.value = value;
+    }
+
+    if (info) {
+        info.textContent = (value * 100).toFixed(2) + "%";
+
+        if (value * 100 === 100) {
+            info.textContent = languageDB["js"]["done"];
+        }
+    }
 }
 
 export function addUrlToList(url = "") {
@@ -812,10 +895,7 @@ export function addUrlToList(url = "") {
             });
         }
 
-        const li = document.createElement("li");
-
-        li.textContent = url;
-        li.setAttribute("data-url", url);
+        const li = createUrlListItem(url);
 
         ul.appendChild(li);
 
@@ -846,7 +926,7 @@ export function removeActiveListItems() {
 
             delete specificSettings[url];
 
-            let index = urlList.indexOf(active.textContent);
+            let index = urlList.indexOf(url);
             urlList.splice(index, 1);
 
             active.remove();
@@ -1260,7 +1340,7 @@ async function downloadURL(item, index, batch, job) {
         config.push("--", url);
 
         const result = await runYtDlp(config, batch, (progress) => {
-            batch.progress.set(index, Math.max(batch.progress.get(index) || 0, progress));
+            batch.progress.set(url, Math.max(batch.progress.get(url) || 0, progress));
             updateDownloadProgress(batch);
         });
 

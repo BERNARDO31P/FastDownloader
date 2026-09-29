@@ -109,6 +109,7 @@
     "adminPermission": "Güncelleme yüklenemedi, lütfen uygulamayı yönetici olarak başlatın",
     "unexpectedError": "Beklenmeyen bir hata oluştu",
     "on": "Açık",
-    "off": "Kapalı"
+    "off": "Kapalı",
+    "done": "Tamamlandı"
   }
 }

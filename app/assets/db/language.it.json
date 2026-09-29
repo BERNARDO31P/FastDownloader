@@ -109,6 +109,7 @@
     "adminPermission": "Non è stato possibile installare l'aggiornamento, si prega di avviare l'applicazione come amministratore",
     "unexpectedError": "Errore imprevisto",
     "on": "Acceso",
-    "off": "Spento"
+    "off": "Spento",
+    "done": "Completato"
   }
 }

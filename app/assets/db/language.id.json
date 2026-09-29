@@ -109,6 +109,7 @@
     "adminPermission": "Tidak dapat menginstal pembaruan, silakan jalankan aplikasi sebagai administrator",
     "unexpectedError": "Kesalahan tak terduga terjadi",
     "on": "Hidup",
-    "off": "Mati"
+    "off": "Mati",
+    "done": "Selesai"
   }
 }

@@ -60,10 +60,12 @@ window.onload = async () => {
 
     await tools.initialize();
 
-    const location = document.getElementById("location");
+    const location = document.querySelector(".location #location");
+    const locationButton = document.querySelector(".location .location-button");
 
     if (tools.getCookie("saveLocation")) {
         location.value = tools.getCookie("lastLocation");
+        locationButton.ariaDisabled = "false";
     }
 
     if (tools.getCookie("cache") !== null) {

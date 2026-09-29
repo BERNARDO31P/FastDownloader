@@ -109,6 +109,7 @@
     "adminPermission": "La mise à jour n'a pas pu être installée, veuillez démarrer l'application en tant qu'administrateur",
     "unexpectedError": "Une erreur inattendue s'est produite",
     "on": "Activé",
-    "off": "Désactivé"
+    "off": "Désactivé",
+    "done": "Terminé"
   }
 }

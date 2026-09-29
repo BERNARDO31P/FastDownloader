@@ -109,6 +109,7 @@
     "adminPermission": "Não foi possível instalar a atualização, por favor inicie o aplicativo como administrador",
     "unexpectedError": "Erro inesperado, por favor entre em contato com o desenvolvedor",
     "on": "Ligado",
-    "off": "Desligado"
+    "off": "Desligado",
+    "done": "Concluído"
   }
 }

@@ -109,6 +109,7 @@
     "adminPermission": "No se pudo instalar la actualización, por favor inicie la aplicación como administrador",
     "unexpectedError": "Error inesperado",
     "on": "Encendido",
-    "off": "Apagado"
+    "off": "Apagado",
+    "done": "Finalizado"
   }
 }

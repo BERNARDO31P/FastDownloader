@@ -49,7 +49,8 @@ function createWindow() {
     win = new BrowserWindow({
         icon: appIcon,
         minWidth: 900,
-        minHeight: 580,
+        minHeight: 550,
+        height: 550,
         x: currentScreen.workArea.x,
         y: currentScreen.workArea.y,
         autoHideMenuBar: true,
