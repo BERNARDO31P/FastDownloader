@@ -16,30 +16,38 @@ const path = require("path");
 const fs = require("fs");
 
 let autoLauncher = null;
+let ytMusicPromise = null;
+let trayClickTimeout = null;
 
 const replacement = new RegExp([
     path.sep + "resources" + path.sep + "app.asar",
     path.sep + "app.asar",
     path.sep + "resources"
 ].join("|"), "gi");
-__dirname = __dirname.replaceAll(replacement, "");
+const applicationDir = __dirname.replaceAll(replacement, "");
 
 let iconDir = null;
-if (fs.existsSync(__dirname + path.sep + "resources")) {
-    iconDir = __dirname + path.sep + "resources" + path.sep + "icons";
-} else if (fs.existsSync(__dirname + path.sep + "icons")) {
-    iconDir = __dirname + path.sep + "icons";
+if (fs.existsSync(applicationDir + path.sep + "resources")) {
+    iconDir = path.join(applicationDir, "resources", "icons");
+} else if (fs.existsSync(applicationDir + path.sep + "icons")) {
+    iconDir = path.join(applicationDir, "icons");
 }
 
-let win = null, trayIcon = null, trayMenu = Menu.buildFromTemplate([]);
-let language = {}, hidden = false;
+const appIcon = iconDir ? path.join(iconDir, "256x256.png") : null;
+const notificationIcon = iconDir ? path.join(iconDir, "64x64.png") : null;
+
+let win = null;
+let trayIcon = null;
+let trayMenu = Menu.buildFromTemplate([]);
+let language = {};
+let hidden = false;
 
 function createWindow() {
     const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
     const currentScreen = getDisplayNearestPoint(getCursorScreenPoint());
 
     win = new BrowserWindow({
-        icon: (iconDir) ? path.join(iconDir, "256x256.png") : null,
+        icon: appIcon,
         minWidth: 900,
         minHeight: 580,
         x: currentScreen.workArea.x,
@@ -53,80 +61,113 @@ function createWindow() {
         }
     });
 
-    win.center();
-    win.loadFile("app" + path.sep + "index.html").then(() => {
-        trayIcon = new Tray((iconDir) ? path.join(iconDir, "256x256.png") : null);
-        trayIcon.setTitle("FastDownloader");
-        trayIcon.setToolTip("FastDownloader");
+    const currentWindow = win;
 
-        ipcMain.on("lang", (event, selectedLanguage) => {
-            language = selectedLanguage;
+    currentWindow.on("hide", updateTrayVisibility);
+    currentWindow.on("show", updateTrayVisibility);
+    currentWindow.on("closed", () => {
+        clearTimeout(trayClickTimeout);
 
-            trayMenu = Menu.buildFromTemplate([
-                {id: "hide", label: language["hide"], type: "normal", click: hide},
-                {id: "addUrl", label: language["addUrl"], type: "normal", click: addURL},
-                {id: "download", label: language["download"], type: "normal", click: download},
-                {id: "location", label: language["location"], type: "normal", click: location},
-                {id: "clear", label: language["clear"], type: "normal", click: clear},
-                {id: "close", label: language["close"], type: "normal", click: exit}
-            ]);
+        if (trayIcon) {
+            trayIcon.destroy();
+            trayIcon = null;
+        }
 
-            trayIcon.setContextMenu(trayMenu);
-
-            let clickTimeout = null;
-            trayIcon.on("click", () => {
-                clickTimeout = setTimeout(() => {
-                    trayIcon.popUpContextMenu();
-                }, 300);
-            });
-            trayIcon.on("double-click", () => {
-                clearTimeout(clickTimeout);
-                maximize();
-            });
-
-            if (!win.isVisible()) {
-                hidden = true;
-
-                removeTrayItem("hide");
-                addTrayItem("maximize", language["maximize"], "normal", maximize);
-
-                trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
-            }
-
-            win.on("hide", () => {
-                hidden = true;
-
-                removeTrayItem("hide");
-                addTrayItem("maximize", language["maximize"], "normal", maximize);
-
-                trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
-            });
-
-            win.on("show", () => {
-                hidden = false;
-
-                removeTrayItem("maximize");
-                addTrayItem("hide", language["hide"], "normal", hide);
-
-                trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
-            });
-        });
+        if (win === currentWindow) {
+            win = null;
+        }
     });
+
+    currentWindow.center();
 
     autoLauncher = new AutoLaunch({
         name: "FastDownloader",
-        path: app.getPath("exe"),
+        path: app.getPath("exe")
+    });
+
+    return currentWindow.loadFile(path.join("app", "index.html")).then(() => {
+        if (currentWindow.isDestroyed()) {
+            return;
+        }
+
+        trayIcon = new Tray(appIcon);
+        trayIcon.setTitle("FastDownloader");
+        trayIcon.setToolTip("FastDownloader");
+
+        // Register these once per tray, rather than on every language message.
+        trayIcon.on("click", () => {
+            clearTimeout(trayClickTimeout);
+            trayClickTimeout = setTimeout(() => {
+                if (trayIcon) trayIcon.popUpContextMenu();
+            }, 300);
+        });
+
+        trayIcon.on("double-click", () => {
+            clearTimeout(trayClickTimeout);
+            maximize();
+        });
+
+        if (Object.keys(language).length) {
+            buildTrayMenu();
+        }
     });
 }
 
+function refreshTrayMenu() {
+    if (trayIcon) {
+        trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+    }
+}
+
+function updateTrayVisibility() {
+    if (!win || !trayIcon || !Object.keys(language).length) {
+        return;
+    }
+
+    hidden = !win.isVisible();
+
+    removeTrayItem(hidden ? "hide" : "maximize");
+    addTrayItem(
+        hidden ? "maximize" : "hide",
+        language[hidden ? "maximize" : "hide"],
+        "normal",
+        hidden ? maximize : hide
+    );
+
+    refreshTrayMenu();
+}
+
+function buildTrayMenu() {
+    trayMenu = Menu.buildFromTemplate([
+        {id: "hide", label: language["hide"], type: "normal", click: hide},
+        {id: "addUrl", label: language["addUrl"], type: "normal", click: addURL},
+        {id: "download", label: language["download"], type: "normal", click: download},
+        {id: "location", label: language["location"], type: "normal", click: location},
+        {id: "clear", label: language["clear"], type: "normal", click: clear},
+        {id: "close", label: language["close"], type: "normal", click: exit}
+    ]);
+
+    updateTrayVisibility();
+}
+
+ipcMain.on("lang", (event, selectedLanguage) => {
+    language = selectedLanguage;
+
+    if (trayIcon) {
+        buildTrayMenu();
+    }
+});
+
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
-        app.quit()
+        app.quit();
     }
 });
 
 app.on("activate", () => {
-    if (win === null) createWindow();
+    if (win === null) {
+        createWindow().catch((error) => console.warn("Could not create window:", error));
+    }
 });
 
 ipcMain.on("restart", () => {
@@ -139,7 +180,7 @@ ipcMain.on("app_version", (event) => {
 });
 
 ipcMain.on("dir_name", (event) => {
-    event.sender.send("dir_name", __dirname);
+    event.sender.send("dir_name", applicationDir);
 });
 
 ipcMain.on("restart_app", () => {
@@ -147,15 +188,16 @@ ipcMain.on("restart_app", () => {
 });
 
 ipcMain.on("set_percentage", (event, percentage) => {
-    win.setProgressBar(percentage, {mode: "normal"});
+    if (win) win.setProgressBar(percentage, {mode: "normal"});
 });
 
 ipcMain.on("open_file_dialog", () => {
     dialog.showOpenDialog({
         properties: ["openDirectory"]
     }).then(function (files) {
-        if (!files.canceled)
+        if (!files.canceled && win) {
             win.webContents.send("selected_file", files.filePaths);
+        }
     });
 });
 
@@ -167,26 +209,29 @@ ipcMain.on("add_abort", () => {
     removeTrayItem("download");
     addTrayItem("abort", language["abort"], "normal", abort);
 
-    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+    refreshTrayMenu();
 });
 
 ipcMain.on("remove_abort", () => {
     removeTrayItem("abort");
     addTrayItem("download", language["download"], "normal", download);
 
-    trayIcon.setContextMenu(Menu.buildFromTemplate(trayMenu.items));
+    refreshTrayMenu();
 });
 
 ipcMain.on("enableCloseToTray", () => {
-    win.on("close", closeToTray);
+    if (win) {
+        win.off("close", closeToTray);
+        win.on("close", closeToTray);
+    }
 });
 
 ipcMain.on("startMinimized", () => {
-    win.hide();
+    hide();
 });
 
 ipcMain.on("disableCloseToTray", () => {
-    win.off("close", closeToTray);
+    if (win) win.off("close", closeToTray);
 });
 
 ipcMain.on("enableAutostart", () => {
@@ -202,23 +247,33 @@ ipcMain.on("disableAutostart", () => {
 });
 
 ipcMain.on("yt-search", async (event, search) => {
-    const ytMusicApi = await getYtMusic();
-    const ytMusic = new ytMusicApi();
-
-    await ytMusic.initialize();
-
+    let results = [];
     try {
-        const results = await ytMusic.searchSongs(search);
+        const ytMusic = await getYtMusic();
+        results = await ytMusic.searchSongs(search);
+    } catch (error) {
+        console.warn("YouTube Music search failed:", error);
+    }
 
-        win.webContents.send("yt-results", results);
-    } catch (e) {
-        win.webContents.send("yt-results", []);
+    if (!event.sender.isDestroyed()) {
+        event.sender.send("yt-results", results);
     }
 });
 
-async function getYtMusic() {
-    const module = await import("ytmusic-api");
-    return module.default;  // <- return the class
+function getYtMusic() {
+    if (!ytMusicPromise) {
+        // Concurrent searches share initialization; search results are not cached.
+        ytMusicPromise = import("ytmusic-api").then(async (module) => {
+            const ytMusic = new module.default();
+            await ytMusic.initialize();
+            return ytMusic;
+        }).catch((error) => {
+            ytMusicPromise = null;
+            throw error;
+        });
+    }
+
+    return ytMusicPromise;
 }
 
 function closeToTray(event) {
@@ -230,25 +285,23 @@ function closeToTray(event) {
 
 function showNotification(title, message) {
     new Notification({
-        title: title,
+        title,
         body: message,
-        icon: (iconDir) ? path.join(iconDir, "64x64.png") : null
+        icon: notificationIcon
     }).show();
 }
 
 function addTrayItem(id, label, type, click) {
-    for (let trayItem of trayMenu.items)
-        if (trayItem.id === id) return;
-
-    trayMenu.items.unshift(new MenuItem({id: id, label: label, type: type, click: click}));
+    if (!trayMenu.items.some((item) => item.id === id)) {
+        trayMenu.items.unshift(new MenuItem({id, label, type, click}));
+    }
 }
 
 function removeTrayItem(id) {
-    for (let i = 0; i < trayMenu.items.length; i++) {
-        if (trayMenu.items[i].id === id) {
-            trayMenu.items.splice(i, 1);
-            break;
-        }
+    const index = trayMenu.items.findIndex((item) => item.id === id);
+
+    if (index !== -1) {
+        trayMenu.items.splice(index, 1);
     }
 }
 
@@ -257,11 +310,11 @@ function exit() {
 }
 
 function hide() {
-    win.hide();
+    if (win) win.hide();
 }
 
 function maximize() {
-    win.show();
+    if (win) win.show();
 }
 
 function download() {
@@ -281,60 +334,78 @@ function location() {
 }
 
 function addURL() {
-    win.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
-
     ipcMain.once("translation", (event, translations) => {
-        let value = clipboard.readText();
+        const value = clipboard.readText();
 
-        if (!value)
+        if (!value) {
             showNotification(translations[0], translations[1]);
-        else win.webContents.send("url", value);
+        } else if (win) {
+            win.webContents.send("url", value);
+        }
     });
+
+    win.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
+}
+
+async function checkAppUpdates() {
+    const currentWindow = win;
+    const timestamp = await currentWindow.webContents.executeJavaScript(
+        "localStorage.getItem(\"lastCheck\");",
+        true
+    );
+    const currentTime = Date.now() / 1000;
+
+    if (!(currentTime - timestamp > 86400)) {
+        return;
+    }
+
+    const result = await autoUpdater.checkForUpdatesAndNotify();
+
+    if (currentWindow.isDestroyed()) {
+        return;
+    }
+
+    await currentWindow.webContents.executeJavaScript(
+        "localStorage.setItem(\"lastCheck\", " + currentTime + ");",
+        true
+    );
+
+    if (result && typeof result.downloadPromise !== "undefined") {
+        currentWindow.webContents.send("update_available", result.updateInfo.version);
+
+        autoUpdater.once("update-downloaded", () => {
+            if (!currentWindow.isDestroyed()) {
+                currentWindow.webContents.send("update_downloaded");
+            }
+        });
+    } else {
+        const stopNotifications = () => {
+            clearInterval(updateInterval);
+            ipcMain.removeListener("app_upto_date", stopNotifications);
+            currentWindow.removeListener("closed", stopNotifications);
+        };
+
+        const updateInterval = setInterval(() => {
+            if (!currentWindow.isDestroyed()) {
+                currentWindow.webContents.send("app_upto_date");
+            } else {
+                stopNotifications();
+            }
+        }, 50);
+
+        ipcMain.once("app_upto_date", stopNotifications);
+        currentWindow.once("closed", stopNotifications);
+    }
 }
 
 app.whenReady().then(async () => {
-    if (process.platform === "win32")
+    if (process.platform === "win32") {
         app.setAppUserModelId("fm.bernardo.fastDownloader");
-
-    createWindow();
-
-    const timestamp = await new Promise((resolve) => {
-        win.webContents
-            .executeJavaScript('localStorage.getItem("lastCheck");', true)
-            .then(result => {
-                resolve(result);
-            });
-    });
-
-    const currentTime = Date.now() / 1000;
-
-    if (currentTime - timestamp > 86400) {
-        autoUpdater.checkForUpdatesAndNotify().then(async (result) => {
-            await new Promise((resolve) => {
-                win.webContents
-                    .executeJavaScript('localStorage.setItem("lastCheck", ' + currentTime + ');', true)
-                    .then(result => {
-                        resolve(result);
-                    });
-            });
-
-            if (result && typeof result.downloadPromise !== "undefined") {
-                win.webContents.send("update_available", result.updateInfo.version);
-
-                autoUpdater.once("update-downloaded", () => {
-                    win.webContents.send("update_downloaded");
-                });
-            } else {
-                let updateInterval = null;
-
-                ipcMain.once("app_upto_date", () => {
-                    clearInterval(updateInterval);
-                });
-
-                updateInterval = setInterval(() => {
-                    win.webContents.send("app_upto_date");
-                }, 50);
-            }
-        });
     }
+
+    // Read renderer storage after its page has loaded.
+    await createWindow();
+    await checkAppUpdates();
+}).catch((error) => {
+    console.warn("Application startup or update check failed:", error);
 });

@@ -159,6 +159,7 @@ function stopDownloadBatch(batch) {
     }
 }
 
+// TODO: FIX USAGE OF errorFilter
 function getDownloadFailure(stderr) {
     // Prefer error lines so unrelated warnings do not choose the retry reason.
     const errorLines = stderr.split(/\r?\n/).filter((line) => /^error:/i.test(line));

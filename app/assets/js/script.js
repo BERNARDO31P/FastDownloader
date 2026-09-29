@@ -1,26 +1,74 @@
-const {ipcRenderer, shell} = require('electron');
+const {ipcRenderer, shell} = require("electron");
 
 import * as tools from "./tools.js";
+
+function requestMain(channel) {
+    return new Promise((resolve) => {
+        // Register before sending so even a fast reply is received.
+        ipcRenderer.once(channel, (event, value) => resolve(value));
+        ipcRenderer.send(channel);
+    });
+}
 
 // TODO: Comment
 window.onload = async () => {
     const title = document.getElementsByTagName("title")[0];
+    const pendingUpdates = [];
+    let initialized = false;
 
-    ipcRenderer.send("app_version");
-    ipcRenderer.once("app_version", (event, arg) => {
+    const applyWhenReady = (callback) => {
+        if (initialized) {
+            callback();
+        } else {
+            pendingUpdates.push(callback);
+        }
+    };
+
+    // Capture update events during initialization, then apply them to the UI.
+    ipcRenderer.once("update_available", (event, version) => {
+        applyWhenReady(() => {
+            const notification = document.getElementById("updateNotification");
+            notification.querySelector(".message").innerText =
+                tools.languageDB["js"]["newVersion"].replaceAll("XXX", version);
+            notification.classList.remove("hidden");
+        });
+    });
+
+    ipcRenderer.once("app_upto_date", () => {
+        applyWhenReady(() => {
+            ipcRenderer.send("app_upto_date");
+            tools.updateYtDl();
+        });
+    });
+
+    ipcRenderer.once("update_downloaded", () => {
+        applyWhenReady(() => {
+            const notification = document.getElementById("updateNotification");
+            notification.querySelector(".message").innerText =
+                tools.languageDB["js"]["updateDownloaded"];
+            notification.querySelector(".restart-button").classList.remove("hidden");
+            notification.classList.remove("hidden");
+        });
+    });
+
+    requestMain("app_version").then((arg) => {
         title.textContent += " " + arg.version;
     });
 
-    ipcRenderer.send("dir_name");
-    ipcRenderer.once("dir_name", (event, dirname) => {
-        tools.setRealDir(dirname);
-    });
+    const dirname = await requestMain("dir_name");
+    tools.setRealDir(dirname);
 
     await tools.initialize();
 
-    const location = document.getElementById("location")
-    if (tools.getCookie("saveLocation")) location.value = tools.getCookie("lastLocation");
-    if (tools.getCookie("cache") !== null) tools.loadAllData(location);
+    const location = document.getElementById("location");
+
+    if (tools.getCookie("saveLocation")) {
+        location.value = tools.getCookie("lastLocation");
+    }
+
+    if (tools.getCookie("cache") !== null) {
+        tools.loadAllData(location);
+    }
 
     if (tools.getCookie("closeToTray")) {
         ipcRenderer.send("enableCloseToTray");
@@ -30,28 +78,14 @@ window.onload = async () => {
         ipcRenderer.send("startMinimized");
     }
 
-    const notification = document.getElementById("updateNotification");
-    const message = notification.querySelector(".message");
-    const restartButton = notification.querySelector('.restart-button');
+    initialized = true;
 
-    ipcRenderer.once("update_available", (event, version) => {
-        message.innerText = tools.languageDB["js"]["newVersion"].replaceAll("XXX", version);
-        notification.classList.remove("hidden");
-    });
-
-    ipcRenderer.once("app_upto_date", () => {
-        ipcRenderer.send("app_upto_date");
-        tools.updateYtDl();
-    });
-
-    ipcRenderer.once("update_downloaded", () => {
-        message.innerText = tools.languageDB["js"]["updateDownloaded"];
-        restartButton.classList.remove("hidden");
-        notification.classList.remove("hidden");
-    });
+    for (const applyUpdate of pendingUpdates) {
+        applyUpdate();
+    }
 
     ipcRenderer.send("lang", tools.languageDB["tray"]);
-}
+};
 
 // TODO: Comment
 tools.bindEvent("click", "button[data-href],a[data-href]", function () {
@@ -65,7 +99,7 @@ tools.bindEvent("click", "a[href]", function (e) {
 
 // TODO: Comment
 tools.bindEvent("click", "#info-close", () => {
-    let info = document.getElementById("info");
+    const info = document.getElementById("info");
 
     info.classList.remove("show");
     document.body.style.overflow = "";

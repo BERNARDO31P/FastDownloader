@@ -3,176 +3,111 @@ import {showNotification} from "../tools.js";
 
 const {ipcRenderer} = require("electron");
 
-setTimeout( () => {
-    let nav = document.querySelector("settings #nav");
-    let info = document.querySelector("body #info");
-
-    let dynamic = info.querySelector("#dynamic");
-    let shadow = info.querySelector("#static");
-
-    document.body.onscroll = () => {
-        if (window.scrollY > 10 && !nav.classList.contains("shadow")) {
-            nav.classList.add("shadow");
-        } else if (window.scrollY < 10 && nav.classList.contains("shadow")) {
-            nav.classList.remove("shadow");
-        }
+/**
+ * Update a scroll shadow while preserving its state at exactly 10 pixels.
+ */
+function updateScrollShadow(element, position) {
+    if (!element) {
+        return;
     }
 
-    dynamic.onscroll = () => {
-        if (dynamic.scrollTop > 10 && !shadow.classList.contains("shadow")) {
-            shadow.classList.add("shadow");
-        } else if (dynamic.scrollTop < 10 && shadow.classList.contains("shadow")) {
-            shadow.classList.remove("shadow");
-        }
+    if (position > 10 && !element.classList.contains("shadow")) {
+        element.classList.add("shadow");
+    } else if (position < 10 && element.classList.contains("shadow")) {
+        element.classList.remove("shadow");
+    }
+}
+
+setTimeout(() => {
+    // Settings are loaded dynamically, so resolve the navigation on each scroll.
+    document.body.addEventListener("scroll", () => {
+        updateScrollShadow(document.querySelector("settings #nav"), window.scrollY);
+    }, {passive: true});
+
+    const info = document.querySelector("body #info");
+    const dynamic = info && info.querySelector("#dynamic");
+    const shadow = info && info.querySelector("#static");
+
+    if (dynamic) {
+        dynamic.addEventListener("scroll", () => {
+            updateScrollShadow(shadow, dynamic.scrollTop);
+        }, {passive: true});
     }
 }, 1000);
 
-// TODO: Comment
+/**
+ * Toggle a checkbox and update its translated on/off label.
+ */
+function toggleCheckbox(checkbox, name) {
+    const enabled = checkbox.classList.toggle("active");
+    const container = checkbox.closest("." + name);
+
+    container.querySelector("span").textContent =
+        tools.languageDB["js"][enabled ? "on" : "off"];
+
+    return enabled;
+}
+
+/**
+ * Enable or disable saving settings before showing the notification.
+ */
 tools.bindEvent("click", "settings .save .checkbox", function () {
-    let saving = this.closest(".save");
+    const enabled = toggleCheckbox(this, "save");
 
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        saving.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        tools.deleteSettings();
-
-        showNotification(tools.languageDB["js"]["settingsAborted"]);
+    if (enabled) {
+        tools.saveSettings();
     } else {
-        this.classList.add("active");
-        saving.querySelector("span").textContent = tools.languageDB["js"]["on"];
+        tools.deleteSettings();
+    }
+
+    showNotification(
+        tools.languageDB["js"][enabled ? "settingsSaved" : "settingsAborted"]
+    );
+});
+
+const checkboxSettings = [
+    {name: "startMinimized"},
+    {
+        name: "closeToTray",
+        enableChannel: "enableCloseToTray",
+        disableChannel: "disableCloseToTray"
+    },
+    {name: "clearList"},
+    {name: "saveLocation"},
+    {name: "premium"},
+    {
+        name: "autostart",
+        enableChannel: "enableAutostart",
+        disableChannel: "disableAutostart"
+    }
+];
+
+/**
+ * Apply each checkbox immediately, then persist settings as before.
+ */
+for (const setting of checkboxSettings) {
+    tools.bindEvent("click", "settings ." + setting.name + " .checkbox", function () {
+        const enabled = toggleCheckbox(this, setting.name);
+        const channel = enabled ? setting.enableChannel : setting.disableChannel;
+
+        if (channel) {
+            ipcRenderer.send(channel);
+        }
+
+        showNotification(
+            tools.languageDB["js"][setting.name + (enabled ? "Enabled" : "Disabled")]
+        );
 
         tools.saveSettings();
+    });
+}
 
-        showNotification(tools.languageDB["js"]["settingsSaved"]);
-    }
-});
-
-tools.bindEvent("click", "settings .startMinimized .checkbox", function () {
-    let startMinimized = this.closest(".startMinimized");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        startMinimized.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        showNotification(tools.languageDB["js"]["startMinimizedDisabled"]);
-    } else {
-        this.classList.add("active");
-        startMinimized.querySelector("span").textContent = tools.languageDB["js"]["on"];7
-
-        showNotification(tools.languageDB["js"]["startMinimizedEnabled"]);
-    }
-
-    tools.saveSettings();
-});
-
-// TODO: Comment
-tools.bindEvent("click", "settings .closeToTray .checkbox", function () {
-    let closingToTray = this.closest(".closeToTray");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        closingToTray.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        ipcRenderer.send("disableCloseToTray");
-
-        showNotification(tools.languageDB["js"]["closeToTrayDisabled"]);
-    } else {
-        this.classList.add("active");
-        closingToTray.querySelector("span").textContent = tools.languageDB["js"]["on"];
-
-        ipcRenderer.send("enableCloseToTray");
-
-        showNotification(tools.languageDB["js"]["closeToTrayEnabled"]);
-    }
-
-    tools.saveSettings();
-});
-
-// TODO: Comment
-tools.bindEvent("click", "settings .clearList .checkbox", function () {
-    let clearList = this.closest(".clearList");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        clearList.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        showNotification(tools.languageDB["js"]["clearListDisabled"]);
-    } else {
-        this.classList.add("active");
-        clearList.querySelector("span").textContent = tools.languageDB["js"]["on"];
-
-        showNotification(tools.languageDB["js"]["clearListEnabled"]);
-    }
-
-    tools.saveSettings();
-});
-
-// TODO: Comment
-tools.bindEvent("click", "settings .saveLocation .checkbox", function () {
-    let saveLocation = this.closest(".saveLocation");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        saveLocation.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        showNotification(tools.languageDB["js"]["saveLocationDisabled"]);
-    } else {
-        this.classList.add("active");
-        saveLocation.querySelector("span").textContent = tools.languageDB["js"]["on"];
-
-        showNotification(tools.languageDB["js"]["saveLocationEnabled"]);
-    }
-
-    tools.saveSettings();
-})
-
-// TODO: Comment
-tools.bindEvent("click", "settings .premium .checkbox", function () {
-    let premium = this.closest(".premium");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        premium.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        showNotification(tools.languageDB["js"]["premiumDisabled"]);
-    } else {
-        this.classList.add("active");
-        premium.querySelector("span").textContent = tools.languageDB["js"]["on"];
-
-        showNotification(tools.languageDB["js"]["premiumEnabled"]);
-    }
-
-    tools.saveSettings();
-});
-
-// TODO: Comment
-tools.bindEvent("click", "settings .autostart .checkbox", function () {
-    let autostarting = this.closest(".autostart");
-
-    if (this.classList.contains("active")) {
-        this.classList.remove("active");
-        autostarting.querySelector("span").textContent = tools.languageDB["js"]["off"];
-
-        ipcRenderer.send("disableAutostart");
-
-        showNotification(tools.languageDB["js"]["autostartDisabled"]);
-    } else {
-        this.classList.add("active");
-        autostarting.querySelector("span").textContent = tools.languageDB["js"]["on"];
-
-        ipcRenderer.send("enableAutostart");
-
-        showNotification(tools.languageDB["js"]["autostartEnabled"]);
-    }
-
-    tools.saveSettings();
-});
-
-// TODO: Comment
-tools.bindEvent("click", "#settings-close:not([aria-disabled='true'])", () => {
-    let settings = document.getElementsByTagName("settings")[0];
-    let nav = settings.querySelector("#nav");
+/**
+ * Close the settings panel using its existing animation.
+ */
+tools.bindEvent("click", "#settings-close:not([aria-disabled=\"true\"])", () => {
+    const settings = document.getElementsByTagName("settings")[0];
+    const nav = settings.querySelector("#nav");
 
     nav.classList.remove("static");
     document.body.style.overflow = "hidden";
@@ -186,40 +121,47 @@ tools.bindEvent("click", "#settings-close:not([aria-disabled='true'])", () => {
     }, () => {
         document.body.style.overflow = "";
         settings.style.display = "";
-
-        let nav = document.querySelector("settings #nav");
         nav.classList.remove("static");
     });
 });
 
-// TODO: Comment
-tools.bindEvent("click", "settings .select .option:not([aria-disabled='true'])", function () {
+/**
+ * Apply a selected option, persist settings, then close the dropdown.
+ */
+tools.bindEvent("click", "settings .select .option:not([aria-disabled=\"true\"])", function () {
     tools.selectOption(this);
-
     tools.saveSettings();
     tools.selectClick(this);
 });
 
-// TODO: Comment
-tools.bindEvent("click", ".lang .select .option:not([aria-disabled='true'])", async function () {
-    let lang = this.getAttribute("data-value");
+/**
+ * Save the selected language and current list before restarting.
+ */
+tools.bindEvent("click", ".lang .select .option:not([aria-disabled=\"true\"])", function () {
+    const lang = this.getAttribute("data-value");
+
     tools.setCookie("lang", lang);
     tools.getAllData();
-
     ipcRenderer.send("restart");
 });
 
-// TODO: Comment
-tools.bindEvent("click", ".select:not([aria-disabled='true']) .head", function () {
-    let active = document.querySelector(".select.active");
-    let select = this.closest(".select");
-    let clicked = this;
-    if (active && select !== active) tools.hideSelect(active);
+/**
+ * Close another open dropdown before toggling the clicked one.
+ */
+tools.bindEvent("click", ".select:not([aria-disabled=\"true\"]) .head", function () {
+    const active = document.querySelector(".select.active");
+    const select = this.closest(".select");
 
-    tools.selectClick(clicked);
+    if (active && select !== active) {
+        tools.hideSelect(active);
+    }
+
+    tools.selectClick(this);
 });
 
-// TODO: Comment
+/**
+ * Open the changelog.
+ */
 tools.bindEvent("click", "#info-open", () => {
     tools.showChangelog();
 });
