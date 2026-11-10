@@ -458,7 +458,7 @@ settings {
 
     & li {
       transition: 0.2s;
-      padding: 5px 10px;
+      padding: 10px 15px;
 
       display: block;
 
@@ -743,6 +743,18 @@ settings {
        border-bottom: 1px solid var(--divider-color);
      }
 
+     .url-progress-row {
+       display: flex;
+       align-items: center;
+       gap: 8px;
+       width: 100%;
+     }
+
+     .url-progress-content {
+       flex: 1;
+       min-width: 0;
+     }
+
      .url-progress-header {
        display: flex;
        align-items: center;
@@ -805,3 +817,43 @@ settings {
      }
    }
  }
+
+// Playlist tracks are contained in their parent entry instead of being flat
+// siblings. The controls stay usable while the download list is locked.
+.listBox > ul > li.playlist-item {
+  .playlist-toggle {
+    box-shadow: unset;
+    background: unset;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0;
+    line-height: 20px;
+    font-size: 26px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .playlist-entries {
+    list-style: none;
+    margin: 5px 0 0 10px;
+    padding: 0 0 0 10px;
+    border-left: 1px solid var(--divider-color);
+
+    &[hidden] {
+      display: none;
+    }
+
+    > li.playlist-entry {
+      padding: 7px 0;
+      font-size: 13px;
+      background: transparent;
+      cursor: default;
+      border-radius: 0;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--divider-color);
+      }
+    }
+  }
+}

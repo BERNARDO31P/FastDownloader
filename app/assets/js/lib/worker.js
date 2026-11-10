@@ -28,15 +28,18 @@ addEventListener("message", (event) => {
             }
 
             // TODO: Handle converted case
-            checkPremiumAndConvert(msg.url).then(({url, converted}) => {
-                if (aborted) {
-                    return;
-                }
+            checkPremiumAndConvert(msg.url)
+                .catch(() => ({url: msg.url, converted: false}))
+                .then(({url}) => {
+                    if (aborted) {
+                        return;
+                    }
 
-                const data = getUrlData(url, msg.location);
+                    const data = getUrlData(url, msg.location, msg.settings);
+                    data.jobId = msg.jobId;
 
-                postMessage({type: "checkPremiumAndAdd", data});
-            });
+                    postMessage({type: "checkPremiumAndAdd", data, index: msg.index, batchId: msg.batchId});
+                });
             break;
 
         case "checkPremium":
@@ -44,7 +47,7 @@ addEventListener("message", (event) => {
 
             // TODO: Handle converted case
             checkPremiumAndConvert(msg.url).then(({url, converted}) => {
-                postMessage({type: "checkPremium", url, old: msg.url});
+                postMessage({type: "checkPremium", url, old: msg.url, requestId: msg.requestId});
             });
             break;
 
@@ -292,7 +295,7 @@ async function getYoutubeMusic(url) {
 }
 
 // TODO: Comment
-function getUrlData(url, location) {
+function getUrlData(url, location, jobSettings = {}) {
     if (url.includes("netflix")) {
         return {url};
     }
@@ -306,15 +309,13 @@ function getUrlData(url, location) {
         location
     };
 
-    const settings = globalSettings[url];
+    const settings = {...globalSettings[url], ...jobSettings};
 
-    if (typeof settings !== "undefined") {
-        for (const field of SETTING_FIELDS) {
-            // Only undefined falls back to the global setting.
-            // Explicit null, false, 0 and empty strings remain valid overrides.
-            if (typeof settings[field] !== "undefined") {
-                item[field] = settings[field];
-            }
+    for (const field of SETTING_FIELDS) {
+        // Per-job overrides retain the selected playlist's settings even if
+        // the same track is present in multiple different playlists.
+        if (typeof settings[field] !== "undefined") {
+            item[field] = settings[field];
         }
     }
 

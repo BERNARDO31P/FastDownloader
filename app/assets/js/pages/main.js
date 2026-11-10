@@ -1,8 +1,5 @@
 import * as tools from "../tools.js";
 import {showNotification, specificSettings, worker} from "../tools.js";
-const {spawn} = require("child_process");
-
-const terminate = require("terminate");
 const {clipboard, ipcRenderer, shell} = require("electron");
 
 let lastClicked = null,
@@ -30,55 +27,10 @@ function resetProgress() {
             progress.value = 0;
         }
 
-        if (info) {
+        if (info && !item.classList.contains("playlist-resolving")) {
             info.textContent = "0%";
         }
     }
-}
-
-function readPlaylist(url, currentPreparation) {
-    return new Promise((resolve, reject) => {
-        // Keep playlist expansion sequential, but let the renderer remain responsive.
-        const executable = tools.ytDl && tools.ytDl.replace(/^"(.*)"$/, "$1");
-        const child = spawn(executable, [
-            "--print", "%(url)s",
-            "--flat-playlist",
-            "--", url
-        ], {
-            shell: false,
-            windowsHide: true,
-            stdio: ["ignore", "pipe", "pipe"]
-        });
-
-        currentPreparation.child = child;
-
-        let output = "";
-        let processError = null;
-
-        child.stdout.setEncoding("utf8");
-        child.stderr.setEncoding("utf8");
-
-        child.stdout.on("data", (data) => {
-            output += data;
-        });
-
-        child.stderr.on("data", (data) => console.debug(data));
-        child.on("error", (error) => {
-            processError = error;
-        });
-
-        child.on("close", () => {
-            if (currentPreparation.child === child) {
-                currentPreparation.child = null;
-            }
-
-            if (processError) {
-                reject(processError);
-            } else {
-                resolve(output.trim());
-            }
-        });
-    });
 }
 
 function hideNavSelect() {
@@ -170,15 +122,21 @@ tools.bindEvent("click", ".listBox:not([aria-disabled=\"true\"]) ul", function (
  * @param {MouseEvent} e - The click event.
  */
 tools.bindEvent("click", ".listBox:not([aria-disabled=\"true\"]) li", function (e) {
+    // Child tracks are read-only progress rows; the toggle must not select a URL.
+    if (e.target.closest(".playlist-toggle, .playlist-entries")) {
+        return;
+    }
+
     let listBox = this.closest(".listBox");
-    let actives = listBox.querySelectorAll("li.active");
+    let actives = listBox.querySelectorAll(":scope > ul > li.active");
+    let wasActive = this.classList.contains("active");
 
     if (!e.ctrlKey && !e.shiftKey) tools.removeActives(listBox);
 
     if (e.shiftKey && actives.length) {
         document.getSelection().removeAllRanges();
 
-        let elements = listBox.querySelectorAll("li");
+        let elements = listBox.querySelectorAll(":scope > ul > li");
         let active = false, clicked = false;
 
         for (let i = 0; i < elements.length; i++) {
@@ -199,11 +157,21 @@ tools.bindEvent("click", ".listBox:not([aria-disabled=\"true\"]) li", function (
                 break;
             }
         }
-    } else {
+    } else if (e.ctrlKey) {
         this.classList.toggle("active");
+    } else if (!wasActive) {
+        this.classList.add("active");
     }
 
     tools.updateSelected();
+});
+
+/**
+ * Playlists remain expandable while a download is running.
+ */
+tools.bindEvent("click", ".listBox .playlist-toggle", function (e) {
+    e.preventDefault();
+    tools.togglePlaylist(this.closest("li.playlist-item"));
 });
 
 /**
@@ -303,7 +271,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
 
     const listBox = document.getElementsByClassName("listBox")[0];
     const location = document.querySelector(".location #location");
-    const items = listBox.querySelectorAll("li");
+    const items = listBox.querySelectorAll(":scope > ul > li");
     const mode = tools.getCookie("mode");
     const codecAudio = tools.getCookie("codecAudio");
     const codecVideo = tools.getCookie("codecVideo");
@@ -339,7 +307,11 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
         return;
     }
 
-    const currentPreparation = {aborted: false, child: null};
+    let interruptPreparation;
+    const interruption = new Promise((resolve) => {
+        interruptPreparation = resolve;
+    });
+    const currentPreparation = {aborted: false, stop: interruptPreparation};
     preparation = currentPreparation;
     let submitted = false;
 
@@ -349,35 +321,37 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
     resetProgress();
 
     try {
-        const allUrls = [];
+        const jobs = [];
+        const settings = tools.specificSettings;
 
         for (const item of items) {
             const itemUrl = item.getAttribute("data-url");
 
-            if (itemUrl.includes("playlist?list=")) {
-                const result = await readPlaylist(itemUrl, currentPreparation);
+            if (tools.isPlaylistUrl(itemUrl)) {
+                // Resolution starts on addition (or list restore). Only wait for
+                // the already-running lookup, never start a second yt-dlp process.
+                const entries = await Promise.race([tools.getPlaylistEntries(item), interruption]);
+                if (currentPreparation.aborted || tools.aborted) return;
 
-                if (currentPreparation.aborted || tools.aborted) {
-                    return;
-                }
-
-                if (!result) {
-                    continue;
-                }
-
-                for (const url of result.split("\n")) {
-                    if (url) allUrls.push(url);
-                }
-
-                if (typeof specificSettings[itemUrl] !== "undefined") {
-                    // Preserve the existing scope of playlist setting overrides.
-                    for (const url of allUrls) {
-                        specificSettings[url] = specificSettings[itemUrl];
+                const children = entries.map((url, index) => ({
+                    url,
+                    jobId: String(jobs.length + index),
+                    settings: {
+                        ...tools.specificSettings[itemUrl],
+                        ...tools.specificSettings[url]
                     }
-                    delete specificSettings[itemUrl];
-                }
+                }));
+
+                tools.assignPlaylistJobIds(item, children);
+                jobs.push(...children);
             } else {
-                allUrls.push(itemUrl);
+                const job = {
+                    url: itemUrl,
+                    jobId: String(jobs.length),
+                    settings: {...tools.specificSettings[itemUrl]}
+                };
+                item.setAttribute("data-job-id", job.jobId);
+                jobs.push(job);
             }
 
             if (currentPreparation.aborted || tools.aborted) {
@@ -385,7 +359,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
             }
         }
 
-        if (!allUrls.length) {
+        if (!jobs.length) {
             return;
         }
 
@@ -395,17 +369,21 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
             codecAudio,
             codecVideo,
             quality,
-            settings: tools.specificSettings
+            settings
         });
 
-        tools.setWorkerCount(allUrls.length);
+        const batchId = tools.setWorkerCount(jobs.length);
 
-        for (const url of allUrls) {
+        for (const [index, job] of jobs.entries()) {
             worker.postMessage({
                 type: "checkPremiumAndAdd",
-                url,
+                url: job.url,
+                jobId: job.jobId,
+                batchId,
+                index,
+                settings: job.settings,
                 location: location.value,
-                count: allUrls.length
+                count: jobs.length
             });
 
             if (currentPreparation.aborted || tools.aborted) {
@@ -417,7 +395,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
     } catch (error) {
         console.warn("Could not prepare downloads:", error);
 
-        if (!currentPreparation.aborted && !tools.aborted) {
+        if (!currentPreparation.aborted && !tools.aborted && !error.playlistNotified) {
             showError("unexpectedError");
         }
     } finally {
@@ -437,12 +415,9 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled=\"true\"]
 
     if (preparation) {
         preparation.aborted = true;
-
-        if (preparation.child && preparation.child.pid) {
-            terminate(preparation.child.pid, (error) => {
-                if (error) console.warn("Could not stop playlist lookup:", error);
-            });
-        }
+        // Do not cancel the add-time playlist lookup; it remains useful after
+        // aborting this download attempt.
+        preparation.stop();
     }
 
     tools.worker.postMessage({
@@ -455,6 +430,10 @@ tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled=\"true\"]
 
 // TODO: Comment
 tools.bindEvent("contextmenu", ".listBox:not([aria-disabled=\"true\"]) li", function (e) {
+    if (e.target.closest(".playlist-entries")) {
+        return;
+    }
+
     e.preventDefault();
 
     const context = document.getElementById("contextMenu");
@@ -515,7 +494,7 @@ tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", functi
     let navSelect = this.closest(".nav-select");
     let className = navSelect.classList[0];
 
-    let actives = document.querySelectorAll(".listBox li.active");
+    let actives = document.querySelectorAll(".listBox > ul > li.active");
     for (let active of actives) {
         let url = active.getAttribute("data-url");
 
@@ -566,7 +545,7 @@ tools.bindEvent("click", "#contextMenu .copy", function () {
 tools.bindEvent("click", "#contextMenu .location", function () {
     ipcRenderer.once("selected_file", (event, paths) => {
         const path = selectedDirectory(paths);
-        const actives = Array.from(document.querySelectorAll(".listBox li.active"));
+        const actives = Array.from(document.querySelectorAll(".listBox > ul > li.active"));
         if (!actives.length && contextElement) actives.push(contextElement);
 
         for (let active of actives) {

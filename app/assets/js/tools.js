@@ -31,6 +31,12 @@ let denoPath = null;
 let denoInitialized = false;
 
 let activeDownloadBatch = null;
+let activeWorkerBatchId = 0;
+let nextPlaylistId = 0;
+let nextPendingUrlId = 0;
+const pendingUrlItems = new Map();
+// Retain resolved playlist URLs and in-flight lookups per visible list item.
+const playlistLookups = new Map();
 
 let extractors = [];
 let brokenExtractors = [];
@@ -45,7 +51,6 @@ export let resolve = null;
 export let aborted = false;
 export let childProcess = null;
 export const childProcesses = new Set();
-export let lastLi = null;
 
 export let languageDB = {};
 
@@ -117,6 +122,17 @@ function executablePath(binary) {
     // Existing exported binary paths include quotes for the legacy exec calls.
     // spawn receives the executable and arguments separately.
     return binary && binary.replace(/^"(.*)"$/, "$1");
+}
+
+function spawnYtDlp(args) {
+    // yt-dlp may otherwise write its redirected output in the Windows code page.
+    // Node decodes both pipes as UTF-8, so force the producer to use UTF-8 too.
+    return spawn(executablePath(ytDl), ["--encoding", "utf-8", ...args], {
+        shell: false,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+        env: {...process.env, PYTHONIOENCODING: "utf-8"}
+    });
 }
 
 function isYouTubeUrl(url) {
@@ -211,9 +227,7 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
         let currentProcess;
 
         try {
-            currentProcess = spawn(executablePath(ytDl), args, {
-                shell: false, windowsHide: true, stdio: ["ignore", "pipe", "pipe"]
-            });
+            currentProcess = spawnYtDlp(args);
         } catch (error) {
             console.warn("Could not start yt-dlp:", error);
             finish({status: null, stdout: ""});
@@ -341,11 +355,11 @@ worker.addEventListener("message", (event) => {
             break;
 
         case "checkPremiumAndAdd":
-            if (aborted) {
+            if (aborted || msg.batchId !== activeWorkerBatchId) {
                 return;
             }
 
-            processedUrls.push(msg.data);
+            processedUrls[msg.index] = msg.data;
             workers--;
 
             console.debug("Added to processedUrls, remaining workers: " + workers);
@@ -393,26 +407,26 @@ worker.addEventListener("message", (event) => {
 
             break;
 
-        case "checkPremium":
-            if (urlList.indexOf(msg.url) !== -1) {
-                showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
+        case "checkPremium": {
+            const item = pendingUrlItems.get(msg.requestId);
+            pendingUrlItems.delete(msg.requestId);
 
-                lastLi.remove();
-
+            if (!item || !item.isConnected) {
                 return;
             }
 
-            lastLi.setAttribute("data-url", msg.url);
-
-            const urlText = lastLi.querySelector(".url-text");
-
-            if (urlText) {
-                urlText.textContent = msg.url;
+            if (urlList.includes(msg.url)) {
+                showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
+                item.remove();
+                return;
             }
 
+            item.setAttribute("data-url", msg.url);
+            item.querySelector(".url-text").textContent = msg.url;
             urlList.push(msg.url);
-
+            if (isPlaylistUrl(msg.url)) resolvePlaylist(item);
             break;
+        }
     }
 });
 
@@ -526,13 +540,167 @@ export function setAborted(bool) {
 
 export function setWorkerCount(count) {
     workers = count;
+    processedUrls = [];
+    return ++activeWorkerBatchId;
+}
+
+export function isPlaylistUrl(value) {
+    try {
+        const url = new URL(value);
+        const hostname = url.hostname.toLowerCase();
+        return (hostname === "youtube.com" || hostname.endsWith(".youtube.com")) &&
+            url.pathname === "/playlist" && url.searchParams.has("list");
+    } catch (error) {
+        return false;
+    }
+}
+
+function normalizePlaylistEntry(value, playlistUrl) {
+    const entry = value.trim();
+    if (!entry || entry === "NA") return null;
+
+    try {
+        const url = new URL(entry);
+        if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+
+        const hostname = url.hostname.toLowerCase();
+        if ((hostname === "youtube.com" || hostname.endsWith(".youtube.com")) &&
+            url.pathname === "/watch" && url.searchParams.has("v")) {
+            const music = new URL(playlistUrl).hostname.toLowerCase() === "music.youtube.com";
+            return `https://${music ? "music" : "www"}.youtube.com/watch?v=${encodeURIComponent(url.searchParams.get("v"))}`;
+        }
+
+        return url.toString();
+    } catch (error) {
+        // A flat yt-dlp playlist may contain bare YouTube video IDs.
+        if (/^[a-zA-Z0-9_-]{11}$/.test(entry)) {
+            const music = new URL(playlistUrl).hostname.toLowerCase() === "music.youtube.com";
+            return `https://${music ? "music" : "www"}.youtube.com/watch?v=${entry}`;
+        }
+        return null;
+    }
+}
+
+function cancelPlaylistLookup(item) {
+    const state = playlistLookups.get(item);
+    if (!state) return;
+
+    state.cancelled = true;
+    playlistLookups.delete(item);
+    if (state.child && state.child.pid) {
+        terminate(state.child.pid, (error) => {
+            if (error) console.debug("Could not cancel playlist lookup: " + error.message);
+        });
+    }
+}
+
+function resolvePlaylist(item) {
+    if (!isPlaylistUrl(item.getAttribute("data-url"))) return;
+
+    const existing = playlistLookups.get(item);
+    if (existing) return existing.promise;
+
+    const state = {cancelled: false, child: null, entries: null, promise: null};
+    playlistLookups.set(item, state);
+    item.classList.add("playlist-resolving");
+    item.querySelector(".url-progress-info").textContent = "0.00%";
+
+    state.promise = new Promise((resolve, reject) => {
+        const executable = executablePath(ytDl);
+        if (!executable) {
+            reject(new Error("yt-dlp executable was not found"));
+            return;
+        }
+
+        let child;
+        try {
+            child = spawnYtDlp([
+                "--print", "%(webpage_url)s",
+                "--flat-playlist",
+                "--", item.getAttribute("data-url")
+            ]);
+        } catch (error) {
+            reject(error);
+            return;
+        }
+
+        state.child = child;
+        let output = "";
+        let processError = null;
+        child.stdout.setEncoding("utf8");
+        child.stderr.setEncoding("utf8");
+        child.stdout.on("data", (data) => { output += data; });
+        child.stderr.on("data", (data) => console.debug(data));
+        child.on("error", (error) => { processError = error; });
+        child.on("close", (code) => {
+            state.child = null;
+            if (state.cancelled) {
+                reject(new Error("Playlist lookup cancelled"));
+            } else if (processError || code !== 0) {
+                reject(processError || new Error(`Playlist lookup failed with exit code ${code}`));
+            } else {
+                resolve(output);
+            }
+        });
+    }).then((output) => {
+        if (state.cancelled || !item.isConnected || playlistLookups.get(item) !== state) {
+            return [];
+        }
+
+        const url = item.getAttribute("data-url");
+        const entries = output.split(/\r?\n/)
+            .map((entry) => normalizePlaylistEntry(entry, url))
+            .filter(Boolean);
+
+        if (!entries.length) {
+            throw new Error("Playlist lookup returned no usable tracks");
+        }
+
+        state.entries = entries;
+        setPlaylistEntries(item, entries.map((entry) => ({url: entry})));
+        item.classList.remove("playlist-resolving");
+        item.setAttribute("data-playlist-status", "resolved");
+        return entries;
+    }).catch((error) => {
+        if (!state.cancelled && item.isConnected && playlistLookups.get(item) === state) {
+            console.warn("Could not resolve playlist:", item.getAttribute("data-url"), error);
+            item.classList.remove("playlist-resolving");
+            item.setAttribute("data-playlist-status", "error");
+            item.querySelector(".url-progress-info").textContent = "!";
+            item.title = error.message;
+            error.playlistNotified = true;
+            showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
+        }
+        throw error;
+    });
+
+    // The lookup is started at add/restore time, not when downloading. Consume
+    // rejections here too so a failed lookup does not cause unhandled rejection.
+    state.promise.catch(() => {});
+    return state.promise;
+}
+
+export function getPlaylistEntries(item) {
+    const state = playlistLookups.get(item);
+    if (!state) return Promise.reject(new Error("Playlist was not resolved"));
+    return state.promise;
+}
+
+export function assignPlaylistJobIds(item, jobs) {
+    const children = item.querySelectorAll(":scope > .playlist-entries > li.playlist-entry");
+    if (children.length !== jobs.length) {
+        throw new Error("Resolved playlist entries do not match the visible list");
+    }
+    children.forEach((child, index) => child.setAttribute("data-job-id", jobs[index].jobId));
 }
 
 export function clearList() {
+    for (const item of Array.from(playlistLookups.keys())) cancelPlaylistLookup(item);
     let ul = document.querySelector(".listBox ul");
 
     ul.innerHTML = "";
     urlList = [];
+    pendingUrlItems.clear();
 }
 
 // TODO: Comment
@@ -546,7 +714,7 @@ export function removeActives(element) {
 
 // TODO: Comment
 export function updateSelected() {
-    let actives = document.querySelectorAll(".listBox li.active");
+    let actives = document.querySelectorAll(".listBox > ul > li.active");
     let linkCount = document.getElementById("link-count");
 
     if (actives.length) {
@@ -559,7 +727,7 @@ export function updateSelected() {
 
 // TODO: Comment
 export function activeToClipboard() {
-    let actives = document.querySelectorAll(".listBox li.active");
+    let actives = document.querySelectorAll(".listBox > ul > li.active");
     let clipText = "";
 
     for (let active of actives) {
@@ -586,13 +754,14 @@ export function loadAllData(location) {
 
         listBox.appendChild(li);
         urlList.push(listItem);
+        if (isPlaylistUrl(listItem)) resolvePlaylist(li);
     }
 }
 
 // TODO: Comment
 export function getAllData() {
     let data = {};
-    let listItems = document.querySelectorAll(".listBox ul li");
+    let listItems = document.querySelectorAll(".listBox > ul > li");
 
     data["listItems"] = [];
 
@@ -606,12 +775,17 @@ export function getAllData() {
 }
 
 // TODO: Comment
-function updateDownloadProgress(batch) {
+function updateDownloadProgress(batch, jobId = null) {
     if (activeDownloadBatch !== batch) {
         return;
     }
 
-    const total = batch.total ? batch.completed / batch.total : 0;
+    // Include the running tracks, not just the number of finished files.
+    let downloaded = 0;
+    for (const progress of batch.progress.values()) {
+        downloaded += progress;
+    }
+    const total = batch.total ? downloaded / batch.total : 0;
 
     const progressTotal = document.querySelector(".progress-total progress");
     const progressTotalInfo = document.querySelector(".progress-total .info p");
@@ -621,15 +795,13 @@ function updateDownloadProgress(batch) {
     }
 
     if (progressTotalInfo) {
-        progressTotalInfo.textContent = (total * 100).toFixed(2) + "%";
-
-        if (total * 100 === 100) {
-            progressTotalInfo.textContent = languageDB["js"]["done"];
-        }
+        progressTotalInfo.textContent = total === 1
+            ? languageDB["js"]["done"]
+            : (total * 100).toFixed(2) + "%";
     }
 
-    for (const [url, progress] of batch.progress) {
-        setUrlProgress(url, progress);
+    if (jobId !== null) {
+        setJobProgress(jobId, batch.progress.get(jobId) || 0, batch);
     }
 
     ipcRenderer.send("set_percentage", total);
@@ -639,8 +811,8 @@ async function downloadItem(item, index, batch) {
     const job = {title: null};
 
     while (!aborted && !batch.stopped) {
-        batch.progress.set(item.url, 0);
-        updateDownloadProgress(batch);
+        batch.progress.set(item.jobId, 0);
+        updateDownloadProgress(batch, item.jobId);
 
         const result = await downloadURL(item, index, batch, job);
 
@@ -649,8 +821,8 @@ async function downloadItem(item, index, batch) {
         }
 
         if (result === "success") {
-            batch.progress.set(item.url, 1);
-            updateDownloadProgress(batch);
+            batch.progress.set(item.jobId, 1);
+            updateDownloadProgress(batch, item.jobId);
 
             return "success";
         }
@@ -670,8 +842,8 @@ async function downloadItem(item, index, batch) {
                 return result;
         }
 
-        batch.progress.set(item.url, 0);
-        updateDownloadProgress(batch);
+        batch.progress.set(item.jobId, 0);
+        updateDownloadProgress(batch, item.jobId);
 
         await sleep(result === "drive" ? 1000 : 10000, batch);
     }
@@ -720,14 +892,14 @@ async function download(data) {
             }
 
             if (result === "success") {
-                batch.progress.set(data[index].url, 1);
+                batch.progress.set(data[index].jobId, 1);
                 batch.completed++;
             } else if (!batch.stopped) {
                 batch.result = result;
                 stopDownloadBatch(batch);
             }
 
-            updateDownloadProgress(batch);
+            updateDownloadProgress(batch, data[index].jobId);
         }
     }
 
@@ -763,6 +935,12 @@ function createUrlListItem(url) {
 
     li.setAttribute("data-url", url);
 
+    const row = document.createElement("div");
+    row.classList.add("url-progress-row");
+
+    const content = document.createElement("div");
+    content.classList.add("url-progress-content");
+
     const header = document.createElement("div");
     header.classList.add("url-progress-header");
 
@@ -782,47 +960,98 @@ function createUrlListItem(url) {
     header.appendChild(text);
     header.appendChild(info);
 
-    li.appendChild(header);
-    li.appendChild(progress);
+    content.appendChild(header);
+    content.appendChild(progress);
+    row.appendChild(content);
+    li.appendChild(row);
 
     return li;
 }
 
-function getUrlListItem(url) {
-    const items = document.querySelectorAll(".listBox li");
-
-    for (const item of items) {
-        if (item.getAttribute("data-url") === String(url)) {
-            return item;
-        }
-    }
-
-    return null;
-}
-
-function setUrlProgress(url, value) {
-    const li = getUrlListItem(url);
-
-    if (!li) {
+function writeListItemProgress(item, value) {
+    if (!item) {
         return;
     }
 
-    const progress = li.querySelector(".url-progress");
-    const info = li.querySelector(".url-progress-info");
-
     value = Math.max(0, Math.min(1, value));
+    item.querySelector(".url-progress").value = value;
+    item.querySelector(".url-progress-info").textContent = value === 1
+        ? languageDB["js"]["done"]
+        : (value * 100).toFixed(2) + "%";
+}
 
-    if (progress) {
-        progress.value = value;
-    }
-
-    if (info) {
-        info.textContent = (value * 100).toFixed(2) + "%";
-
-        if (value * 100 === 100) {
-            info.textContent = languageDB["js"]["done"];
+function setJobProgress(jobId, value, batch) {
+    for (const item of document.querySelectorAll(".listBox li[data-job-id]")) {
+        if (item.getAttribute("data-job-id") !== String(jobId)) {
+            continue;
         }
+
+        writeListItemProgress(item, value);
+
+        const playlist = item.closest("li.playlist-item");
+        if (playlist && playlist !== item) {
+            const children = playlist.querySelectorAll(".playlist-entries > li[data-job-id]");
+            let completed = 0;
+
+            for (const child of children) {
+                completed += batch.progress.get(child.getAttribute("data-job-id")) || 0;
+            }
+
+            writeListItemProgress(playlist, children.length ? completed / children.length : 0);
+        }
+        break;
     }
+}
+
+export function setPlaylistEntries(item, entries) {
+    let list = item.querySelector(".playlist-entries");
+
+    if (!list) {
+        list = document.createElement("ul");
+        list.classList.add("playlist-entries");
+        list.id = `playlist-entries-${++nextPlaylistId}`;
+        list.hidden = true;
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.classList.add("playlist-toggle");
+        toggle.textContent = "▸";
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-controls", list.id);
+        toggle.setAttribute("aria-label", "Playlist: " + item.getAttribute("data-url"));
+
+        item.classList.add("playlist-item");
+        item.querySelector(".url-progress-row").prepend(toggle);
+        item.appendChild(list);
+    }
+
+    list.replaceChildren();
+
+    for (const entry of entries) {
+        const child = createUrlListItem(entry.url);
+        child.classList.add("playlist-entry");
+        if (entry.jobId !== undefined) child.setAttribute("data-job-id", entry.jobId);
+        list.appendChild(child);
+    }
+
+    writeListItemProgress(item, 0);
+}
+
+export function togglePlaylist(item) {
+    if (!item) {
+        return;
+    }
+
+    const list = item.querySelector(".playlist-entries");
+    const toggle = item.querySelector(".playlist-toggle");
+
+    if (!list || !toggle) {
+        return;
+    }
+
+    list.hidden = !list.hidden;
+    toggle.setAttribute("aria-expanded", String(!list.hidden));
+    toggle.textContent = list.hidden ? "▸" : "▾";
 }
 
 export function addUrlToList(url = "") {
@@ -883,23 +1112,29 @@ export function addUrlToList(url = "") {
             return false;
         }
 
-        if (urlList.indexOf(url.toString()) !== -1) {
+        if (urlList.includes(url.toString()) ||
+            Array.from(pendingUrlItems.values()).some((item) => item.isConnected && item.getAttribute("data-url") === url.toString())) {
             showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
 
             return false;
         }
 
-        if (youtube) {
-            worker.postMessage({
-                type: "checkPremium", url: url, mode: getCookie("mode")
-            });
-        }
-
-        const li = createUrlListItem(url);
-
+        const li = createUrlListItem(url.toString());
         ul.appendChild(li);
 
-        lastLi = li;
+        if (isPlaylistUrl(url.toString())) {
+            urlList.push(url.toString());
+            resolvePlaylist(li);
+        } else if (youtube) {
+            const requestId = ++nextPendingUrlId;
+            pendingUrlItems.set(requestId, li);
+            worker.postMessage({
+                type: "checkPremium", url: url.toString(), mode: getCookie("mode"), requestId
+            });
+        } else {
+            urlList.push(url.toString());
+        }
+
     }
 
     if (ul.scrollHeight > ul.clientHeight) {
@@ -918,7 +1153,7 @@ export function addUrlToList(url = "") {
 // TODO: Comment
 export function removeActiveListItems() {
     let ul = document.querySelector(".listBox ul");
-    let actives = ul.querySelectorAll("li.active");
+    let actives = ul.querySelectorAll(":scope > li.active");
 
     if (actives) {
         for (let active of actives) {
@@ -927,8 +1162,17 @@ export function removeActiveListItems() {
             delete specificSettings[url];
 
             let index = urlList.indexOf(url);
-            urlList.splice(index, 1);
+            if (index !== -1) {
+                urlList.splice(index, 1);
+            }
 
+            for (const [pendingId, item] of pendingUrlItems) {
+                if (item === active) {
+                    pendingUrlItems.delete(pendingId);
+                }
+            }
+
+            cancelPlaylistLookup(active);
             active.remove();
         }
     }
@@ -1340,8 +1584,9 @@ async function downloadURL(item, index, batch, job) {
         config.push("--", url);
 
         const result = await runYtDlp(config, batch, (progress) => {
-            batch.progress.set(url, Math.max(batch.progress.get(url) || 0, progress));
-            updateDownloadProgress(batch);
+            // Reserve 100% for completed postprocessing and a successful exit.
+            batch.progress.set(item.jobId, Math.max(batch.progress.get(item.jobId) || 0, Math.min(0.99, progress)));
+            updateDownloadProgress(batch, item.jobId);
         });
 
         return result.status;
@@ -1359,7 +1604,7 @@ export function setDisabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
     let location = document.querySelector(".location #location");
 
-    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler)");
+    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler):not(.playlist-toggle)");
 
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
@@ -1382,7 +1627,7 @@ export function setEnabled() {
     let listBox = document.getElementsByClassName("listBox")[0];
     let location = document.querySelector(".location #location");
 
-    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler)");
+    let buttons = document.querySelectorAll("button:not(.abort-button):not(.location-button):not(.theme-toggler):not(.playlist-toggle)");
 
     let abortButton = document.querySelector(".abort-button");
     let input = document.querySelector("input:not(#location)");
