@@ -306,7 +306,6 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
 
             // Settle only after close: a retry must not overlap its old process.
             // Warnings and progress on stderr do not turn exit code 0 into failure.
-            const failure = getDownloadFailure(stderr);
             let status;
 
             if (aborted || batch.stopped) {
