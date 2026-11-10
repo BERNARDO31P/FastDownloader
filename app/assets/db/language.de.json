@@ -13,7 +13,10 @@
     "maximize": "Maximieren",
     "abort": "Abbrechen",
     "location": "Speicherort",
-    "clear": "Liste leeren"
+    "clear": "Liste leeren",
+    "pause": "Pausieren",
+    "resume": "Fortsetzen",
+    "pausing": "Wird pausiert…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "Herunterladen",
       "abort": "Abbrechen",
       "clear": "Liste leeren",
-      "copy": "Kopieren"
+      "copy": "Kopieren",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "pausing": "Wird pausiert…"
     },
     "label": {
       "progressTotal": "Fortschritt insgesamt",
@@ -40,6 +46,7 @@
       "closeToTray": "Ins Tray schliessen",
       "startMinimized": "Minimiert starten",
       "autostart": "Automatisch bei Systemstart starten",
+      "downloadThreads": "Gleichzeitige Downloads",
       "downloadMode": "Download-Modus",
       "quality": "Qualität",
       "codec": "Codec",

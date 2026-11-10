@@ -9,30 +9,6 @@ function showError(key) {
     showNotification(tools.languageDB["js"][key], tools.languageDB["js"]["error"]);
 }
 
-function resetProgress() {
-    const progressTotal = document.querySelector(".progress-total");
-
-    if (progressTotal) {
-        progressTotal.querySelector("progress").value = 0;
-        progressTotal.querySelector(".info p").textContent = "0%";
-    }
-
-    for (const item of document.querySelectorAll(".listBox li")) {
-        const progress = item.querySelector(".url-progress");
-        const info = item.querySelector(".url-progress-info");
-
-        if (progress) {
-            progress.value = 0;
-        }
-        item.removeAttribute("data-download-state");
-        item.removeAttribute("data-job-id");
-
-        if (info && !item.classList.contains("playlist-resolving")) {
-            info.textContent = "0%";
-        }
-    }
-}
-
 function hideNavSelect() {
     this.querySelector(".select").classList.remove("show");
 }
@@ -260,7 +236,10 @@ tools.bindEvent("click", ".theme-toggler", () => {
  * running; settings are snapshotted by each worker when its track starts.
  */
 tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"])", () => {
-    if (tools.downloading) return;
+    if (tools.downloading) {
+        tools.toggleDownloadPause();
+        return;
+    }
 
     const items = Array.from(document.querySelectorAll(".listBox > ul > li"));
     const location = document.querySelector(".location #location");
@@ -276,8 +255,7 @@ tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"]
     }
     if (!location.value) return showError("storageLocation");
 
-    resetProgress();
-    ipcRenderer.send("set_percentage", 0);
+    tools.resetAllDownloadProgress();
     ipcRenderer.send("add_abort");
     tools.startDownloadQueue(items);
 });

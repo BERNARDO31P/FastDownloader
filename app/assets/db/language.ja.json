@@ -13,7 +13,10 @@
     "maximize": "最大化",
     "abort": "中止",
     "location": "保存場所",
-    "clear": "リストをクリア"
+    "clear": "リストをクリア",
+    "pause": "一時停止",
+    "resume": "再開",
+    "pausing": "一時停止中…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "ダウンロード",
       "abort": "中止",
       "clear": "リストをクリア",
-      "copy": "コピー"
+      "copy": "コピー",
+      "pause": "一時停止",
+      "resume": "再開",
+      "pausing": "一時停止中…"
     },
     "label": {
       "progressTotal": "全体の進行状況",
@@ -40,6 +46,7 @@
       "closeToTray": "トレイに閉じる",
       "startMinimized": "最小化して開始",
       "autostart": "システム起動時に自動開始",
+      "downloadThreads": "同時ダウンロード数",
       "downloadMode": "ダウンロードモード",
       "quality": "品質",
       "codec": "コーデック",

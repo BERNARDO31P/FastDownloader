@@ -13,7 +13,10 @@
     "maximize": "Maximaliseren",
     "abort": "Afbreken",
     "location": "Locatie",
-    "clear": "Lijst wissen"
+    "clear": "Lijst wissen",
+    "pause": "Pauzeren",
+    "resume": "Hervatten",
+    "pausing": "Pauzeren…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "Downloaden",
       "abort": "Afbreken",
       "clear": "Lijst wissen",
-      "copy": "Kopiëren"
+      "copy": "Kopiëren",
+      "pause": "Pauzeren",
+      "resume": "Hervatten",
+      "pausing": "Pauzeren…"
     },
     "label": {
       "progressTotal": "Totale voortgang",
@@ -40,6 +46,7 @@
       "closeToTray": "Sluiten naar systeemvak",
       "startMinimized": "Minimale modus starten",
       "autostart": "Automatisch starten bij systeemopstart",
+      "downloadThreads": "Gelijktijdige downloads",
       "downloadMode": "Downloadmodus",
       "quality": "Kwaliteit",
       "codec": "Codec",

@@ -13,7 +13,10 @@
     "maximize": "تكبير",
     "abort": "إلغاء",
     "location": "الموقع",
-    "clear": "مسح القائمة"
+    "clear": "مسح القائمة",
+    "pause": "إيقاف مؤقت",
+    "resume": "استئناف",
+    "pausing": "جارٍ الإيقاف المؤقت…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "تحميل",
       "abort": "إلغاء",
       "clear": "مسح القائمة",
-      "copy": "نسخ"
+      "copy": "نسخ",
+      "pause": "إيقاف مؤقت",
+      "resume": "استئناف",
+      "pausing": "جارٍ الإيقاف المؤقت…"
     },
     "label": {
       "progressTotal": "التقدم الكلي",
@@ -40,6 +46,7 @@
       "closeToTray": "الإغلاق إلى علبة النظام",
       "startMinimized": "بدء مصغر",
       "autostart": "بدء التشغيل التلقائي عند بدء النظام",
+      "downloadThreads": "التنزيلات المتزامنة",
       "downloadMode": "وضع التحميل",
       "quality": "الجودة",
       "codec": "كودك",

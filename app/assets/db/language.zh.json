@@ -13,7 +13,10 @@
     "maximize": "最大化",
     "abort": "中止",
     "location": "保存位置",
-    "clear": "清除列表"
+    "clear": "清除列表",
+    "pause": "暂停",
+    "resume": "继续",
+    "pausing": "正在暂停…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "下载",
       "abort": "中止",
       "clear": "清除列表",
-      "copy": "复制"
+      "copy": "复制",
+      "pause": "暂停",
+      "resume": "继续",
+      "pausing": "正在暂停…"
     },
     "label": {
       "progressTotal": "总进度",
@@ -40,6 +46,7 @@
       "closeToTray": "关闭到系统托盘",
       "startMinimized": "最小化启动",
       "autostart": "系统启动时自动启动",
+      "downloadThreads": "同时下载数",
       "downloadMode": "下载模式",
       "quality": "质量",
       "codec": "编解码器",

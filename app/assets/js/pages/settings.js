@@ -130,6 +130,9 @@ tools.bindEvent("click", "#settings-close:not([aria-disabled=\"true\"])", () => 
  */
 tools.bindEvent("click", "settings .select .option:not([aria-disabled=\"true\"])", function () {
     tools.selectOption(this);
+    if (this.closest(".select")?.id === "threads") {
+        tools.setDownloadConcurrency(this.getAttribute("data-value"));
+    }
     tools.saveSettings();
     tools.selectClick(this);
 });

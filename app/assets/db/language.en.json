@@ -13,7 +13,10 @@
     "maximize": "Maximize",
     "abort": "Abort",
     "location": "Saving location",
-    "clear": "Clear list"
+    "clear": "Clear list",
+    "pause": "Pause",
+    "resume": "Resume",
+    "pausing": "Pausing…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "Download",
       "abort": "Abort",
       "clear": "Clear list",
-      "copy": "Copy"
+      "copy": "Copy",
+      "pause": "Pause",
+      "resume": "Resume",
+      "pausing": "Pausing…"
     },
     "label": {
       "progressTotal": "Total progress",
@@ -40,6 +46,7 @@
       "closeToTray": "Close to tray",
       "startMinimized": "Start minimized",
       "autostart": "Start automatically at system startup",
+      "downloadThreads": "Simultaneous downloads (threads)",
       "downloadMode": "Download mode",
       "quality": "Quality",
       "codec": "Codec",

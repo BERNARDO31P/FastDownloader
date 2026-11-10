@@ -13,7 +13,10 @@
     "maximize": "Maksimalkan",
     "abort": "Batalkan",
     "location": "Lokasi",
-    "clear": "Bersihkan daftar"
+    "clear": "Bersihkan daftar",
+    "pause": "Jeda",
+    "resume": "Lanjutkan",
+    "pausing": "Menjeda…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "Unduh",
       "abort": "Batalkan",
       "clear": "Bersihkan daftar",
-      "copy": "Salin"
+      "copy": "Salin",
+      "pause": "Jeda",
+      "resume": "Lanjutkan",
+      "pausing": "Menjeda…"
     },
     "label": {
       "progressTotal": "Kemajuan total",
@@ -40,6 +46,7 @@
       "closeToTray": "Tutup ke baki sistem",
       "startMinimized": "Mulai dalam keadaan diminimalkan",
       "autostart": "Mulai otomatis saat sistem dinyalakan",
+      "downloadThreads": "Unduhan bersamaan",
       "downloadMode": "Mode unduh",
       "quality": "Kualitas",
       "codec": "Codec",

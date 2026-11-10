@@ -7,8 +7,23 @@ const path = require("path");
 const {ipcRenderer, clipboard} = require("electron");
 const {exec, spawn, spawnSync} = require("child_process");
 
-// Number of simultaneous track jobs, including metadata and conversion.
-const DOWNLOAD_CONCURRENCY = 2;
+// Actual simultaneous downloads (metadata lookups have a separate bounded pool).
+const DEFAULT_DOWNLOAD_CONCURRENCY = 2;
+function clampDownloadConcurrency(value) {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 1 && parsed <= 4
+        ? parsed : DEFAULT_DOWNLOAD_CONCURRENCY;
+}
+let downloadConcurrency = clampDownloadConcurrency(getCookie("threads", DEFAULT_DOWNLOAD_CONCURRENCY));
+
+export function getDownloadConcurrency() {
+    return downloadConcurrency;
+}
+
+export function setDownloadConcurrency(value) {
+    downloadConcurrency = clampDownloadConcurrency(value);
+    if (activeDownloadBatch) pumpDownloadQueue(activeDownloadBatch);
+}
 
 let theme = getCookie("theme");
 if (!theme) theme = "light";
@@ -100,9 +115,9 @@ export function bindEvent(eventNames, selectors, handler) {
 }
 
 // TODO: Comment
-function sleep(ms, batch) {
+function sleep(ms, batch, preparationJob = null) {
     return new Promise((finish) => {
-        if (aborted || batch.stopped) {
+        if (aborted || batch.stopped || (preparationJob && batch.pauseRequested)) {
             finish();
             return;
         }
@@ -110,11 +125,13 @@ function sleep(ms, batch) {
         const wake = () => {
             clearTimeout(timer);
             batch.retryWaits.delete(wake);
+            if (preparationJob?.preflightWake === wake) preparationJob.preflightWake = null;
             finish();
         };
 
         const timer = setTimeout(wake, ms);
         batch.retryWaits.add(wake);
+        if (preparationJob) preparationJob.preflightWake = wake;
     });
 }
 
@@ -151,6 +168,7 @@ function stopDownloadBatch(batch) {
     }
 
     batch.stopped = true;
+    for (const job of batch.preparingJobs) job.preflightCancelled = true;
 
     // An in-flight worker conversion must not hold a download slot forever.
     for (const [id, pending] of pendingDownloadPrepares) {
@@ -225,7 +243,7 @@ function getDownloadFailure(stderr) {
     return hasUnexpectedStderr ? null : "ignored";
 }
 
-function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
+function runYtDlp(args, batch, onProgress = null, captureOutput = false, preflightJob = null) {
     return new Promise((finish) => {
         if (aborted || batch.stopped) {
             finish({status: "aborted", stdout: ""});
@@ -245,6 +263,7 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
         childProcess = currentProcess;
         childProcesses.add(currentProcess);
         batch.processes.add(currentProcess);
+        if (preflightJob) preflightJob.preflightProcess = currentProcess;
 
         let stdout = "";
         let stderr = "";
@@ -296,6 +315,9 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
 
             childProcesses.delete(currentProcess);
             batch.processes.delete(currentProcess);
+            if (preflightJob && preflightJob.preflightProcess === currentProcess) {
+                preflightJob.preflightProcess = null;
+            }
 
             if (childProcess === currentProcess) {
                 const remaining = Array.from(childProcesses);
@@ -310,6 +332,8 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
 
             if (aborted || batch.stopped) {
                 status = "aborted";
+            } else if (preflightJob && preflightJob.preflightCancelled) {
+                status = "paused";
             } else if (code === 0 && !processError) {
                 // yt-dlp frequently writes warnings and informational messages to stderr.
                 // A successful exit code always means the command succeeded.
@@ -325,8 +349,8 @@ function runYtDlp(args, batch, onProgress = null, captureOutput = false) {
     });
 }
 
-async function getTitle(url, mode, batch, commonArgs) {
-    const result = await runYtDlp([...commonArgs, "--print", "channel,artist,title", "--skip-download", "--", url], batch, null, true);
+async function getTitle(url, mode, batch, commonArgs, preflightJob = null) {
+    const result = await runYtDlp([...commonArgs, "--print", "channel,artist,title", "--skip-download", "--", url], batch, null, true, preflightJob);
 
     if (result.status !== "success") {
         return {status: result.status, title: null};
@@ -345,7 +369,9 @@ async function getTitle(url, mode, batch, commonArgs) {
             title: outputString[2].trim()
         };
 
-        return {status: "success", title: clearTitle(URLInfo, mode)};
+        // Retain the raw metadata: mode and filename rules are applied only when
+        // this track actually starts downloading (settings remain editable).
+        return {status: "success", info: URLInfo};
     } catch (error) {
         console.warn("Could not read the download title:", error);
         return {status: null, title: null};
@@ -737,9 +763,34 @@ export function getAllData() {
     setCookie("cache", JSON.stringify(data));
 }
 
+// Clear every progress indicator without removing URLs or expanded playlists.
+// This is also used after Abort, so completed and partially downloaded tracks
+// start at zero if the user launches another download session.
+export function resetAllDownloadProgress() {
+    const progressTotal = document.querySelector(".progress-total progress");
+    const infoTotal = document.querySelector(".progress-total .info p");
+
+    if (progressTotal) progressTotal.value = 0;
+    if (infoTotal) infoTotal.textContent = "0.00%";
+
+    for (const item of document.querySelectorAll(".listBox li")) {
+        // Only reset this row's indicators, not a nested playlist child's.
+        const progress = item.querySelector(":scope > .url-progress-row > .url-progress-content > .url-progress");
+        const info = item.querySelector(":scope > .url-progress-row > .url-progress-content > .url-progress-header > .url-progress-info");
+        if (progress) progress.value = 0;
+        if (info) info.textContent = "0.00%";
+        item.removeAttribute("data-download-state");
+        item.removeAttribute("data-job-id");
+    }
+
+    // Electron removes the Windows taskbar progress indicator for values < 0.
+    ipcRenderer.send("set_percentage", -1);
+}
+
 // TODO: Comment
 function updateDownloadProgress(batch, jobId = null) {
-    if (activeDownloadBatch !== batch) return;
+    // Callbacks from terminated yt-dlp workers must not restore stale progress.
+    if (activeDownloadBatch !== batch || aborted) return;
 
     let downloaded = 0;
     for (const progress of batch.progress.values()) downloaded += progress;
@@ -781,7 +832,19 @@ function getJobSettings(job) {
     return settings;
 }
 
+function normalizeAudioQuality(quality) {
+    return quality === "medium" ? 5 : quality === "bad" ? 9 : 0;
+}
+
 function prepareDownloadJob(job, settings, batch) {
+    // Most playlist/music URLs and all video downloads need no conversion. This
+    // avoids the worker roundtrip and starts their title lookup immediately.
+    if (settings.mode !== "audio" || !isYouTubeUrl(job.url) ||
+        job.url.includes("music.youtube") || job.url.includes("playlist")) {
+        return Promise.resolve({url: job.url, ...settings,
+            quality: normalizeAudioQuality(settings.quality), jobId: job.jobId});
+    }
+
     return new Promise((resolvePrepare) => {
         if (aborted || batch.stopped) {
             resolvePrepare(null);
@@ -800,16 +863,18 @@ function prepareDownloadJob(job, settings, batch) {
     });
 }
 
-async function downloadItem(item, batch) {
-    const job = {title: null};
+async function downloadItem(item, batch, job) {
+    const titleState = {title: job.rawInfo ? clearTitle({...job.rawInfo}, item.mode) : null};
 
     while (!aborted && !batch.stopped) {
+        if (batch.pauseRequested) return "paused";
         batch.progress.set(item.jobId, 0);
         updateDownloadProgress(batch, item.jobId);
 
-        const result = await downloadURL(item, batch, job);
+        const result = await downloadURL(item, batch, titleState, job);
 
         if (aborted || batch.stopped) return "aborted";
+        if (result === "paused") return "paused";
         if (result === "success") {
             batch.progress.set(item.jobId, 1);
             updateDownloadProgress(batch, item.jobId);
@@ -829,20 +894,74 @@ async function downloadItem(item, batch) {
                 return result;
         }
 
+        // Do not initiate another transfer attempt while Pausing.
+        if (batch.pauseRequested) return "paused";
         batch.progress.set(item.jobId, 0);
         updateDownloadProgress(batch, item.jobId);
         await sleep(result === "drive" ? 1000 : 10000, batch);
+        if (batch.pauseRequested) return "paused";
     }
-
     return "aborted";
 }
 
-function setDownloadButtons(running) {
+function setDownloadButtons(state) {
     const start = document.querySelector(".startAbort .start-button");
     const abort = document.querySelector(".startAbort .abort-button");
-    if (start) start.ariaDisabled = String(running);
-    if (abort) abort.ariaDisabled = String(!running);
+    const key = {
+        idle: "download",
+        running: "pause",
+        pausing: "pausing",
+        paused: "resume",
+        stopping: "abort"
+    }[state];
+
+    if (start) {
+        start.textContent = languageDB["main"]?.["button"]?.[key] || key;
+        start.ariaDisabled = String(state === "pausing" || state === "stopping");
+    }
+    if (abort) abort.ariaDisabled = String(state === "idle" || state === "stopping");
+    ipcRenderer.send("download_state", state);
     // URL entry, removal, list selection and global settings stay editable.
+}
+
+/**
+ * Stop *preparing* immediately, but never terminate an actual transfer.
+ * Ready jobs stay in the queue until Resume. Running transfers finish normally.
+ */
+function cancelPreflightJobs(batch) {
+    for (const job of batch.preparingJobs) {
+        job.preflightCancelled = true;
+        if (job.preflightWake) job.preflightWake();
+        if (job.preflightProcess?.pid) {
+            terminate(job.preflightProcess.pid, (error) => {
+                if (error && !batch.stopped) console.debug("Could not stop title lookup: " + error.message);
+            });
+        }
+    }
+    for (const [id, pending] of pendingDownloadPrepares) {
+        if (pending.batch !== batch) continue;
+        pendingDownloadPrepares.delete(id);
+        pending.resolve(null);
+    }
+}
+
+export function toggleDownloadPause() {
+    const batch = activeDownloadBatch;
+    if (!batch || batch.finished || batch.stopped || aborted) return false;
+
+    if (batch.pauseRequested) {
+        if (!batch.paused) return false;
+        batch.pauseRequested = false;
+        batch.paused = false;
+        setDownloadButtons("running");
+        pumpDownloadQueue(batch);
+    } else {
+        batch.pauseRequested = true;
+        cancelPreflightJobs(batch);
+        setDownloadButtons("pausing");
+        pumpDownloadQueue(batch);
+    }
+    return true;
 }
 
 function finishDownloadBatch(batch) {
@@ -852,7 +971,7 @@ function finishDownloadBatch(batch) {
         ? "aborted" : batch.result;
     activeDownloadBatch = null;
     downloading = false;
-    setDownloadButtons(false);
+    setDownloadButtons("idle");
 
     const progressTotal = document.querySelector(".progress-total progress");
     const infoTotal = document.querySelector(".progress-total .info p");
@@ -865,61 +984,185 @@ function finishDownloadBatch(batch) {
         showNotification(message, languageDB["js"]["success"]);
         if (getCookie("clearList")) clearList();
     } else if (resolve === "aborted") {
+        resetAllDownloadProgress();
         showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
     } else {
         showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
     }
-
     ipcRenderer.send("remove_abort");
 }
 
-async function runQueuedJob(job, batch) {
-    // Mark the specific URL as started before reading mutable user settings.
-    job.state = "running";
-    job.row.setAttribute("data-download-state", "running");
-    // URL normalization may have completed while this job was still queued.
-    job.url = job.row.getAttribute("data-url");
-    const snapshot = getJobSettings(job);
-    batch.modesUsed.add(snapshot.mode);
-    const prepared = await prepareDownloadJob(job, snapshot, batch);
-    if (!prepared || aborted || batch.stopped) return "aborted";
-    return downloadItem(prepared, batch);
+function buildCommonArgs(url) {
+    const commonArgs = ["--no-check-formats", "--no-check-certificates",
+        "--extractor-args", "youtube:player_client=default,web_safari;player_js_version=actual"];
+    const premium = JSON.parse(getCookie("premium"));
+    if (isYouTubeUrl(url) && premium?.check) {
+        if (premium.browser) {
+            if (process.platform !== "win32" || premium.browser !== "chrome") {
+                commonArgs.push("--cookies-from-browser", premium.browser);
+            } else {
+                console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
+            }
+        } else {
+            showNotification(languageDB["js"]["noBrowser"]);
+            return null;
+        }
+    }
+    if (denoPath) commonArgs.push("--js-runtimes", "deno:" + denoPath);
+    return commonArgs;
 }
 
-function pumpDownloadQueue(batch) {
-    if (activeDownloadBatch !== batch || batch.finished || batch.initializing) return;
+async function preflightDownloadJob(job, batch) {
+    job.preflightCancelled = false;
+    job.preflightWake = null;
+    job.url = job.row.getAttribute("data-url");
+    const initialSettings = getJobSettings(job);
+    const prepared = await prepareDownloadJob(job, initialSettings, batch);
+    if (!prepared || job.preflightCancelled || batch.pauseRequested || batch.stopped || job.cancelled) {
+        return "paused";
+    }
 
-    while (!aborted && !batch.stopped && batch.running < DOWNLOAD_CONCURRENCY && batch.queue.length) {
-        const job = batch.queue.shift();
-        if (job.cancelled) continue;
-        batch.running++;
+    const args = buildCommonArgs(prepared.url);
+    if (!args) return null;
+    let title;
+    while (!aborted && !batch.stopped && !batch.pauseRequested && !job.preflightCancelled) {
+        title = await getTitle(prepared.url, initialSettings.mode, batch, args, job);
+        if (job.preflightCancelled || batch.pauseRequested || batch.stopped || job.cancelled) return "paused";
+        if (title.status === "success") break;
+        switch (title.status) {
+            case "permission":
+            case "network":
+            case "login":
+                showNotification(languageDB["js"][title.status], languageDB["js"]["error"], 8000);
+                break;
+            case "drive":
+            case "sleep":
+                break;
+            default:
+                return title.status;
+        }
+        await sleep(title.status === "drive" ? 1000 : 10000, batch, job);
+    }
+    if (job.preflightCancelled || batch.pauseRequested || batch.stopped || job.cancelled) return "paused";
+    if (!title || title.status !== "success") return "aborted";
 
-        runQueuedJob(job, batch).then((result) => {
-            if (result === "success") {
-                batch.progress.set(job.jobId, 1);
-                job.state = "completed";
-                job.row.setAttribute("data-download-state", "completed");
-            } else if (!batch.stopped) {
+    job.prepared = prepared;
+    job.rawInfo = title.info;
+    job.preflightMode = initialSettings.mode;
+    return "success";
+}
+
+// Prepare tracks in parallel with the active transfers, allowing the next
+// download to begin without waiting for a second yt-dlp metadata process.
+function pumpPreflight(batch) {
+    if (batch.initializing || batch.stopped || batch.pauseRequested || batch.finished) return;
+    while (batch.preparing < downloadConcurrency) {
+        const job = batch.queue.find((entry) => !entry.cancelled && entry.state === "queued");
+        if (!job) break;
+        job.state = "preparing";
+        batch.preparing++;
+        batch.preparingJobs.add(job);
+        preflightDownloadJob(job, batch).then((status) => {
+            if (batch.stopped || job.cancelled) return;
+            if (status === "paused") {
+                job.state = "queued";
+            } else if (status === "success") {
+                job.state = "ready";
+            } else {
                 job.state = "failed";
                 job.row.setAttribute("data-download-state", "failed");
-                batch.result = result;
+                batch.result = status;
                 stopDownloadBatch(batch);
             }
         }).catch((error) => {
-            console.warn("Download failed:", error);
+            console.warn("Track preparation failed:", error);
             if (!batch.stopped) {
                 batch.result = null;
                 stopDownloadBatch(batch);
             }
         }).finally(() => {
-            batch.running--;
-            updateDownloadProgress(batch, job.jobId);
+            batch.preparing--;
+            batch.preparingJobs.delete(job);
             pumpDownloadQueue(batch);
         });
     }
+}
 
-    if (batch.running === 0 && (batch.stopped || (batch.pendingSources === 0 && batch.queue.length === 0))) {
-        finishDownloadBatch(batch);
+async function runQueuedJob(job, batch) {
+    // The immutable settings snapshot is taken at the actual download start,
+    // not when a URL enters the queue or when its title is being resolved.
+    job.state = "running";
+    job.row.setAttribute("data-download-state", "running");
+    job.downloadStarted = false;
+    const snapshot = getJobSettings(job);
+    batch.modesUsed.add(snapshot.mode);
+    const item = {...job.prepared, ...snapshot, jobId: job.jobId,
+        quality: normalizeAudioQuality(snapshot.quality)};
+    return downloadItem(item, batch, job);
+}
+
+function pumpDownloadQueue(batch) {
+    if (activeDownloadBatch !== batch || batch.finished || batch.initializing) return;
+
+    if (!batch.pauseRequested && !batch.stopped && !aborted) {
+        pumpPreflight(batch);
+        while (batch.running < downloadConcurrency) {
+            const jobIndex = batch.queue.findIndex((job) => !job.cancelled && job.state === "ready");
+            if (jobIndex < 0) break;
+            const job = batch.queue[jobIndex];
+            // Audio/video mode affects URL conversion and title formatting. If
+            // it changed during preflight, refresh before starting the transfer.
+            if (job.preflightMode !== getJobSettings(job).mode ||
+                job.url !== job.row.getAttribute("data-url")) {
+                job.state = "queued";
+                job.prepared = null;
+                job.rawInfo = null;
+                pumpPreflight(batch);
+                continue;
+            }
+            batch.queue.splice(jobIndex, 1);
+            batch.running++;
+            runQueuedJob(job, batch).then((result) => {
+                // Abort can complete while this promise is settling. Do not
+                // restore a completed/failed state on an already reset row.
+                if (batch.stopped || aborted) return;
+                if (result === "success") {
+                    batch.progress.set(job.jobId, 1);
+                    job.state = "completed";
+                    job.row.setAttribute("data-download-state", "completed");
+                } else if (result === "paused" && !batch.stopped) {
+                    // It had no active transfer (e.g. waiting for an output
+                    // lock); keep it queued for Resume rather than failing.
+                    job.state = "ready";
+                    job.row.setAttribute("data-download-state", "queued");
+                    batch.queue.unshift(job);
+                } else if (!batch.stopped) {
+                    job.state = "failed";
+                    job.row.setAttribute("data-download-state", "failed");
+                    batch.result = result;
+                    stopDownloadBatch(batch);
+                }
+            }).catch((error) => {
+                console.warn("Download failed:", error);
+                if (!batch.stopped) {
+                    batch.result = null;
+                    stopDownloadBatch(batch);
+                }
+            }).finally(() => {
+                batch.running--;
+                updateDownloadProgress(batch, job.jobId);
+                pumpDownloadQueue(batch);
+            });
+        }
+    }
+
+    if (batch.running === 0 && batch.preparing === 0) {
+        if (batch.stopped || (batch.pendingSources === 0 && batch.queue.length === 0)) {
+            finishDownloadBatch(batch);
+        } else if (batch.pauseRequested && !batch.paused) {
+            batch.paused = true;
+            setDownloadButtons("paused");
+        }
     }
 }
 
@@ -927,7 +1170,9 @@ function queueDownloadJob(batch, source, row, url) {
     const job = {
         source, row, url,
         jobId: String(++nextDownloadJobId),
-        state: "queued", cancelled: false
+        state: "queued", cancelled: false, preflightCancelled: false,
+        preflightProcess: null, preflightWake: null, prepared: null,
+        rawInfo: null, downloadStarted: false
     };
     source.jobs.push(job);
     row.setAttribute("data-job-id", job.jobId);
@@ -1001,7 +1246,10 @@ export function removeDownloadSource(item) {
     }
 
     for (const job of source.jobs) {
-        if (job.state === "queued") {
+        if (["queued", "ready", "preparing"].includes(job.state)) {
+            job.preflightCancelled = true;
+            if (job.preflightWake) job.preflightWake();
+            if (job.preflightProcess?.pid) terminate(job.preflightProcess.pid, () => {});
             job.cancelled = true;
             batch.queue = batch.queue.filter((entry) => entry !== job);
             batch.progress.delete(job.jobId);
@@ -1019,8 +1267,10 @@ export function startDownloadQueue(items) {
     aborted = false;
     resolve = null;
     const batch = {
-        total: 0, running: 0, pendingSources: 0, queue: [],
+        total: 0, running: 0, preparing: 0, preparingJobs: new Set(),
+        pendingSources: 0, queue: [],
         sources: new Map(), stopped: false, finished: false, initializing: true,
+        pauseRequested: false, paused: false,
         modesUsed: new Set(), result: "success", processes: new Set(), retryWaits: new Set(),
         progress: new Map(), outputLocks: new Map()
     };
@@ -1028,7 +1278,7 @@ export function startDownloadQueue(items) {
     activeDownloadBatch = batch;
     downloading = true;
     worker.postMessage({type: "reset"});
-    setDownloadButtons(true);
+    setDownloadButtons("running");
 
     for (const item of items) enqueueDownloadSource(item);
     batch.initializing = false;
@@ -1037,10 +1287,13 @@ export function startDownloadQueue(items) {
 }
 
 export function abortDownloadQueue() {
-    if (!activeDownloadBatch) return;
+    if (!activeDownloadBatch || activeDownloadBatch.stopped) return;
+    const batch = activeDownloadBatch;
+    setDownloadButtons("stopping");
     setAborted(true);
+    resetAllDownloadProgress();
     worker.postMessage({type: "abort"});
-    pumpDownloadQueue(activeDownloadBatch);
+    pumpDownloadQueue(batch);
 }
 
 function generateDomainVariations(url) {
@@ -1619,36 +1872,14 @@ function initializeDeno() {
 }
 
 // TODO: Comment
-async function downloadURL(item, batch, job) {
+async function downloadURL(item, batch, job, queueJob) {
     if (aborted || batch.stopped) {
         return "aborted";
     }
 
     const {mode, location, url, codecAudio, codecVideo, quality} = item;
-    const commonArgs = ["--no-check-formats", "--no-check-certificates", "--extractor-args", "youtube:player_client=default,web_safari;player_js_version=actual"];
-
-    const premium = JSON.parse(getCookie("premium"));
-
-    if (isYouTubeUrl(url) && premium && premium.check) {
-        if (premium.browser && premium.browser.length) {
-            if (process.platform !== "win32" || premium.browser !== "chrome") {
-                commonArgs.push("--cookies-from-browser", premium.browser);
-            } else {
-                console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
-            }
-        } else {
-            showNotification(languageDB["js"]["noBrowser"]);
-            return null;
-        }
-    }
-
-    /*
-     * Deno is installed/found and updated once during startup.
-     * Downloads only reuse the already resolved executable path.
-     */
-    if (denoPath && denoPath.length) {
-        commonArgs.push("--js-runtimes", "deno:" + denoPath);
-    }
+    const commonArgs = buildCommonArgs(url);
+    if (!commonArgs) return null;
 
     // A successful title lookup is reused if the actual download needs a retry.
     if (job.title === null) {
@@ -1658,12 +1889,11 @@ async function downloadURL(item, batch, job) {
             return metadata.status;
         }
 
-        job.title = metadata.title;
+        job.title = clearTitle({...metadata.info}, mode);
     }
 
-    if (aborted || batch.stopped) {
-        return "aborted";
-    }
+    if (aborted || batch.stopped) return "aborted";
+    if (batch.pauseRequested) return "paused";
 
     console.debug(job.title);
 
@@ -1682,9 +1912,8 @@ async function downloadURL(item, batch, job) {
     await previousOutput;
 
     try {
-        if (aborted || batch.stopped) {
-            return "aborted";
-        }
+        if (aborted || batch.stopped) return "aborted";
+        if (batch.pauseRequested) return "paused";
 
         // Arguments are passed directly, preserving spaces and URL ampersands.
         // Literal percent characters must still be escaped for yt-dlp templates.
@@ -1712,6 +1941,7 @@ async function downloadURL(item, batch, job) {
 
         config.push("--", url);
 
+        queueJob.downloadStarted = true;
         const result = await runYtDlp(config, batch, (progress) => {
             // Reserve 100% for completed postprocessing and a successful exit.
             batch.progress.set(item.jobId, Math.max(batch.progress.get(item.jobId) || 0, Math.min(0.99, progress)));
@@ -1857,6 +2087,7 @@ export function saveSettings() {
         setCookie("codecAudio", codecAudio.getAttribute("data-value"));
 
         setCookie("codecVideo", codecVideo.getAttribute("data-value"));
+        setCookie("threads", getDownloadConcurrency());
 
         setCookie("save", true);
 
@@ -1882,6 +2113,7 @@ export function deleteSettings() {
     setCookie("quality", "");
     setCookie("codecAudio", "");
     setCookie("codecVideo", "");
+    setCookie("threads", DEFAULT_DOWNLOAD_CONCURRENCY);
 
     setCookie("save", false);
     setCookie("closeToTray", false);
@@ -1907,6 +2139,8 @@ export function loadSettings() {
     const codecVideo = document.querySelector("settings .codecVideo .select");
 
     const lang = document.querySelector("settings .lang .select");
+    const threads = document.querySelector("settings .threads .select");
+    selectOption(threads?.querySelector(`[data-value="${getDownloadConcurrency()}"]`));
 
     const modeValue = getCookie("mode");
     const qualityValue = getCookie("quality");

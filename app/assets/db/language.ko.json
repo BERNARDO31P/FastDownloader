@@ -13,7 +13,10 @@
     "maximize": "최대화",
     "abort": "중단",
     "location": "저장 위치",
-    "clear": "목록 지우기"
+    "clear": "목록 지우기",
+    "pause": "일시 정지",
+    "resume": "재개",
+    "pausing": "일시 정지 중…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "다운로드",
       "abort": "중단",
       "clear": "목록 지우기",
-      "copy": "복사"
+      "copy": "복사",
+      "pause": "일시 정지",
+      "resume": "재개",
+      "pausing": "일시 정지 중…"
     },
     "label": {
       "progressTotal": "전체 진행률",
@@ -40,6 +46,7 @@
       "closeToTray": "트레이로 닫기",
       "startMinimized": "최소화된 상태로 시작",
       "autostart": "시작할 때 자동 시작",
+      "downloadThreads": "동시 다운로드 수",
       "downloadMode": "다운로드 모드",
       "quality": "품질",
       "codec": "코덱",

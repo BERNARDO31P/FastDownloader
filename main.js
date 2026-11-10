@@ -41,6 +41,7 @@ let trayIcon = null;
 let trayMenu = Menu.buildFromTemplate([]);
 let language = {};
 let hidden = false;
+let downloadMenuState = "idle";
 
 function createWindow() {
     const {getCursorScreenPoint, getDisplayNearestPoint} = screen;
@@ -120,6 +121,24 @@ function refreshTrayMenu() {
     }
 }
 
+function refreshDownloadTrayItem() {
+    removeTrayItem("download");
+    removeTrayItem("toggle-download");
+    removeTrayItem("abort");
+
+    if (downloadMenuState === "idle") {
+        addTrayItem("download", language["download"] || "Download", "normal", download);
+    } else {
+        addTrayItem("abort", language["abort"] || "Abort", "normal", abort);
+        const key = downloadMenuState === "paused" ? "resume" :
+            downloadMenuState === "pausing" ? "pausing" : "pause";
+        addTrayItem("toggle-download", language[key] || key, "normal", download);
+        const toggle = trayMenu.items.find((item) => item.id === "toggle-download");
+        if (toggle) toggle.enabled = downloadMenuState === "running" || downloadMenuState === "paused";
+    }
+    refreshTrayMenu();
+}
+
 function updateTrayVisibility() {
     if (!win || !trayIcon || !Object.keys(language).length) {
         return;
@@ -148,6 +167,7 @@ function buildTrayMenu() {
         {id: "close", label: language["close"], type: "normal", click: exit}
     ]);
 
+    refreshDownloadTrayItem();
     updateTrayVisibility();
 }
 
@@ -207,17 +227,19 @@ ipcMain.on("show_notification", (event, title, message) => {
 });
 
 ipcMain.on("add_abort", () => {
-    removeTrayItem("download");
-    addTrayItem("abort", language["abort"], "normal", abort);
+    downloadMenuState = "running";
+    refreshDownloadTrayItem();
+});
 
-    refreshTrayMenu();
+ipcMain.on("download_state", (event, state) => {
+    if (!["idle", "running", "pausing", "paused", "stopping"].includes(state)) return;
+    downloadMenuState = state;
+    refreshDownloadTrayItem();
 });
 
 ipcMain.on("remove_abort", () => {
-    removeTrayItem("abort");
-    addTrayItem("download", language["download"], "normal", download);
-
-    refreshTrayMenu();
+    downloadMenuState = "idle";
+    refreshDownloadTrayItem();
 });
 
 ipcMain.on("enableCloseToTray", () => {

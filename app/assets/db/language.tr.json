@@ -13,7 +13,10 @@
     "maximize": "Maksimuma çıkar",
     "abort": "İptal et",
     "location": "Konum",
-    "clear": "Listeyi temizle"
+    "clear": "Listeyi temizle",
+    "pause": "Duraklat",
+    "resume": "Devam et",
+    "pausing": "Duraklatılıyor…"
   },
   "main": {
     "button": {
@@ -23,7 +26,10 @@
       "download": "İndir",
       "abort": "İptal et",
       "clear": "Listeyi temizle",
-      "copy": "Kopyala"
+      "copy": "Kopyala",
+      "pause": "Duraklat",
+      "resume": "Devam et",
+      "pausing": "Duraklatılıyor…"
     },
     "label": {
       "progressTotal": "Toplam ilerleme",
@@ -40,6 +46,7 @@
       "closeToTray": "Tepsiye kapat",
       "startMinimized": "Küçültülmüş olarak başlat",
       "autostart": "Sistem başlatıldığında otomatik başlat",
+      "downloadThreads": "Eş zamanlı indirmeler",
       "downloadMode": "İndirme modu",
       "quality": "Kalite",
       "codec": "Kodek",
