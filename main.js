@@ -247,7 +247,7 @@ ipcMain.on("disableAutostart", () => {
     });
 });
 
-ipcMain.on("yt-search", async (event, search) => {
+ipcMain.on("yt-search", async (event, search, requestId) => {
     let results = [];
     try {
         const ytMusic = await getYtMusic();
@@ -257,7 +257,7 @@ ipcMain.on("yt-search", async (event, search) => {
     }
 
     if (!event.sender.isDestroyed()) {
-        event.sender.send("yt-results", results);
+        event.sender.send("yt-results", {results, requestId});
     }
 });
 

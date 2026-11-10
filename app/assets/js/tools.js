@@ -24,14 +24,15 @@ let debug = console.debug;
 
 let hiddenElements = [];
 let urlList = [];
-let processedUrls = [];
 let logs = [];
 
 let denoPath = null;
 let denoInitialized = false;
 
 let activeDownloadBatch = null;
-let activeWorkerBatchId = 0;
+let nextDownloadJobId = 0;
+let nextWorkerRequestId = 0;
+const pendingDownloadPrepares = new Map();
 let nextPlaylistId = 0;
 let nextPendingUrlId = 0;
 const pendingUrlItems = new Map();
@@ -44,7 +45,6 @@ let brokenExtractors = [];
 export let specificSettings = {};
 
 export let worker = new Worker("assets/js/lib/worker.js", {type: "module"});
-export let workers = 0;
 
 export let downloading = false;
 export let resolve = null;
@@ -151,6 +151,14 @@ function stopDownloadBatch(batch) {
     }
 
     batch.stopped = true;
+
+    // An in-flight worker conversion must not hold a download slot forever.
+    for (const [id, pending] of pendingDownloadPrepares) {
+        if (pending.batch === batch) {
+            pendingDownloadPrepares.delete(id);
+            pending.resolve(null);
+        }
+    }
 
     // Wake retry delays immediately. Keep processes registered until close.
     for (const wake of Array.from(batch.retryWaits)) {
@@ -351,61 +359,16 @@ worker.addEventListener("message", (event) => {
 
     switch (msg.type) {
         case "getYouTubeMusicSearch":
-            ipcRenderer.send("yt-search", msg.search);
+            ipcRenderer.send("yt-search", msg.search, msg.requestId);
             break;
 
-        case "checkPremiumAndAdd":
-            if (aborted || msg.batchId !== activeWorkerBatchId) {
-                return;
-            }
-
-            processedUrls[msg.index] = msg.data;
-            workers--;
-
-            console.debug("Added to processedUrls, remaining workers: " + workers);
-
-            if (!workers) {
-                download(processedUrls).then(() => {
-                    let progressTotal = document.querySelector(".progress-total progress");
-                    let infoTotal = document.querySelector(".progress-total .info p");
-
-                    if (resolve === "success") {
-                        infoTotal.textContent = languageDB["js"]["done"];
-                        progressTotal.value = 1;
-
-                        ipcRenderer.send("set_percentage", 1);
-                    }
-
-                    setEnabled();
-
-                    downloading = false;
-                    processedUrls = [];
-
-                    switch (resolve) {
-                        case "aborted":
-                            showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
-                            break;
-
-                        case "success":
-                            if (getCookie("mode") === "audio") {
-                                showNotification(languageDB["js"]["songsDownloaded"], languageDB["js"]["success"]);
-                            } else {
-                                showNotification(languageDB["js"]["videosDownloaded"], languageDB["js"]["success"]);
-                            }
-
-                            if (getCookie("clearList")) clearList();
-                            break;
-
-                        default:
-                            showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
-                            break;
-                    }
-
-                    ipcRenderer.send("remove_abort");
-                });
-            }
-
+        case "checkPremiumAndAdd": {
+            const pending = pendingDownloadPrepares.get(msg.requestId);
+            if (!pending) return;
+            pendingDownloadPrepares.delete(msg.requestId);
+            pending.resolve(msg.data);
             break;
+        }
 
         case "checkPremium": {
             const item = pendingUrlItems.get(msg.requestId);
@@ -417,10 +380,16 @@ worker.addEventListener("message", (event) => {
 
             if (urlList.includes(msg.url)) {
                 showNotification(languageDB["js"]["urlInList"], languageDB["js"]["error"]);
+                removeDownloadSource(item);
                 item.remove();
                 return;
             }
 
+            // Preserve settings selected while URL normalization was pending.
+            if (msg.old !== msg.url && specificSettings[msg.old]) {
+                specificSettings[msg.url] = {...specificSettings[msg.old], ...specificSettings[msg.url]};
+                delete specificSettings[msg.old];
+            }
             item.setAttribute("data-url", msg.url);
             item.querySelector(".url-text").textContent = msg.url;
             urlList.push(msg.url);
@@ -536,12 +505,6 @@ export function setAborted(bool) {
     if (bool) {
         stopDownloadBatch(activeDownloadBatch);
     }
-}
-
-export function setWorkerCount(count) {
-    workers = count;
-    processedUrls = [];
-    return ++activeWorkerBatchId;
 }
 
 export function isPlaylistUrl(value) {
@@ -695,6 +658,7 @@ export function assignPlaylistJobIds(item, jobs) {
 }
 
 export function clearList() {
+    for (const item of document.querySelectorAll(".listBox > ul > li")) removeDownloadSource(item);
     for (const item of Array.from(playlistLookups.keys())) cancelPlaylistLookup(item);
     let ul = document.querySelector(".listBox ul");
 
@@ -776,54 +740,80 @@ export function getAllData() {
 
 // TODO: Comment
 function updateDownloadProgress(batch, jobId = null) {
-    if (activeDownloadBatch !== batch) {
-        return;
-    }
+    if (activeDownloadBatch !== batch) return;
 
-    // Include the running tracks, not just the number of finished files.
     let downloaded = 0;
-    for (const progress of batch.progress.values()) {
-        downloaded += progress;
-    }
+    for (const progress of batch.progress.values()) downloaded += progress;
     const total = batch.total ? downloaded / batch.total : 0;
 
     const progressTotal = document.querySelector(".progress-total progress");
     const progressTotalInfo = document.querySelector(".progress-total .info p");
 
-    if (progressTotal) {
-        progressTotal.value = total;
-    }
-
+    if (progressTotal) progressTotal.value = total;
     if (progressTotalInfo) {
-        progressTotalInfo.textContent = total === 1
+        progressTotalInfo.textContent = total === 1 && batch.pendingSources === 0 &&
+            batch.running === 0 && batch.queue.length === 0
             ? languageDB["js"]["done"]
             : (total * 100).toFixed(2) + "%";
     }
 
-    if (jobId !== null) {
-        setJobProgress(jobId, batch.progress.get(jobId) || 0, batch);
-    }
-
+    if (jobId !== null) setJobProgress(jobId, batch.progress.get(jobId) || 0, batch);
     ipcRenderer.send("set_percentage", total);
 }
 
-async function downloadItem(item, index, batch) {
+function getJobSettings(job) {
+    // This is intentionally called ONLY when a download slot becomes available.
+    // Each job retains its snapshot, even when the user changes settings later.
+    const parentSettings = specificSettings[job.source.item.getAttribute("data-url")] || {};
+    const trackSettings = specificSettings[job.url] || {};
+    const overrides = {...parentSettings, ...trackSettings};
+    const settings = {
+        mode: getCookie("mode"),
+        codecAudio: getCookie("codecAudio"),
+        codecVideo: getCookie("codecVideo"),
+        quality: getCookie("quality"),
+        location: document.querySelector(".location #location").value
+    };
+
+    for (const key of ["mode", "codecAudio", "codecVideo", "quality", "location"]) {
+        if (overrides[key] !== undefined) settings[key] = overrides[key];
+    }
+
+    return settings;
+}
+
+function prepareDownloadJob(job, settings, batch) {
+    return new Promise((resolvePrepare) => {
+        if (aborted || batch.stopped) {
+            resolvePrepare(null);
+            return;
+        }
+
+        const requestId = ++nextWorkerRequestId;
+        pendingDownloadPrepares.set(requestId, {resolve: resolvePrepare, batch});
+        worker.postMessage({
+            type: "checkPremiumAndAdd",
+            url: job.url,
+            jobId: job.jobId,
+            requestId,
+            settings
+        });
+    });
+}
+
+async function downloadItem(item, batch) {
     const job = {title: null};
 
     while (!aborted && !batch.stopped) {
         batch.progress.set(item.jobId, 0);
         updateDownloadProgress(batch, item.jobId);
 
-        const result = await downloadURL(item, index, batch, job);
+        const result = await downloadURL(item, batch, job);
 
-        if (aborted || batch.stopped) {
-            return "aborted";
-        }
-
+        if (aborted || batch.stopped) return "aborted";
         if (result === "success") {
             batch.progress.set(item.jobId, 1);
             updateDownloadProgress(batch, item.jobId);
-
             return "success";
         }
 
@@ -833,89 +823,225 @@ async function downloadItem(item, index, batch) {
             case "login":
                 showNotification(languageDB["js"][result], languageDB["js"]["error"], 8000);
                 break;
-
             case "drive":
             case "sleep":
                 break;
-
             default:
                 return result;
         }
 
         batch.progress.set(item.jobId, 0);
         updateDownloadProgress(batch, item.jobId);
-
         await sleep(result === "drive" ? 1000 : 10000, batch);
     }
 
     return "aborted";
 }
 
-async function download(data) {
-    if (aborted) {
-        resolve = "aborted";
+function setDownloadButtons(running) {
+    const start = document.querySelector(".startAbort .start-button");
+    const abort = document.querySelector(".startAbort .abort-button");
+    if (start) start.ariaDisabled = String(running);
+    if (abort) abort.ariaDisabled = String(!running);
+    // URL entry, removal, list selection and global settings stay editable.
+}
+
+function finishDownloadBatch(batch) {
+    if (activeDownloadBatch !== batch || batch.finished) return;
+    batch.finished = true;
+    resolve = aborted || (batch.stopped && batch.result === "success")
+        ? "aborted" : batch.result;
+    activeDownloadBatch = null;
+    downloading = false;
+    setDownloadButtons(false);
+
+    const progressTotal = document.querySelector(".progress-total progress");
+    const infoTotal = document.querySelector(".progress-total .info p");
+    if (resolve === "success") {
+        if (infoTotal) infoTotal.textContent = languageDB["js"]["done"];
+        if (progressTotal) progressTotal.value = 1;
+        ipcRenderer.send("set_percentage", 1);
+        const message = batch.modesUsed.size > 1 ? languageDB["js"]["done"]
+            : languageDB["js"][batch.modesUsed.has("audio") ? "songsDownloaded" : "videosDownloaded"];
+        showNotification(message, languageDB["js"]["success"]);
+        if (getCookie("clearList")) clearList();
+    } else if (resolve === "aborted") {
+        showNotification(languageDB["js"]["downloadAborted"], languageDB["js"]["error"]);
+    } else {
+        showNotification(languageDB["js"]["unexpectedError"], languageDB["js"]["error"]);
+    }
+
+    ipcRenderer.send("remove_abort");
+}
+
+async function runQueuedJob(job, batch) {
+    // Mark the specific URL as started before reading mutable user settings.
+    job.state = "running";
+    job.row.setAttribute("data-download-state", "running");
+    // URL normalization may have completed while this job was still queued.
+    job.url = job.row.getAttribute("data-url");
+    const snapshot = getJobSettings(job);
+    batch.modesUsed.add(snapshot.mode);
+    const prepared = await prepareDownloadJob(job, snapshot, batch);
+    if (!prepared || aborted || batch.stopped) return "aborted";
+    return downloadItem(prepared, batch);
+}
+
+function pumpDownloadQueue(batch) {
+    if (activeDownloadBatch !== batch || batch.finished || batch.initializing) return;
+
+    while (!aborted && !batch.stopped && batch.running < DOWNLOAD_CONCURRENCY && batch.queue.length) {
+        const job = batch.queue.shift();
+        if (job.cancelled) continue;
+        batch.running++;
+
+        runQueuedJob(job, batch).then((result) => {
+            if (result === "success") {
+                batch.progress.set(job.jobId, 1);
+                job.state = "completed";
+                job.row.setAttribute("data-download-state", "completed");
+            } else if (!batch.stopped) {
+                job.state = "failed";
+                job.row.setAttribute("data-download-state", "failed");
+                batch.result = result;
+                stopDownloadBatch(batch);
+            }
+        }).catch((error) => {
+            console.warn("Download failed:", error);
+            if (!batch.stopped) {
+                batch.result = null;
+                stopDownloadBatch(batch);
+            }
+        }).finally(() => {
+            batch.running--;
+            updateDownloadProgress(batch, job.jobId);
+            pumpDownloadQueue(batch);
+        });
+    }
+
+    if (batch.running === 0 && (batch.stopped || (batch.pendingSources === 0 && batch.queue.length === 0))) {
+        finishDownloadBatch(batch);
+    }
+}
+
+function queueDownloadJob(batch, source, row, url) {
+    const job = {
+        source, row, url,
+        jobId: String(++nextDownloadJobId),
+        state: "queued", cancelled: false
+    };
+    source.jobs.push(job);
+    row.setAttribute("data-job-id", job.jobId);
+    row.setAttribute("data-download-state", "queued");
+    batch.progress.set(job.jobId, 0);
+    batch.queue.push(job);
+    return job;
+}
+
+// Called at initial start and for every newly added top-level URL.
+export function enqueueDownloadSource(item) {
+    const batch = activeDownloadBatch;
+    if (!batch || batch.finished || batch.stopped || batch.sources.has(item) || !item.isConnected) return;
+
+    const source = {item, jobs: [], cancelled: false, pending: false};
+    batch.sources.set(item, source);
+    batch.total++;
+    updateDownloadProgress(batch);
+
+    const url = item.getAttribute("data-url");
+    if (!isPlaylistUrl(url)) {
+        queueDownloadJob(batch, source, item, url);
+        pumpDownloadQueue(batch);
         return;
     }
 
+    // A resolving playlist contributes one placeholder to the denominator.
+    // Once its entries arrive, replace that placeholder with all real tracks.
+    source.pending = true;
+    batch.pendingSources++;
+    getPlaylistEntries(item).then((entries) => {
+        if (source.cancelled || batch.stopped || activeDownloadBatch !== batch) return;
+        if (!entries.length) throw new Error("Playlist is empty");
+
+        batch.total += entries.length - 1;
+        const children = item.querySelectorAll(":scope > .playlist-entries > li.playlist-entry");
+        if (children.length !== entries.length) throw new Error("Playlist entries changed while resolving");
+        for (let i = 0; i < entries.length; i++) {
+            queueDownloadJob(batch, source, children[i], entries[i]);
+        }
+        updateDownloadProgress(batch);
+    }).catch((error) => {
+        if (source.cancelled || batch.stopped || activeDownloadBatch !== batch) return;
+        console.warn("Playlist could not enter the download queue:", error);
+        // A failed newly added playlist must not abort downloads already running.
+        source.cancelled = true;
+        batch.total--;
+        updateDownloadProgress(batch);
+    }).finally(() => {
+        if (source.pending) {
+            source.pending = false;
+            batch.pendingSources--;
+        }
+        pumpDownloadQueue(batch);
+    });
+}
+
+// If a URL is deleted, any not-yet-started jobs are removed; running processes
+// keep their immutable job data and are allowed to finish.
+export function removeDownloadSource(item) {
+    const batch = activeDownloadBatch;
+    if (!batch) return;
+    const source = batch.sources.get(item);
+    if (!source || source.cancelled) return;
+
+    source.cancelled = true;
+    if (source.pending) {
+        source.pending = false;
+        batch.pendingSources--;
+        batch.total--;
+    }
+
+    for (const job of source.jobs) {
+        if (job.state === "queued") {
+            job.cancelled = true;
+            batch.queue = batch.queue.filter((entry) => entry !== job);
+            batch.progress.delete(job.jobId);
+            batch.total--;
+        }
+    }
+
+    updateDownloadProgress(batch);
+    pumpDownloadQueue(batch);
+}
+
+export function startDownloadQueue(items) {
+    if (downloading || activeDownloadBatch) return false;
+
+    aborted = false;
+    resolve = null;
     const batch = {
-        total: data.length,
-        completed: 0,
-        nextIndex: 0,
-        stopped: false,
-        result: "success",
-        processes: new Set(),
-        retryWaits: new Set(),
-        progress: new Map(),
-        outputLocks: new Map()
+        total: 0, running: 0, pendingSources: 0, queue: [],
+        sources: new Map(), stopped: false, finished: false, initializing: true,
+        modesUsed: new Set(), result: "success", processes: new Set(), retryWaits: new Set(),
+        progress: new Map(), outputLocks: new Map()
     };
 
     activeDownloadBatch = batch;
     downloading = true;
-    resolve = null;
-    updateDownloadProgress(batch);
+    worker.postMessage({type: "reset"});
+    setDownloadButtons(true);
 
-    async function runWorker() {
-        while (!aborted && !batch.stopped) {
-            const index = batch.nextIndex++;
+    for (const item of items) enqueueDownloadSource(item);
+    batch.initializing = false;
+    pumpDownloadQueue(batch);
+    return true;
+}
 
-            if (index >= data.length) {
-                return;
-            }
-
-            let result;
-
-            try {
-                result = await downloadItem(data[index], index, batch);
-            } catch (error) {
-                console.warn("Download failed:", error);
-                result = null;
-            }
-
-            if (result === "success") {
-                batch.progress.set(data[index].jobId, 1);
-                batch.completed++;
-            } else if (!batch.stopped) {
-                batch.result = result;
-                stopDownloadBatch(batch);
-            }
-
-            updateDownloadProgress(batch, data[index].jobId);
-        }
-    }
-
-    const downloadWorkers = [];
-    const workerCount = Math.min(DOWNLOAD_CONCURRENCY, data.length);
-
-    for (let i = 0; i < workerCount; i++) {
-        downloadWorkers.push(runWorker());
-    }
-
-    // Each worker owns a slot until metadata, download and postprocessing close.
-    await Promise.all(downloadWorkers);
-
-    resolve = aborted || (batch.stopped && batch.result === "success") ? "aborted" : batch.result;
-
-    activeDownloadBatch = null;
+export function abortDownloadQueue() {
+    if (!activeDownloadBatch) return;
+    setAborted(true);
+    worker.postMessage({type: "abort"});
+    pumpDownloadQueue(activeDownloadBatch);
 }
 
 function generateDomainVariations(url) {
@@ -1135,6 +1261,9 @@ export function addUrlToList(url = "") {
             urlList.push(url.toString());
         }
 
+        // The live batch observes new list items immediately. An unresolved
+        // playlist remains a placeholder until its lookup finishes.
+        if (downloading) enqueueDownloadSource(li);
     }
 
     if (ul.scrollHeight > ul.clientHeight) {
@@ -1172,6 +1301,7 @@ export function removeActiveListItems() {
                 }
             }
 
+            removeDownloadSource(active);
             cancelPlaylistLookup(active);
             active.remove();
         }
@@ -1490,7 +1620,7 @@ function initializeDeno() {
 }
 
 // TODO: Comment
-async function downloadURL(item, index, batch, job) {
+async function downloadURL(item, batch, job) {
     if (aborted || batch.stopped) {
         return "aborted";
     }

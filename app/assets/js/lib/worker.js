@@ -7,10 +7,7 @@ const urlSkip = {};
 
 const TITLE_DELIMITER = / - | – /gi;
 const MATCH_DEVIATION = 65;
-const SETTING_FIELDS = ["quality", "mode", "codecAudio", "codecVideo", "location"];
-
-let globalSettings = {};
-let globalMode, globalCodecAudio, globalCodecVideo, globalQuality;
+let nextSearchId = 0;
 
 let aborted = false;
 
@@ -23,44 +20,25 @@ addEventListener("message", (event) => {
             break;
 
         case "checkPremiumAndAdd":
-            if (aborted) {
-                return;
-            }
-
-            // TODO: Handle converted case
-            checkPremiumAndConvert(msg.url)
+            if (aborted) return;
+            checkPremiumAndConvert(msg.url, msg.settings.mode)
                 .catch(() => ({url: msg.url, converted: false}))
                 .then(({url}) => {
-                    if (aborted) {
-                        return;
-                    }
-
-                    const data = getUrlData(url, msg.location, msg.settings);
+                    if (aborted) return;
+                    const data = getUrlData(url, msg.settings);
                     data.jobId = msg.jobId;
-
-                    postMessage({type: "checkPremiumAndAdd", data, index: msg.index, batchId: msg.batchId});
+                    postMessage({type: "checkPremiumAndAdd", data, requestId: msg.requestId});
                 });
             break;
 
         case "checkPremium":
-            globalMode = msg.mode;
-
-            // TODO: Handle converted case
-            checkPremiumAndConvert(msg.url).then(({url, converted}) => {
+            checkPremiumAndConvert(msg.url, msg.mode).catch(() => ({url: msg.url})).then(({url}) => {
                 postMessage({type: "checkPremium", url, old: msg.url, requestId: msg.requestId});
             });
             break;
 
-        case "loadData":
+        case "reset":
             aborted = false;
-
-            loadData(
-                msg.mode,
-                msg.codecAudio,
-                msg.codecVideo,
-                msg.quality,
-                msg.settings
-            );
             break;
     }
 });
@@ -71,18 +49,9 @@ function sleep(ms) {
 }
 
 // TODO: Comment
-function loadData(mode, codecAudio, codecVideo, quality, settings) {
-    globalMode = mode;
-    globalCodecAudio = codecAudio;
-    globalCodecVideo = codecVideo;
-    globalQuality = quality;
-    globalSettings = settings;
-}
-
-// TODO: Comment
-async function checkPremiumAndConvert(url) {
+async function checkPremiumAndConvert(url, mode) {
     if (
-        globalMode !== "audio" ||
+        mode !== "audio" ||
         url.includes("music.youtube") ||
         url.includes("playlist")
     ) {
@@ -141,20 +110,16 @@ function getSortedLength(string1, string2) {
 async function getYouTubeMusicSearch(ytFullTitle, run = 0, retry = 5) {
     try {
         const results = await new Promise((resolve) => {
+            const requestId = ++nextSearchId;
             const listener = (event) => {
                 const msg = event.data;
-
-                if (msg.type !== "youTubeMusicSearchResults") {
-                    return;
-                }
-
+                if (msg.type !== "youTubeMusicSearchResults" || msg.requestId !== requestId) return;
                 removeEventListener("message", listener);
                 resolve(msg.results);
             };
 
             addEventListener("message", listener);
-
-            postMessage({type: "getYouTubeMusicSearch", search: ytFullTitle});
+            postMessage({type: "getYouTubeMusicSearch", search: ytFullTitle, requestId});
         });
 
         //    const results = await window.electron.invoke("yt-search", ytFullTitle);
@@ -294,45 +259,16 @@ async function getYoutubeMusic(url) {
     }).catch(() => null);
 }
 
-// TODO: Comment
-function getUrlData(url, location, jobSettings = {}) {
-    if (url.includes("netflix")) {
-        return {url};
-    }
+// Settings are snapshotted in the renderer at the instant a job starts.
+function getUrlData(url, settings) {
+    if (url.includes("netflix")) return {url, ...settings};
 
-    const item = {
-        url,
-        quality: globalQuality,
-        mode: globalMode,
-        codecAudio: globalCodecAudio,
-        codecVideo: globalCodecVideo,
-        location
-    };
-
-    const settings = {...globalSettings[url], ...jobSettings};
-
-    for (const field of SETTING_FIELDS) {
-        // Per-job overrides retain the selected playlist's settings even if
-        // the same track is present in multiple different playlists.
-        if (typeof settings[field] !== "undefined") {
-            item[field] = settings[field];
-        }
-    }
-
+    const item = {url, ...settings};
     switch (item.quality) {
-        case "medium":
-            item.quality = 5;
-            break;
-
-        case "bad":
-            item.quality = 9;
-            break;
-
+        case "medium": item.quality = 5; break;
+        case "bad": item.quality = 9; break;
         case "best":
-        default:
-            item.quality = 0;
-            break;
+        default: item.quality = 0; break;
     }
-
     return item;
 }

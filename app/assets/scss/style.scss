@@ -819,7 +819,7 @@ settings {
  }
 
 // Playlist tracks are contained in their parent entry instead of being flat
-// siblings. The controls stay usable while the download list is locked.
+// siblings. The controls stay usable throughout active downloads.
 .listBox > ul > li.playlist-item {
   .playlist-toggle {
     box-shadow: unset;
@@ -856,4 +856,11 @@ settings {
       }
     }
   }
+}
+// Settings on a started track are immutable; queued entries remain editable.
+#contextMenu > div[aria-disabled="true"] {
+  opacity: .45;
+  cursor: default;
+
+  &:hover { background-color: transparent; }
 }

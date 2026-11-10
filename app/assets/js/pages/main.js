@@ -1,11 +1,9 @@
 import * as tools from "../tools.js";
-import {showNotification, specificSettings, worker} from "../tools.js";
+import {showNotification, worker} from "../tools.js";
 const {clipboard, ipcRenderer, shell} = require("electron");
 
 let lastClicked = null,
     contextElement = null;
-
-let preparation = null;
 
 function showError(key) {
     showNotification(tools.languageDB["js"][key], tools.languageDB["js"]["error"]);
@@ -26,6 +24,8 @@ function resetProgress() {
         if (progress) {
             progress.value = 0;
         }
+        item.removeAttribute("data-download-state");
+        item.removeAttribute("data-job-id");
 
         if (info && !item.classList.contains("playlist-resolving")) {
             info.textContent = "0%";
@@ -256,193 +256,49 @@ tools.bindEvent("click", ".theme-toggler", () => {
 /**
  * When the user clicks the start button, this function starts the download process.
  *
- * It sends the configuration to the worker to prepare.
- * Playlists are converted to single URLS.
- *
- * The URLs are then converted to YouTube Music by the worker (if configured).
+ * Adds all visible URLs to the live queue. New URLs join automatically while
+ * running; settings are snapshotted by each worker when its track starts.
  */
-tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"])", async () => {
-    // An abort may still be waiting for processes to close.
-    if (preparation || tools.downloading) {
-        return;
-    }
+tools.bindEvent("click", ".startAbort .start-button:not([aria-disabled=\"true\"])", () => {
+    if (tools.downloading) return;
 
-    tools.setAborted(false);
-
-    const listBox = document.getElementsByClassName("listBox")[0];
+    const items = Array.from(document.querySelectorAll(".listBox > ul > li"));
     const location = document.querySelector(".location #location");
-    const items = listBox.querySelectorAll(":scope > ul > li");
     const mode = tools.getCookie("mode");
-    const codecAudio = tools.getCookie("codecAudio");
-    const codecVideo = tools.getCookie("codecVideo");
-    const quality = tools.getCookie("quality");
 
-    if (!items.length) {
-        showError("noURLs");
-        return;
-    }
-
-    if (!mode) {
-        showError("downloadMode");
-        return;
-    }
-
+    if (!items.length) return showError("noURLs");
+    if (!mode) return showError("downloadMode");
     if (mode === "audio") {
-        if (!codecAudio) {
-            showError("codec");
-            return;
-        }
-
-        if (!quality) {
-            showError("quality");
-            return;
-        }
-    } else if (!codecVideo) {
-        showError("codec");
-        return;
+        if (!tools.getCookie("codecAudio")) return showError("codec");
+        if (!tools.getCookie("quality")) return showError("quality");
+    } else if (!tools.getCookie("codecVideo")) {
+        return showError("codec");
     }
+    if (!location.value) return showError("storageLocation");
 
-    if (!location.value) {
-        showError("storageLocation");
-        return;
-    }
-
-    let interruptPreparation;
-    const interruption = new Promise((resolve) => {
-        interruptPreparation = resolve;
-    });
-    const currentPreparation = {aborted: false, stop: interruptPreparation};
-    preparation = currentPreparation;
-    let submitted = false;
-
-    tools.setDisabled();
+    resetProgress();
     ipcRenderer.send("set_percentage", 0);
     ipcRenderer.send("add_abort");
-    resetProgress();
-
-    try {
-        const jobs = [];
-        const settings = tools.specificSettings;
-
-        for (const item of items) {
-            const itemUrl = item.getAttribute("data-url");
-
-            if (tools.isPlaylistUrl(itemUrl)) {
-                // Resolution starts on addition (or list restore). Only wait for
-                // the already-running lookup, never start a second yt-dlp process.
-                const entries = await Promise.race([tools.getPlaylistEntries(item), interruption]);
-                if (currentPreparation.aborted || tools.aborted) return;
-
-                const children = entries.map((url, index) => ({
-                    url,
-                    jobId: String(jobs.length + index),
-                    settings: {
-                        ...tools.specificSettings[itemUrl],
-                        ...tools.specificSettings[url]
-                    }
-                }));
-
-                tools.assignPlaylistJobIds(item, children);
-                jobs.push(...children);
-            } else {
-                const job = {
-                    url: itemUrl,
-                    jobId: String(jobs.length),
-                    settings: {...tools.specificSettings[itemUrl]}
-                };
-                item.setAttribute("data-job-id", job.jobId);
-                jobs.push(job);
-            }
-
-            if (currentPreparation.aborted || tools.aborted) {
-                return;
-            }
-        }
-
-        if (!jobs.length) {
-            return;
-        }
-
-        worker.postMessage({
-            type: "loadData",
-            mode,
-            codecAudio,
-            codecVideo,
-            quality,
-            settings
-        });
-
-        const batchId = tools.setWorkerCount(jobs.length);
-
-        for (const [index, job] of jobs.entries()) {
-            worker.postMessage({
-                type: "checkPremiumAndAdd",
-                url: job.url,
-                jobId: job.jobId,
-                batchId,
-                index,
-                settings: job.settings,
-                location: location.value,
-                count: jobs.length
-            });
-
-            if (currentPreparation.aborted || tools.aborted) {
-                return;
-            }
-        }
-
-        submitted = true;
-    } catch (error) {
-        console.warn("Could not prepare downloads:", error);
-
-        if (!currentPreparation.aborted && !tools.aborted && !error.playlistNotified) {
-            showError("unexpectedError");
-        }
-    } finally {
-        preparation = null;
-
-        if (!submitted) {
-            tools.setEnabled();
-            ipcRenderer.send("remove_abort");
-        }
-    }
+    tools.startDownloadQueue(items);
 });
 
-// TODO: Comment
 tools.bindEvent("click", ".startAbort .abort-button:not([aria-disabled=\"true\"])", () => {
-    // The updated tools module stops all active download and metadata processes.
-    tools.setAborted(true);
-
-    if (preparation) {
-        preparation.aborted = true;
-        // Do not cancel the add-time playlist lookup; it remains useful after
-        // aborting this download attempt.
-        preparation.stop();
-    }
-
-    tools.worker.postMessage({
-        type: "abort"
-    });
-
-    tools.setEnabled();
-    ipcRenderer.send("remove_abort");
+    tools.abortDownloadQueue();
 });
 
 // TODO: Comment
 tools.bindEvent("contextmenu", ".listBox:not([aria-disabled=\"true\"]) li", function (e) {
-    if (e.target.closest(".playlist-entries")) {
-        return;
-    }
-
     e.preventDefault();
 
     const context = document.getElementById("contextMenu");
     const url = this.getAttribute("data-url");
-    const settings = tools.specificSettings[url];
+    const settings = tools.specificSettings[url] || {};
+    const parent = this.closest("li.playlist-item");
+    const inherited = parent && parent !== this
+        ? tools.specificSettings[parent.getAttribute("data-url")] || {} : {};
     const setting = (key, fallback) => (
-        typeof settings !== "undefined" && typeof settings[key] !== "undefined"
-            ? settings[key]
-            : tools.getCookie(fallback)
+        settings[key] !== undefined ? settings[key]
+            : inherited[key] !== undefined ? inherited[key] : tools.getCookie(fallback)
     );
 
     const audio = setting("mode", "mode") === "audio";
@@ -453,9 +309,14 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled=\"true\"]) li", func
 
     selectContextValue(context, "mode", audio ? "audio" : "video");
     selectContextValue(context, "quality", setting("quality", "quality"));
-    selectContextValue(context, "codecAudio", setting("codec", "codecAudio"));
+    selectContextValue(context, "codecAudio", setting("codecAudio", "codecAudio"));
+    selectContextValue(context, "codecVideo", setting("codecVideo", "codecVideo"));
 
-    contextElement = e.target;
+    contextElement = this;
+    const locked = ["running", "completed", "failed"].includes(this.getAttribute("data-download-state"));
+    for (const node of context.querySelectorAll(".nav-select, .location")) {
+        node.setAttribute("aria-disabled", String(locked));
+    }
     context.classList.add("show");
 
     context.style.left = e.pageX + "px";
@@ -466,8 +327,10 @@ tools.bindEvent("contextmenu", ".listBox:not([aria-disabled=\"true\"]) li", func
         context.style.left = contextBounding.left + (document.body.clientWidth - contextBounding.left - contextBounding.width - 10) + "px";
     }
 
-    this.classList.add("active");
-    tools.updateSelected();
+    if (!this.classList.contains("playlist-entry")) {
+        this.classList.add("active");
+        tools.updateSelected();
+    }
 });
 
 // TODO: Comment
@@ -491,11 +354,14 @@ tools.bindEvent("mouseover", "#contextMenu .nav-select", function () {
 
 // TODO: Comment
 tools.bindEvent("click", "#contextMenu .nav-select .option:not(.active)", function () {
+    if (this.closest(".nav-select").getAttribute("aria-disabled") === "true") return;
     let navSelect = this.closest(".nav-select");
     let className = navSelect.classList[0];
 
-    let actives = document.querySelectorAll(".listBox > ul > li.active");
+    let actives = contextElement && contextElement.classList.contains("playlist-entry")
+        ? [contextElement] : document.querySelectorAll(".listBox > ul > li.active");
     for (let active of actives) {
+        if (["running", "completed", "failed"].includes(active.getAttribute("data-download-state"))) continue;
         let url = active.getAttribute("data-url");
 
         if (typeof tools.specificSettings[url] === "undefined")
@@ -543,12 +409,15 @@ tools.bindEvent("click", "#contextMenu .copy", function () {
 
 // TODO: Comment
 tools.bindEvent("click", "#contextMenu .location", function () {
+    if (this.getAttribute("aria-disabled") === "true") return;
     ipcRenderer.once("selected_file", (event, paths) => {
         const path = selectedDirectory(paths);
-        const actives = Array.from(document.querySelectorAll(".listBox > ul > li.active"));
+        const actives = contextElement && contextElement.classList.contains("playlist-entry")
+            ? [contextElement] : Array.from(document.querySelectorAll(".listBox > ul > li.active"));
         if (!actives.length && contextElement) actives.push(contextElement);
 
         for (let active of actives) {
+            if (["running", "completed", "failed"].includes(active.getAttribute("data-download-state"))) continue;
             let url = active.getAttribute("data-url");
 
             if (typeof tools.specificSettings[url] !== "object")
@@ -619,7 +488,7 @@ ipcRenderer.on("location", () => {
 
 // TODO: Comment
 ipcRenderer.on("yt-results", (event, results) => {
-    worker.postMessage({type: "youTubeMusicSearchResults", results: results});
+    worker.postMessage({type: "youTubeMusicSearchResults", results: results.results, requestId: results.requestId});
 });
 
 // TODO: Comment
@@ -656,11 +525,11 @@ ipcRenderer.on("translate", (event, array) => {
 
 // TODO: Comment
 document.addEventListener("keydown", (e) => {
-    if (e.code === "Delete" && !tools.downloading)
+    if (e.code === "Delete")
         tools.removeActiveListItems();
 
-    if (e.code === "KeyA" && e.ctrlKey && lastClicked && lastClicked.closest(".listBox") !== null && !tools.downloading) {
-        let items = document.querySelectorAll(".listBox li");
+    if (e.code === "KeyA" && e.ctrlKey && lastClicked && lastClicked.closest(".listBox") !== null) {
+        let items = document.querySelectorAll(".listBox > ul > li");
         if (!items.length) return;
 
         setTimeout(() => {
