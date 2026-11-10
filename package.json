@@ -1,6 +1,7 @@
 {
   "name": "fastdownloader",
   "version": "0.9.0",
+  "desktopName": "fm.bernardo.fastDownloader.desktop",
   "description": "A fast YouTube video/audio downloader in electron.js (and many more websites)",
   "main": "main.js",
   "scripts": {
@@ -50,8 +51,7 @@
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32"
+            "x64"
           ]
         }
       ],
@@ -85,6 +85,7 @@
       "perMachine": true
     },
     "linux": {
+      "syncDesktopName": true,
       "category": "Utility",
       "target": [
         "deb",
