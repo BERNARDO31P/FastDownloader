@@ -357,17 +357,27 @@ function location() {
 }
 
 function addURL() {
-    ipcMain.once("translation", (event, translations) => {
-        const value = clipboard.readText();
+    const currentWindow = win;
+    if (!currentWindow || currentWindow.isDestroyed()) return;
 
-        if (!value) {
+    ipcMain.once("translation", async (event, translations) => {
+        if (event.sender !== currentWindow.webContents || currentWindow.isDestroyed()) return;
+
+        try {
+            const value = await clipboard.readText();
+
+            if (!value) {
+                showNotification(translations[0], translations[1]);
+            } else if (!currentWindow.isDestroyed()) {
+                currentWindow.webContents.send("url", value);
+            }
+        } catch (error) {
+            console.error("Failed to read clipboard from tray:", error);
             showNotification(translations[0], translations[1]);
-        } else if (win) {
-            win.webContents.send("url", value);
         }
     });
 
-    win.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
+    currentWindow.webContents.send("translate", [["js", "error"], ["js", "noClipboard"]]);
 }
 
 async function checkAppUpdates() {

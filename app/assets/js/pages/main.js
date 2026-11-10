@@ -1,6 +1,6 @@
 import * as tools from "../tools.js";
 import {showNotification, worker} from "../tools.js";
-const {clipboard, ipcRenderer, shell} = require("electron");
+const {ipcRenderer, shell} = require("electron");
 
 let lastClicked = null,
     contextElement = null;
@@ -167,12 +167,22 @@ tools.bindEvent("click", ".listBox .clear-button:not([aria-disabled=\"true\"])",
 /**
  * Adds the clipboard text as a URL to the list.
  */
-tools.bindEvent("click", ".input .paste-button:not([aria-disabled=\"true\"])", (e) => {
-    let clipboardText = clipboard.readText();
+tools.bindEvent("click", ".input .paste-button:not([aria-disabled=\"true\"])", async (e) => {
+    let clipboardText;
+
+    try {
+        clipboardText = await navigator.clipboard.readText();
+    } catch (error) {
+        console.error("Failed to read clipboard:", error);
+        showNotification(tools.languageDB["js"]["noClipboard"], tools.languageDB["js"]["error"]);
+        return;
+    }
 
     if (!clipboardText) {
         showNotification(tools.languageDB["js"]["noClipboard"], tools.languageDB["js"]["error"]);
-    } else tools.addUrlToList(clipboardText);
+    } else {
+        tools.addUrlToList(clipboardText);
+    }
 
     let input = e.target.closest(".input").querySelector("input");
     input.value = "";

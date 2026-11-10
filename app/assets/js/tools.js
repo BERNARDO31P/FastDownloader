@@ -4,7 +4,7 @@ import {errorFilter, ytFilter} from "./lib/filter.js";
 const fs = require("fs");
 const terminate = require("terminate");
 const path = require("path");
-const {ipcRenderer, clipboard} = require("electron");
+const {ipcRenderer} = require("electron");
 const {exec, spawn, spawnSync} = require("child_process");
 
 // Actual simultaneous downloads (metadata lookups have a separate bounded pool).
@@ -715,15 +715,21 @@ export function updateSelected() {
 }
 
 // TODO: Comment
-export function activeToClipboard() {
-    let actives = document.querySelectorAll(".listBox > ul > li.active");
+export async function activeToClipboard() {
+    const actives = document.querySelectorAll(".listBox > ul > li.active");
     let clipText = "";
 
-    for (let active of actives) {
+    for (const active of actives) {
         clipText += active.getAttribute("data-url") + "\n";
     }
 
-    clipboard.writeText(clipText);
+    if (!clipText) return;
+
+    try {
+        await navigator.clipboard.writeText(clipText);
+    } catch (error) {
+        console.error("Failed to copy URLs to clipboard:", error);
+    }
 }
 
 // TODO: Comment

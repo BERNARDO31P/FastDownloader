@@ -27,12 +27,12 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "@electron/asar": "4.3.1",
-    "electron": "39.8.10",
-    "electron-builder": "26.15.3"
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
   },
   "dependencies": {
     "auto-launch": "5.0.6",
-    "electron-updater": "6.8.9",
+    "electron-updater": "6.8.11",
     "fastest-levenshtein": "1.0.16",
     "terminate": "2.8.0",
     "youtube-sr": "4.3.12",
