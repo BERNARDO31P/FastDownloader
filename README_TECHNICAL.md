@@ -73,37 +73,37 @@ YouTube Premium features require an appropriate subscription and a browser sessi
 
 ### List and keyboard controls
 
-| Action | Control |
-| --- | --- |
-| Add a URL from the input | **Enter** or **Add** |
-| Paste one or more URLs | Paste button |
-| Select several top-level URLs | **Ctrl + click** |
-| Select a range | **Shift + click** |
-| Select all top-level URLs | **Ctrl + A** when working in the list |
-| Remove selected URLs | **Delete** or **Remove** |
-| Copy selected top-level URLs | **Ctrl + C** or right-click **Copy** |
-| Expand / collapse a playlist | Arrow beside the playlist |
-| Override a URL or track | **Right-click** the relevant row |
-| Open the download directory | Folder button beside the selected location |
+| Action                        | Control                                    |
+|-------------------------------|--------------------------------------------|
+| Add a URL from the input      | **Enter** or **Add**                       |
+| Paste one or more URLs        | Paste button                               |
+| Select several top-level URLs | **Ctrl + click**                           |
+| Select a range                | **Shift + click**                          |
+| Select all top-level URLs     | **Ctrl + A** when working in the list      |
+| Remove selected URLs          | **Delete** or **Remove**                   |
+| Copy selected top-level URLs  | **Ctrl + C** or right-click **Copy**       |
+| Expand / collapse a playlist  | Arrow beside the playlist                  |
+| Override a URL or track       | **Right-click** the relevant row           |
+| Open the download directory   | Folder button beside the selected location |
 
 ## Settings reference
 
-| Setting | Options / behavior |
-| --- | --- |
-| Save settings | Persist chosen application settings across restarts. |
-| Save last storage location | Reuse the last selected output folder. |
-| Close to tray | Hide the main window instead of closing the application. |
-| Start minimized | Start with the main window hidden. |
-| Start automatically at system startup | Enable or disable OS autostart. |
-| Clear URL list after download | Remove the list after a successful batch; an aborted batch does not trigger this. |
-| Language | Select one of the 16 translations. Changing the language restarts the application and temporarily restores the URL list and output location. |
-| Download mode | **Audio only** or **Video and audio**. |
-| Simultaneous downloads (threads) | **1, 2, 3, or 4**; default **2**. This controls concurrent download jobs, not the `-N 2` fragment setting passed to yt-dlp. |
-| Audio quality | **Best**, **Medium**, or **Bad** (yt-dlp audio-quality values `0`, `5`, or `9`). |
-| Audio codec | **AAC, FLAC, MP3, M4A, Opus, Vorbis, WAV**. |
-| Video codec preference | **VP9, AV1, H.264/AVC, H.265/HEVC, H.266/VVC**. |
-| YouTube Premium | Optionally request browser cookies for eligible YouTube downloads. |
-| Browser | **Chrome, Firefox, Edge, Opera**; see the Windows Chrome limitation above. |
+| Setting                               | Options / behavior                                                                                                                           |
+|---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| Save settings                         | Persist chosen application settings across restarts.                                                                                         |
+| Save last storage location            | Reuse the last selected output folder.                                                                                                       |
+| Close to tray                         | Hide the main window instead of closing the application.                                                                                     |
+| Start minimized                       | Start with the main window hidden.                                                                                                           |
+| Start automatically at system startup | Enable or disable OS autostart.                                                                                                              |
+| Clear URL list after download         | Remove the list after a successful batch; an aborted batch does not trigger this.                                                            |
+| Language                              | Select one of the 16 translations. Changing the language restarts the application and temporarily restores the URL list and output location. |
+| Download mode                         | **Audio only** or **Video and audio**.                                                                                                       |
+| Simultaneous downloads (threads)      | **1, 2, 3, or 4**; default **2**. This controls concurrent download jobs, not the `-N 2` fragment setting passed to yt-dlp.                  |
+| Audio quality                         | **Best**, **Medium**, or **Bad** (yt-dlp audio-quality values `0`, `5`, or `9`).                                                             |
+| Audio codec                           | **AAC, FLAC, MP3, M4A, Opus, Vorbis, WAV**.                                                                                                  |
+| Video codec preference                | **VP9, AV1, H.264/AVC, H.265/HEVC, H.266/VVC**.                                                                                              |
+| YouTube Premium                       | Optionally request browser cookies for eligible YouTube downloads.                                                                           |
+| Browser                               | **Chrome, Firefox, Edge, Opera**; see the Windows Chrome limitation above.                                                                   |
 
 Audio downloads use FFmpeg-based extraction/conversion through yt-dlp. The application attempts to embed thumbnails for MP3, AAC, and FLAC audio. Video downloads prefer the selected codec and request **MP4** as the merged output container; the actual result depends on the formats offered by the source and FFmpeg support. Codec selection is a preference, not a guarantee that every site provides that format.
 
@@ -113,10 +113,10 @@ Downloaded file names are derived from media titles and metadata. In audio mode,
 
 The project's build configuration targets:
 
-| Platform | Configured package formats |
-| --- | --- |
-| Windows (x64) | NSIS `.exe` installer |
-| Linux | `.deb`, `.AppImage`, `.rpm`, `.tar.gz`, `.pacman` |
+| Platform      | Configured package formats                        |
+|---------------|---------------------------------------------------|
+| Windows (x64) | NSIS `.exe` installer                             |
+| Linux         | `.deb`, `.AppImage`, `.rpm`, `.tar.gz`, `.pacman` |
 
 The original project documentation lists testing on **Windows 10/11, Ubuntu/Debian, CentOS/Red Hat, and Arch Linux**. The availability of a given format is determined by the actual published releases. An [AUR listing](https://aur.archlinux.org/packages/fastdownloader-bin) is also referenced by the project.
 
@@ -191,17 +191,17 @@ Only download content you have permission to access, and comply with applicable 
 
 Versions below are taken from the **0.9.0 `package.json`**, not from older README entries.
 
-| Dependency | Version | Purpose |
-| --- | --- | --- |
-| [Electron](https://www.electronjs.org/) | 45.2.3 | Desktop runtime |
-| [electron-builder](https://www.electron.build/) | 26.18.0 | Packaging and publishing |
-| [electron-updater](https://www.npmjs.com/package/electron-updater) | 6.8.11 | Application updates |
-| [auto-launch](https://www.npmjs.com/package/auto-launch) | 5.0.6 | OS autostart |
-| [youtube-sr](https://www.npmjs.com/package/youtube-sr) | 4.3.12 | YouTube metadata lookup |
-| [ytmusic-api](https://www.npmjs.com/package/ytmusic-api) | 5.3.1 | YouTube Music search |
-| [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) | 1.0.16 | Music-title similarity matching |
-| [terminate](https://www.npmjs.com/package/terminate) | 2.8.0 | Process-tree termination |
-| [@electron/asar](https://www.npmjs.com/package/@electron/asar) | 4.3.1 | Application archive tooling |
+| Dependency                                                               | Version | Purpose                         |
+|--------------------------------------------------------------------------|---------|---------------------------------|
+| [Electron](https://www.electronjs.org/)                                  | 45.2.3  | Desktop runtime                 |
+| [electron-builder](https://www.electron.build/)                          | 26.18.0 | Packaging and publishing        |
+| [electron-updater](https://www.npmjs.com/package/electron-updater)       | 6.8.11  | Application updates             |
+| [auto-launch](https://www.npmjs.com/package/auto-launch)                 | 5.0.6   | OS autostart                    |
+| [youtube-sr](https://www.npmjs.com/package/youtube-sr)                   | 4.3.12  | YouTube metadata lookup         |
+| [ytmusic-api](https://www.npmjs.com/package/ytmusic-api)                 | 5.3.1   | YouTube Music search            |
+| [fastest-levenshtein](https://www.npmjs.com/package/fastest-levenshtein) | 1.0.16  | Music-title similarity matching |
+| [terminate](https://www.npmjs.com/package/terminate)                     | 2.8.0   | Process-tree termination        |
+| [@electron/asar](https://www.npmjs.com/package/@electron/asar)           | 4.3.1   | Application archive tooling     |
 
 External programs: [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org/), and [Deno](https://deno.com/). Their installed versions are **not pinned in `package.json`** and may change through updates or the supplied release binaries.
 
