@@ -114,8 +114,8 @@
       ],
       "extraFiles": [
         {
-          "from": "resources/fm.bernardo.fastDownloader.metainfo.xml",
-          "to": "usr/share/metainfo/fm.bernardo.fastDownloader.metainfo.xml"
+          "from": "resources/fm.bernardo.fastDownloader.appdata.xml",
+          "to": "usr/share/metainfo/fm.bernardo.fastDownloader.appdata.xml"
         }
       ]
     },
