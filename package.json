@@ -9,9 +9,9 @@
     "build": "electron-builder build --win --linux --publish never",
     "build_win": "electron-builder build --win --publish never",
     "build_unix": "electron-builder build --linux --publish never",
-    "deploy": "bash scripts/appimage.sh --check && electron-builder build --win --linux --publish always && bash scripts/appimage.sh",
-    "deploy_win": "electron-builder build --win --publish always",
-    "deploy_unix": "bash scripts/appimage.sh --check && electron-builder build --linux --publish always && bash scripts/appimage.sh"
+    "deploy": "node scripts/deploy.js --win --linux",
+    "deploy_win": "node scripts/deploy.js --win",
+    "deploy_unix": "node scripts/deploy.js --linux"
   },
   "repository": {
     "type": "git",
