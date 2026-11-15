@@ -82,10 +82,12 @@ function createWindow() {
 
     currentWindow.center();
 
-    autoLauncher = new AutoLaunch({
-        name: "FastDownloader",
-        path: app.getPath("exe")
-    });
+    if (app.isPackaged || process.env.FASTDOWNLOADER_TEST_AUTOLAUNCH === "1") {
+        autoLauncher = new AutoLaunch({
+            name: app.isPackaged ? "FastDownloader" : "FastDownloader-Dev",
+            path: app.getPath("exe")
+        });
+    }
 
     return currentWindow.loadFile(path.join("app", "index.html")).then(() => {
         if (currentWindow.isDestroyed()) {
@@ -258,12 +260,18 @@ ipcMain.on("disableCloseToTray", () => {
 });
 
 ipcMain.on("enableAutostart", () => {
+    if (!autoLauncher) {
+        return;
+    }
     autoLauncher.isEnabled().then((isEnabled) => {
         if (!isEnabled) autoLauncher.enable();
     });
 });
 
 ipcMain.on("disableAutostart", () => {
+    if (!autoLauncher) {
+        return;
+    }
     autoLauncher.isEnabled().then((isEnabled) => {
         if (isEnabled) autoLauncher.disable();
     });
