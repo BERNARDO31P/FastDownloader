@@ -25,7 +25,7 @@
     "video"
   ],
   "author": "Bernardo de Oliveira <bernardo@bernardo.fm>",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-only",
   "devDependencies": {
     "@electron/asar": "4.3.1",
     "electron": "45.2.3",
@@ -111,7 +111,26 @@
           "from": "resources/icons/64x64.png",
           "to": "icons/64x64.png"
         }
+      ],
+      "extraFiles": [
+        {
+          "from": "resources/fm.bernardo.fastDownloader.metainfo.xml",
+          "to": "usr/share/metainfo/fm.bernardo.fastDownloader.metainfo.xml"
+        }
       ]
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "BERNARDO31P",
+        "repo": "fastDownloader"
+      }
+    ],
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     }
   }
 }

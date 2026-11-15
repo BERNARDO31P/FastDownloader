@@ -1,0 +1,43 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>fm.bernardo.fastDownloader</id>
+    <name>FastDownloader</name>
+    <summary>Fast video and audio downloader</summary>
+
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-3.0-only</project_license>
+
+    <description>
+        <p>
+            FastDownloader is a free and open-source application
+            for downloading video and audio from YouTube
+            and many other websites.
+        </p>
+        <p>
+            Built with Electron, FastDownloader provides
+            a straightforward interface for managing
+            downloads and playlists.
+        </p>
+    </description>
+
+    <launchable type="desktop-id">
+        fm.bernardo.fastDownloader.desktop
+    </launchable>
+
+    <url type="homepage">https://github.com/BERNARDO31P/fastDownloader</url>
+    <url type="bugtracker">https://github.com/BERNARDO31P/fastDownloader/issues</url>
+
+    <screenshots>
+        <screenshot type="default">
+            <caption>FastDownloader main window</caption>
+            <image>
+                https://raw.githubusercontent.com/BERNARDO31P/fastDownloader/master/resources/screenshot/main_light.png
+            </image>
+        </screenshot>
+    </screenshots>
+
+    <releases>
+        <release version="0.9.0" date="2026-11-10"/>
+    </releases>
+</component>
