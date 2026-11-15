@@ -47,7 +47,16 @@
     },
     "files": [
       "**/*",
-      "!**/node_modules/@biomejs/**"
+      "!**/node_modules/@biomejs/**",
+      "!**/node_modules/zod/src/**",
+      "!**/node_modules/zod/v4/**",
+      "!**/node_modules/zod/v4-mini/**",
+      "!**/*.map",
+      "!scripts/**",
+      "!**/*.AppImage.zsync",
+      "!README.md",
+      "!README_TECHNICAL.md",
+      "!app/assets/scss/**"
     ],
     "win": {
       "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
