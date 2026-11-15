@@ -9,6 +9,7 @@ APP_ID="fm.bernardo.fastDownloader"
 DIST_DIR="$ROOT/dist"
 WORK_DIR="$DIST_DIR/.appimage-release-work"
 META_SOURCE="$ROOT/resources/$APP_ID.appdata.xml"
+MANIFEST_MERGER="$ROOT/scripts/merge-linux-manifest.js"
 
 check_command() {
     if ! command -v "$1" >/dev/null 2>&1; then
@@ -17,24 +18,32 @@ check_command() {
     fi
 }
 
-check_dependencies() {
+check_release_dependencies() {
     if [[ "$(uname -s)" != "Linux" ]]; then
         echo "AppImage releases must be built on Linux (WSL2 is supported)." >&2
         exit 1
     fi
-
-    for command_name in node npx appstreamcli curl gh; do
+    for command_name in node gh; do
         check_command "$command_name"
     done
-
-    if [[ ! -f "$META_SOURCE" ]]; then
-        echo "AppStream metadata not found: $META_SOURCE" >&2
+    if [[ ! -f "$MANIFEST_MERGER" ]]; then
+        echo "Missing script: $MANIFEST_MERGER" >&2
         exit 1
     fi
-
     if ! gh auth status >/dev/null 2>&1; then
         echo "GitHub CLI is not authenticated. Run: gh auth login" >&2
         echo "Alternatively, set GH_TOKEN or GITHUB_TOKEN for this session." >&2
+        exit 1
+    fi
+}
+
+check_dependencies() {
+    check_release_dependencies
+    for command_name in npx appstreamcli curl; do
+        check_command "$command_name"
+    done
+    if [[ ! -f "$META_SOURCE" ]]; then
+        echo "AppStream metadata not found: $META_SOURCE" >&2
         exit 1
     fi
 }
@@ -49,6 +58,9 @@ case "$MODE" in
     --publish)
         check_dependencies
         ;;
+    --repair-manifest)
+        check_release_dependencies
+        ;;
     --no-upload)
         check_command node
         check_command npx
@@ -60,7 +72,7 @@ case "$MODE" in
         fi
         ;;
     *)
-        echo "Usage: bash scripts/appimage.sh [--check|--publish|--no-upload]" >&2
+        echo "Usage: bash scripts/appimage.sh [--check|--publish|--no-upload|--repair-manifest]" >&2
         exit 2
         ;;
 esac
@@ -73,6 +85,34 @@ MANIFEST_PATH="$DIST_DIR/latest-linux.yml"
 TAG="v$VERSION"
 
 mkdir -p "$DIST_DIR"
+
+# Repair an already-published release without rebuilding/replacing any binaries.
+if [[ "$MODE" == "--repair-manifest" ]]; then
+    rm -rf "$WORK_DIR"
+    mkdir -p "$WORK_DIR/base"
+    gh release download "$TAG" --repo "$REPO" \
+        --pattern "latest-linux.yml" --dir "$WORK_DIR/base" --clobber
+    node "$MANIFEST_MERGER" \
+        --base "$WORK_DIR/base/latest-linux.yml" \
+        --output "$WORK_DIR/latest-linux.yml" \
+        --version "$VERSION" \
+        --appimage-name "$APPIMAGE_NAME" \
+        --repo "$REPO" --tag "$TAG"
+    cp "$WORK_DIR/latest-linux.yml" "$MANIFEST_PATH"
+    gh release upload "$TAG" "$MANIFEST_PATH" --repo "$REPO" --clobber
+    rm -rf "$WORK_DIR"
+    echo "Repaired latest-linux.yml on GitHub Release $TAG; binaries were not changed."
+    exit 0
+fi
+
+# The AppImage-only electron-builder invocation may overwrite dist/latest-linux.yml.
+# Preserve a local copy first, for --no-upload builds.
+BASE_BACKUP="$(mktemp)"
+cleanup_manifest_backup() { rm -f "$BASE_BACKUP"; }
+trap cleanup_manifest_backup EXIT
+if [[ "$MODE" == "--no-upload" && -s "$MANIFEST_PATH" ]]; then
+    cp "$MANIFEST_PATH" "$BASE_BACKUP"
+fi
 
 # Build only AppImage, without publishing the unprocessed binary.
 rm -f "$APPIMAGE_PATH" "$ZSYNC_PATH"
@@ -110,7 +150,15 @@ TOOL="$(cd "$(dirname "$TOOL")" && pwd)/$(basename "$TOOL")"
 
 # Use a clean extraction directory to avoid leftover files from previous releases.
 rm -rf "$WORK_DIR"
-mkdir -p "$WORK_DIR"
+mkdir -p "$WORK_DIR/base"
+if [[ "$MODE" == "--publish" ]]; then
+    # Other Linux packages were uploaded by the normal electron-builder deploy.
+    # Download that manifest, not the AppImage-only manifest generated locally.
+    gh release download "$TAG" --repo "$REPO" \
+        --pattern "latest-linux.yml" --dir "$WORK_DIR/base" --clobber
+elif [[ -s "$BASE_BACKUP" ]]; then
+    cp "$BASE_BACKUP" "$WORK_DIR/base/latest-linux.yml"
+fi
 (
     cd "$WORK_DIR"
     "$APPIMAGE_PATH" --appimage-extract
@@ -148,44 +196,20 @@ if [[ ! -s "$WORK_DIR/$APPIMAGE_NAME" || ! -s "$WORK_DIR/$APPIMAGE_NAME.zsync" ]
     exit 1
 fi
 
-# Repacking changes the checksum. Generate metadata for the FINAL binary.
-# Do not reuse electron-builder's old latest-linux.yml or embedded blockMapSize.
-APPIMAGE_FILE="$WORK_DIR/$APPIMAGE_NAME" \
-MANIFEST_FILE="$WORK_DIR/latest-linux.yml" \
-RELEASE_VERSION="$VERSION" node <<"NODE"
-const fs = require("node:fs");
-const crypto = require("node:crypto");
-const path = require("node:path");
-
-const file = process.env.APPIMAGE_FILE;
-const manifest = process.env.MANIFEST_FILE;
-const version = process.env.RELEASE_VERSION;
-const name = path.basename(file);
-const size = fs.statSync(file).size;
-const hash = crypto.createHash("sha512");
-
-const stream = fs.createReadStream(file);
-stream.on("data", chunk => hash.update(chunk));
-stream.on("error", error => {
-    console.error(error);
-    process.exitCode = 1;
-});
-stream.on("end", () => {
-    const sha512 = hash.digest("base64");
-    const contents = [
-        `version: ${version}`,
-        "files:",
-        `  - url: ${name}`,
-        `    sha512: ${sha512}`,
-        `    size: ${size}`,
-        `path: ${name}`,
-        `sha512: ${sha512}`,
-        `releaseDate: ${new Date().toISOString()}`,
-        ""
-    ].join("\n");
-    fs.writeFileSync(manifest, contents);
-});
-NODE
+# Merge only the final AppImage checksum into the existing Linux update metadata.
+# Restore missing DEB/RPM/Pacman entries from the actual GitHub release if an
+# earlier script already overwrote latest-linux.yml.
+MERGE_ARGS=(
+    --base "$WORK_DIR/base/latest-linux.yml"
+    --output "$WORK_DIR/latest-linux.yml"
+    --version "$VERSION"
+    --appimage-name "$APPIMAGE_NAME"
+    --appimage "$WORK_DIR/$APPIMAGE_NAME"
+)
+if [[ "$MODE" == "--publish" ]]; then
+    MERGE_ARGS+=(--repo "$REPO" --tag "$TAG")
+fi
+node "$MANIFEST_MERGER" "${MERGE_ARGS[@]}"
 
 # Replace the unprocessed output only after all generation steps succeeded.
 mv -f "$WORK_DIR/$APPIMAGE_NAME" "$APPIMAGE_PATH"
