@@ -9,9 +9,9 @@
     "build": "electron-builder build --win --linux --publish never",
     "build_win": "electron-builder build --win --publish never",
     "build_unix": "electron-builder build --linux --publish never",
-    "deploy": "electron-builder build --win --linux --publish always",
+    "deploy": "bash scripts/appimage.sh --check && electron-builder build --win --linux --publish always && bash scripts/appimage.sh",
     "deploy_win": "electron-builder build --win --publish always",
-    "deploy_unix": "electron-builder build --linux --publish always"
+    "deploy_unix": "bash scripts/appimage.sh --check && electron-builder build --linux --publish always && bash scripts/appimage.sh"
   },
   "repository": {
     "type": "git",
@@ -89,7 +89,6 @@
       "category": "Utility",
       "target": [
         "deb",
-        "AppImage",
         "rpm",
         "tar.gz",
         "pacman"
