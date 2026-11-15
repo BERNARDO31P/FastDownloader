@@ -45,6 +45,10 @@
     "directories": {
       "buildResources": "resources"
     },
+    "files": [
+      "**/*",
+      "!**/node_modules/@biomejs/**"
+    ],
     "win": {
       "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
       "target": [
