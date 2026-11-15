@@ -105,6 +105,8 @@ if [[ ! -f "$TOOL" ]]; then
     exit 1
 fi
 chmod +x "$TOOL"
+# appimagetool must remain reachable after changing into the output directory.
+TOOL="$(cd "$(dirname "$TOOL")" && pwd)/$(basename "$TOOL")"
 
 # Use a clean extraction directory to avoid leftover files from previous releases.
 rm -rf "$WORK_DIR"
@@ -130,10 +132,16 @@ appstreamcli validate --no-net "$APPDIR/usr/share/metainfo/$APP_ID.appdata.xml"
 
 # Repackage with AppImageUpdate information; appimagetool creates the .zsync.
 UPDATE_INFO="gh-releases-zsync|BERNARDO31P|fastDownloader|latest|FastDownloader-*.AppImage.zsync"
-ARCH=x86_64 "$TOOL" \
-    -u "$UPDATE_INFO" \
-    "$APPDIR" \
-    "$WORK_DIR/$APPIMAGE_NAME"
+# appimagetool runs zsyncmake without an output path. It writes the .zsync
+# into the process working directory, not next to the destination AppImage.
+# Run from WORK_DIR so both artifacts land where the script expects them.
+(
+    cd "$WORK_DIR"
+    ARCH=x86_64 "$TOOL" \
+        -u "$UPDATE_INFO" \
+        "$APPDIR" \
+        "$WORK_DIR/$APPIMAGE_NAME"
+)
 
 if [[ ! -s "$WORK_DIR/$APPIMAGE_NAME" || ! -s "$WORK_DIR/$APPIMAGE_NAME.zsync" ]]; then
     echo "Repackaging failed to produce an AppImage and a .zsync file." >&2
