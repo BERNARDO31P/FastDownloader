@@ -91,7 +91,7 @@ if [[ "$MODE" == "--repair-manifest" ]]; then
     rm -rf "$WORK_DIR"
     mkdir -p "$WORK_DIR/base"
     gh release download "$TAG" --repo "$REPO" \
-        --pattern "latest-linux.yml" --dir "$WORK_DIR/base" --clobber
+        --pattern "latest-linux.yml" --dir "$WORK_DIR/base"
     node "$MANIFEST_MERGER" \
         --base "$WORK_DIR/base/latest-linux.yml" \
         --output "$WORK_DIR/latest-linux.yml" \
@@ -155,7 +155,7 @@ if [[ "$MODE" == "--publish" ]]; then
     # Other Linux packages were uploaded by the normal electron-builder deploy.
     # Download that manifest, not the AppImage-only manifest generated locally.
     gh release download "$TAG" --repo "$REPO" \
-        --pattern "latest-linux.yml" --dir "$WORK_DIR/base" --clobber
+        --pattern "latest-linux.yml" --dir "$WORK_DIR/base"
 elif [[ -s "$BASE_BACKUP" ]]; then
     cp "$BASE_BACKUP" "$WORK_DIR/base/latest-linux.yml"
 fi

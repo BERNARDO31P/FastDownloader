@@ -133,7 +133,7 @@ async function main() {
             try {
                 process.stderr.write(`Restoring missing manifest entry from release: ${assetName}\n`);
                 gh(["release", "download", options.tag, "--repo", options.repo,
-                    "--pattern", assetName, "--dir", temp, "--clobber"]);
+                    "--pattern", assetName, "--dir", temp]);
                 const assetPath = path.join(temp, assetName);
                 if (!fs.statSync(assetPath).isFile()) fatal(`Downloaded asset missing: ${assetName}`);
                 const { sha512, size } = await digestFile(assetPath);
