@@ -59,7 +59,7 @@ h2 {
 
 h3 {
   margin: 15px 0 0 0;
-  display: block;
+  display: inline-block;
 
   color: var(--text-color);
 }
@@ -172,6 +172,10 @@ settings {
 
   display: none;
 
+  & > h3 + div:not(.toggle) {
+    margin: -5px 0 0 0;
+  }
+
   & > div:not(.toggle) {
     margin: 15px 0 0 0;
   }
@@ -208,7 +212,7 @@ settings {
     }
   }
 
-  & > .row:last-of-type {
+  & > div:last-of-type {
     padding-bottom: 50px !important;
   }
 }
@@ -592,6 +596,14 @@ settings {
       border-radius: 5px 5px 0 0;
     }
 
+    &.top > .body:has(> :last-child:nth-child(3)) {
+      margin-top: -130px !important;
+    }
+
+    &.top > .body:has(> :last-child:nth-child(2)) {
+      margin-top: -105px !important;
+    }
+
     &.top > .head {
       border-radius: 0 0 5px 5px;
     }
@@ -653,6 +665,10 @@ settings {
       width: 90%;
       margin: 15px auto;
       position: relative;
+    }
+
+    & > *:only-of-type {
+      width: 95%;
     }
   }
 }

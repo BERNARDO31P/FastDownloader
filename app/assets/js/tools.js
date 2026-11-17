@@ -9,11 +9,13 @@ const {exec, spawn, spawnSync} = require("child_process");
 
 // Actual simultaneous downloads (metadata lookups have a separate bounded pool).
 const DEFAULT_DOWNLOAD_CONCURRENCY = 2;
+
 function clampDownloadConcurrency(value) {
     const parsed = Number(value);
     return Number.isInteger(parsed) && parsed >= 1 && parsed <= 4
         ? parsed : DEFAULT_DOWNLOAD_CONCURRENCY;
 }
+
 let downloadConcurrency = clampDownloadConcurrency(getCookie("threads", DEFAULT_DOWNLOAD_CONCURRENCY));
 
 export function getDownloadConcurrency() {
@@ -74,6 +76,11 @@ export let ffmpeg = "";
 export let elevate = "";
 
 export let selectedLang = null;
+export let availableBrowsers = {};
+
+export function setBrowsers(browsers) {
+    availableBrowsers = browsers;
+}
 
 // TODO: Comment
 HTMLElement.prototype.animateCallback = function (keyframes, options, callback) {
@@ -617,9 +624,13 @@ function resolvePlaylist(item) {
         let processError = null;
         child.stdout.setEncoding("utf8");
         child.stderr.setEncoding("utf8");
-        child.stdout.on("data", (data) => { output += data; });
+        child.stdout.on("data", (data) => {
+            output += data;
+        });
         child.stderr.on("data", (data) => console.debug(data));
-        child.on("error", (error) => { processError = error; });
+        child.on("error", (error) => {
+            processError = error;
+        });
         child.on("close", (code) => {
             state.child = null;
             if (state.cancelled) {
@@ -664,7 +675,8 @@ function resolvePlaylist(item) {
 
     // The lookup is started at add/restore time, not when downloading. Consume
     // rejections here too so a failed lookup does not cause unhandled rejection.
-    state.promise.catch(() => {});
+    state.promise.catch(() => {
+    });
     return state.promise;
 }
 
@@ -808,7 +820,7 @@ function updateDownloadProgress(batch, jobId = null) {
     if (progressTotal) progressTotal.value = total;
     if (progressTotalInfo) {
         progressTotalInfo.textContent = total === 1 && batch.pendingSources === 0 &&
-            batch.running === 0 && batch.queue.length === 0
+        batch.running === 0 && batch.queue.length === 0
             ? languageDB["js"]["done"]
             : (total * 100).toFixed(2) + "%";
     }
@@ -847,8 +859,10 @@ function prepareDownloadJob(job, settings, batch) {
     // avoids the worker roundtrip and starts their title lookup immediately.
     if (settings.mode !== "audio" || !isYouTubeUrl(job.url) ||
         job.url.includes("music.youtube") || job.url.includes("playlist")) {
-        return Promise.resolve({url: job.url, ...settings,
-            quality: normalizeAudioQuality(settings.quality), jobId: job.jobId});
+        return Promise.resolve({
+            url: job.url, ...settings,
+            quality: normalizeAudioQuality(settings.quality), jobId: job.jobId
+        });
     }
 
     return new Promise((resolvePrepare) => {
@@ -1002,13 +1016,9 @@ function buildCommonArgs(url) {
     const commonArgs = ["--no-check-formats", "--no-check-certificates",
         "--extractor-args", "youtube:player_client=default,web_safari;player_js_version=actual"];
     const premium = JSON.parse(getCookie("premium"));
-    if (isYouTubeUrl(url) && premium?.check) {
+    if (availableBrowsers.length && isYouTubeUrl(url) && premium?.check) {
         if (premium.browser) {
-            if (process.platform !== "win32" || premium.browser !== "chrome") {
-                commonArgs.push("--cookies-from-browser", premium.browser);
-            } else {
-                console.warn("Chrome is currently not supported on Windows for extracting cookies, continuing");
-            }
+            commonArgs.push("--cookies-from-browser", premium.browser);
         } else {
             showNotification(languageDB["js"]["noBrowser"]);
             return null;
@@ -1102,8 +1112,10 @@ async function runQueuedJob(job, batch) {
     job.downloadStarted = false;
     const snapshot = getJobSettings(job);
     batch.modesUsed.add(snapshot.mode);
-    const item = {...job.prepared, ...snapshot, jobId: job.jobId,
-        quality: normalizeAudioQuality(snapshot.quality)};
+    const item = {
+        ...job.prepared, ...snapshot, jobId: job.jobId,
+        quality: normalizeAudioQuality(snapshot.quality)
+    };
     return downloadItem(item, batch, job);
 }
 
@@ -1255,7 +1267,8 @@ export function removeDownloadSource(item) {
         if (["queued", "ready", "preparing"].includes(job.state)) {
             job.preflightCancelled = true;
             if (job.preflightWake) job.preflightWake();
-            if (job.preflightProcess?.pid) terminate(job.preflightProcess.pid, () => {});
+            if (job.preflightProcess?.pid) terminate(job.preflightProcess.pid, () => {
+            });
             job.cancelled = true;
             batch.queue = batch.queue.filter((entry) => entry !== job);
             batch.progress.delete(job.jobId);
@@ -1669,67 +1682,124 @@ export function selectClick(element) {
 
         hiddenElements = [];
     } else {
-        let options = select.querySelectorAll(".option");
-        let option = options[0];
+        const dropdown = select.querySelector(".body");
 
-        let computedStyle = window.getComputedStyle(option, null);
+        // Activate first so the dropdown can be measured.
+        select.classList.add("active");
 
-        let optionHeight = getNumber(computedStyle.height) + getNumber(computedStyle.padding) * 2;
+        // Measure the actual dropdown including padding and borders.
+        let dropdownRect = dropdown.getBoundingClientRect();
 
-        let optionCount = options.length;
-        let optionsHeight = optionHeight * optionCount;
-
-        optionsHeight = optionsHeight > 100 ? 100 : optionsHeight;
-
-        let clientRectSelect = select.getClientRects()[0];
-        let clientRectBody = document.body.getClientRects()[0];
-
-        if ((clientRectBody.height - 20) - clientRectSelect.bottom < optionsHeight) {
+        // Check whether it fits below the select.
+        if (dropdownRect.bottom > window.innerHeight - 20) {
             select.classList.add("top");
             label.classList.add("hidden");
+
+            // Recalculate because the dropdown now opens upwards.
+            dropdownRect = dropdown.getBoundingClientRect();
         }
 
-        let nextElement = select.parentElement;
-        let height = 0;
 
-        let interval = setInterval(() => {
-            let row = nextElement.closest(".row");
+        const style = getComputedStyle(dropdown);
+        const option = dropdown.querySelector(".option");
+        const optionStyle = option ? getComputedStyle(option) : style;
 
-            if (row) {
-                nextElement = row;
+        const px = value => parseFloat(value) || 0;
+
+        const padding = {
+            top: Math.max(px(style.paddingTop), px(optionStyle.paddingTop)),
+            bottom: Math.max(px(style.paddingBottom), px(optionStyle.paddingBottom)),
+            left: Math.max(px(style.paddingLeft), px(optionStyle.paddingLeft)),
+            right: Math.max(px(style.paddingRight), px(optionStyle.paddingRight))
+        };
+
+        dropdownRect = {
+            top: dropdownRect.top - padding.top,
+            bottom: dropdownRect.bottom + padding.bottom,
+            left: dropdownRect.left - padding.left,
+            right: dropdownRect.right + padding.right
+        };
+
+
+        let elementsToHide = new Set();
+        let settings = select.closest("settings");
+
+        function overlapsDropdown(element) {
+            let rect = element.getBoundingClientRect();
+
+            return rect.width > 0 &&
+                rect.height > 0 &&
+                rect.left < dropdownRect.right &&
+                rect.right > dropdownRect.left &&
+                rect.top < dropdownRect.bottom &&
+                rect.bottom > dropdownRect.top;
+        }
+
+        // Check individual settings using their label's parent div.
+        for (let label of settings.querySelectorAll("label")) {
+            let setting = label.parentElement;
+
+            if (setting.tagName !== "DIV" || setting.contains(select)) {
+                continue;
             }
 
-            if (select.classList.contains("top")) {
-                nextElement = nextElement.previousElementSibling;
-            } else {
-                nextElement = nextElement.nextElementSibling;
+            if (overlapsDropdown(setting)) {
+                elementsToHide.add(setting);
+            }
+        }
+
+        // Check standalone elements outside the settings groups.
+        for (let element of settings.children) {
+            if (element.contains(select) ||
+                element.id === "nav" ||
+                element.classList.contains("row")) {
+                continue;
             }
 
-            if (nextElement) {
-                let rect = nextElement.getBoundingClientRect();
-                let style = getComputedStyle(nextElement);
-
-                height += rect.height;
-
-                if (style.opacity !== "0") {
-                    hiddenElements.push(nextElement);
-                }
-
-                if (height > 60) {
-                    clearInterval(interval);
-
-                    for (let element of hiddenElements) {
-                        element.classList.add("hidden");
-                    }
-                }
-            } else {
-                clearInterval(interval);
-
-                for (let element of hiddenElements) {
-                    element.classList.add("hidden");
-                }
+            if (overlapsDropdown(element)) {
+                elementsToHide.add(element);
             }
-        });
+        }
+
+
+        for (let column of settings.querySelectorAll(".column")) {
+            if (column.contains(select)) {
+                continue;
+            }
+
+            let children = Array.from(column.children);
+
+            if (children.length === 0) {
+                continue;
+            }
+
+            let allHidden = children.every(child => {
+                if (elementsToHide.has(child) || child.classList.contains("hidden")) {
+                    return true;
+                }
+
+                let style = getComputedStyle(child);
+
+                return style.display === "none" ||
+                    style.visibility === "hidden" ||
+                    style.opacity === "0";
+            });
+
+            if (allHidden) {
+                for (let child of children) {
+                    elementsToHide.delete(child);
+                }
+
+                elementsToHide.add(column);
+            }
+        }
+
+        // Hide the collected elements.
+        for (let element of elementsToHide) {
+            hiddenElements.push(element);
+            element.classList.add("hidden");
+        }
+
 
         select.classList.add("active");
     }
@@ -2020,8 +2090,9 @@ export function selectOption(option) {
     let button = select.querySelector("div");
 
     let selected = select.querySelector("[aria-selected=\"true\"]");
-
-    selected.ariaSelected = "false";
+    if (selected) {
+        selected.ariaSelected = "false";
+    }
     option.ariaSelected = "true";
 
     button.textContent = option.textContent;

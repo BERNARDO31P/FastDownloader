@@ -181,6 +181,55 @@ ipcMain.on("lang", (event, selectedLanguage) => {
     }
 });
 
+ipcMain.handle("getInstalledBrowsers", async () => {
+    const {detectBrowsers} = await import("@httptoolkit/browser-launcher");
+
+    const supported = new Map([
+        ["chrome", ["chrome", "Google Chrome"]],
+        ["firefox", ["firefox", "Mozilla Firefox"]],
+        ["edge", ["edge", "Microsoft Edge"]],
+        ["msedge", ["edge", "Microsoft Edge"]],
+        ["opera", ["opera", "Opera"]],
+        ["brave", ["brave", "Brave"]],
+        ["chromium", ["chromium", "Chromium"]],
+        ["safari", ["safari", "Safari"]],
+        ["vivaldi", ["vivaldi", "Vivaldi"]],
+        ["whale", ["whale", "Naver Whale"]]
+    ]);
+
+    const detected = await detectBrowsers();
+    const available = new Map();
+
+    const chromiumBrowsers = new Set([
+        "chrome",
+        "chromium",
+        "edge",
+        "msedge",
+        "opera",
+        "brave",
+        "vivaldi",
+        "whale"
+    ]);
+    for (const browser of detected) {
+        const name = browser.name.toLowerCase();
+        const entry = supported.get(name);
+
+        if (!entry) {
+            continue;
+        }
+
+        const [value, label] = entry;
+
+        if (process.platform === "win32" && chromiumBrowsers.has(value)) {
+            continue;
+        }
+
+        available.set(value, {value, label});
+    }
+
+    return Array.from(available.values());
+});
+
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
         app.quit();

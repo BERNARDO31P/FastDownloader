@@ -1,5 +1,5 @@
 import * as tools from "../tools.js";
-import {showNotification} from "../tools.js";
+import {availableBrowsers, showNotification} from "../tools.js";
 
 const {ipcRenderer} = require("electron");
 
@@ -18,22 +18,29 @@ function updateScrollShadow(element, position) {
     }
 }
 
-setTimeout(() => {
-    // Settings are loaded dynamically, so resolve the navigation on each scroll.
-    document.body.addEventListener("scroll", () => {
-        updateScrollShadow(document.querySelector("settings #nav"), window.scrollY);
-    }, {passive: true});
+document.addEventListener("scroll", (event) => {
+    const target = event.target;
+    const info = document.querySelector("#info");
+    const settings = document.querySelector("settings");
 
-    const info = document.querySelector("body #info");
-    const dynamic = info && info.querySelector("#dynamic");
-    const shadow = info && info.querySelector("#static");
-
-    if (dynamic) {
-        dynamic.addEventListener("scroll", () => {
-            updateScrollShadow(shadow, dynamic.scrollTop);
-        }, {passive: true});
+    if (target === info?.querySelector("#dynamic")) {
+        updateScrollShadow(info.querySelector("#static"), target.scrollTop);
+        return;
     }
-}, 1000);
+
+    if (!settings || (target instanceof Element && target.closest(".select"))) {
+        return;
+    }
+
+    if (target === document || (target instanceof Element &&
+        (settings.contains(target) || target.contains(settings)))) {
+        const scrollTop = target === document
+            ? document.scrollingElement.scrollTop
+            : target.scrollTop;
+
+        updateScrollShadow(settings.querySelector("#nav"), scrollTop);
+    }
+}, {capture: true, passive: true});
 
 /**
  * Toggle a checkbox and update its translated on/off label.
@@ -168,3 +175,38 @@ tools.bindEvent("click", ".select:not([aria-disabled=\"true\"]) .head", function
 tools.bindEvent("click", "#info-open", () => {
     tools.showChangelog();
 });
+
+
+(async () => {
+    const settings = document.getElementsByTagName("settings")[0];
+    const select = settings.querySelector("#browser");
+    const body = select.querySelector(".body");
+
+    if (!availableBrowsers.length) {
+        settings.querySelector(".youtube-section").style.display = "none";
+        return;
+    }
+
+    const premium = JSON.parse(tools.getCookie("premium") || "{}");
+    const selectedBrowser = premium?.browser;
+
+    const placeholder = body.querySelector(".option[data-value=\"\"]");
+
+    body.replaceChildren(placeholder);
+
+    for (const browser of availableBrowsers) {
+        const option = document.createElement("div");
+
+        option.className = "option";
+        option.dataset.value = browser.value;
+        option.textContent = browser.label;
+
+        body.appendChild(option);
+    }
+
+    const selected = Array.from(body.children).find(option =>
+        option.dataset.value === selectedBrowser
+    ) || placeholder;
+
+    tools.selectOption(selected);
+})();

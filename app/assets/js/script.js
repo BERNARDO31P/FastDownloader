@@ -80,6 +80,12 @@ window.onload = async () => {
         ipcRenderer.send("startMinimized");
     }
 
+    try {
+        tools.setBrowsers(await ipcRenderer.invoke("getInstalledBrowsers"));
+    } catch (error) {
+        console.warn("Could not detect installed browsers:", error);
+    }
+
     initialized = true;
 
     for (const applyUpdate of pendingUpdates) {
