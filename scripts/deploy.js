@@ -57,6 +57,13 @@ if (release.status === 0) {
 let configFile = null;
 const env = { ...process.env };
 const args = ["electron-builder", "build", ...targets];
+
+if (targets.includes("--win")) {
+    // Acquire and verify Windows N-API addons before any publishing begins.
+    // Avoid node-gyp cross-compilation while preserving the original detector.
+    run(process.execPath, ["scripts/prepare-win-browser-native.js"]);
+    args.push("--config.npmRebuild=false");
+}
 if (releaseType !== "draft") {
     fs.mkdirSync(path.join(root, "dist"), { recursive: true });
     configFile = path.join(root, "dist", ".fastdownloader-release-config.json");
