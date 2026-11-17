@@ -11,11 +11,30 @@ const {spawnSync} = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 
 function dependencyDirectory(name, parent) {
-    try {
-        return path.dirname(require.resolve(name + "/package.json", {paths: [parent]}));
-    } catch (error) {
-        throw new Error("Missing dependency " + name + " below " + parent + ". Run npm install first.", {cause: error});
+    // Packages with an "exports" field may block require.resolve(".../package.json")
+    // even though their package.json exists on disk. Resolve via node_modules
+    // directories instead, walking upward to support nested and hoisted installs.
+    let directory = fs.realpathSync(parent);
+
+    for (;;) {
+        const candidate = path.join(directory, "node_modules", ...name.split("/"));
+        const manifest = path.join(candidate, "package.json");
+
+        if (fs.existsSync(manifest)) {
+            const installed = JSON.parse(fs.readFileSync(manifest, "utf8"));
+            if (installed.name === name) {
+                return fs.realpathSync(candidate);
+            }
+        }
+
+        const parentDirectory = path.dirname(directory);
+        if (parentDirectory === directory) {
+            break;
+        }
+        directory = parentDirectory;
     }
+
+    throw new Error("Missing dependency " + name + " below " + parent + ". Run npm install first.");
 }
 
 function verifyWindowsX64Binary(filename) {
@@ -47,7 +66,10 @@ const pkg = require(path.join(registry, "package.json"));
 // registry-js uses N-API. This ABI is stable across supported Node/Electron
 // versions; never try to build for the Electron 45 Node ABI instead.
 const napiVersion = pkg.binary?.napi_versions?.[0] ?? 3;
-const prebuildInstaller = require.resolve("prebuild-install/bin.js", {paths: [registry]});
+const prebuildInstaller = path.join(dependencyDirectory("prebuild-install", registry), "bin.js");
+if (!fs.existsSync(prebuildInstaller)) {
+    throw new Error("prebuild-install/bin.js was not found in the installed dependency.");
+}
 
 console.log("Preparing", pkg.name + "@" + pkg.version, "for Windows x64 (N-API", napiVersion + ")");
 const result = spawnSync(process.execPath, [
