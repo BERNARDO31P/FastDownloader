@@ -156,19 +156,49 @@ try {
     }
     console.log("Windows x64 registry.node verified:", path.relative(root, target));
 
-    // win-version-info ships prebuilt Windows binaries directly in npm.
-    const prebuildDir = path.join(versionInfo, "prebuilds", "win32-x64");
-    if (!fs.existsSync(prebuildDir)) {
-        throw new Error("win-version-info is missing prebuilds/win32-x64.");
+    // win-version-info ships its official Windows x64 N-API prebuild in npm.
+    // node-gyp-build prefers build/Release/*.node over prebuilds, so a Linux
+    // native addon left behind by npm install would otherwise be loaded on
+    // Windows (ERROR_BAD_EXE_FORMAT / Windows error 193).
+    const windowsVersionInfo = path.join(versionInfo, "prebuilds", "win32-x64", "node.napi.node");
+    if (!fs.existsSync(windowsVersionInfo)) {
+        throw new Error("win-version-info is missing the official prebuilds/win32-x64/node.napi.node.");
     }
-    const nativeFiles = fs.readdirSync(prebuildDir)
-        .filter(name => name.endsWith(".node"))
-        .map(name => path.join(prebuildDir, name));
-    if (!nativeFiles.length) {
-        throw new Error("win-version-info has no Windows x64 .node prebuild.");
+    verifyWindowsX64Binary(fs.readFileSync(windowsVersionInfo), windowsVersionInfo);
+    console.log("win-version-info Windows x64 N-API prebuild verified:", path.relative(root, windowsVersionInfo));
+
+    // Remove the host (Linux) compiled artifacts. On Windows, node-gyp-build
+    // must select prebuilds/win32-x64/node.napi.node, not build/Release/VersionInfo.node.
+    const hostBuild = path.join(versionInfo, "build");
+    if (fs.existsSync(hostBuild)) {
+        fs.rmSync(hostBuild, {recursive: true, force: true});
+        console.log("Removed stale host build:", path.relative(root, hostBuild));
     }
-    for (const file of nativeFiles) {
-        verifyWindowsX64Binary(fs.readFileSync(file), file);
+
+    // Check the real package loader, without loading the Windows native addon
+    // into Linux. node-gyp-build reads these target overrides at module load.
+    const originalPlatform = process.env.npm_config_platform;
+    const originalArch = process.env.npm_config_arch;
+    const originalPrebuildsOnly = process.env.PREBUILDS_ONLY;
+    try {
+        process.env.npm_config_platform = "win32";
+        process.env.npm_config_arch = "x64";
+        delete process.env.PREBUILDS_ONLY;
+
+        const loaderFile = require.resolve("node-gyp-build", {paths: [versionInfo]});
+        const loader = require(loaderFile);
+        const selected = loader.path(versionInfo);
+        if (fs.realpathSync(selected) !== fs.realpathSync(windowsVersionInfo)) {
+            throw new Error("win-version-info would load an incorrect native addon: " + selected);
+        }
+        console.log("win-version-info native loader target PASS:", path.relative(root, selected));
+    } finally {
+        if (originalPlatform === undefined) delete process.env.npm_config_platform;
+        else process.env.npm_config_platform = originalPlatform;
+        if (originalArch === undefined) delete process.env.npm_config_arch;
+        else process.env.npm_config_arch = originalArch;
+        if (originalPrebuildsOnly === undefined) delete process.env.PREBUILDS_ONLY;
+        else process.env.PREBUILDS_ONLY = originalPrebuildsOnly;
     }
 
     console.log("Windows browser detection assets ready; proceeding with Linux -> Windows packaging.");
